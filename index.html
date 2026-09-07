@@ -1,229 +1,260 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Princess Floral Garden | Mix Song</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #fdfbf7;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --primary-pink: #e8a5c8;
-            --accent-gold: #d4af37;
-            --text-color: #5a4a42;
-            --floral-shadow: 0 8px 32px 0 rgba(232, 165, 200, 0.2);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Prompt', sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(#f7e1ec 1px, transparent 1px), radial-gradient(#f7e1ec 1px, var(--bg-color) 1px);
-            background-size: 40px 40px;
-            background-position: 0 0, 20px 20px;
-            color: var(--text-color);
-            min-height: 100vh;
-        }
-
-        header {
-            text-align: center;
-            padding: 40px 20px 20px;
-        }
-
-        header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            color: #b07d9b;
-            margin-bottom: 5px;
-        }
-
-        header p {
-            font-weight: 300;
-            font-size: 1rem;
-            letter-spacing: 1px;
-            color: #8c7873;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .nav-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--primary-pink);
-            padding: 10px 22px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-family: 'Prompt', sans-serif;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
-
-        .tab-btn:hover, .tab-btn.active {
-            background: var(--primary-pink);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: var(--floral-shadow);
-        }
-
-        .playlist-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .song-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(232, 165, 200, 0.4);
-            box-shadow: var(--floral-shadow);
-            backdrop-filter: blur(8px);
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .song-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .song-card::before {
-            content: '🌸';
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.2rem;
-            opacity: 0.6;
-        }
-
-        .song-category {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--accent-gold);
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .song-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        .song-artist {
-            font-size: 0.9rem;
-            color: #8c7873;
-            margin-bottom: 15px;
-        }
-
-        .play-btn {
-            background: transparent;
-            border: 1.5px solid var(--primary-pink);
-            color: var(--text-color);
-            padding: 6px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-
-        .play-btn:hover {
-            background: var(--primary-pink);
-            color: white;
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px;
-            font-size: 0.85rem;
-            color: #a3918c;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Delia Randomdance | Royal Blossom</title>
+  <link rel="icon" type="image/png" href="DeliaLogo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SortableJS สำหรับการลากวาง (Drag and Drop) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <!-- เชื่อมต่อไฟล์ CSS -->
+  <link rel="stylesheet" href="style.css">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow">
 </head>
 <body>
 
-    <header>
-        <h1>Royal Blossom Sanctuary</h1>
-        <p>✨ Curated Mix Songs & Floral Aesthetics ✨</p>
-    </header>
+  <!-- แจ้งเตือนแบบ Toast -->
+  <div id="toast-container"></div>
 
-    <div class="container">
-        <!-- Navigation / Category Filters -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="filterSongs('all')">🌷 All Melodies</button>
-            <button class="tab-btn" onclick="filterSongs('global')">🌍 Global & TikTok</button>
-            <button class="tab-btn" onclick="filterSongs('kpop')">💖 K-Pop</button>
-            <button class="tab-btn" onclick="filterSongs('jpop')">🌸 J-Pop</button>
-            <button class="tab-btn" onclick="filterSongs('tpop')">👑 T-Pop</button>
-        </div>
-
-        <!-- Playlist Container -->
-        <div class="playlist-grid" id="playlistGrid">
-            <!-- Items can be dynamically populated or added via HTML -->
-            <div class="song-card" data-category="kpop">
-                <div class="song-category">K-Pop</div>
-                <div class="song-title">Sparkling Night</div>
-                <div class="song-artist">Special Stage Mix</div>
-                <button class="play-btn">Listen 🎶</button>
-            </div>
-
-            <div class="song-card" data-category="global">
-                <div class="song-category">Global / TikTok</div>
-                <div class="song-title">Viral Challenge Track</div>
-                <div class="song-artist">Trending Edit</div>
-                <button class="play-btn">Listen 🎶</button>
-            </div>
-
-            <div class="song-card" data-category="jpop">
-                <div class="song-category">J-Pop</div>
-                <div class="song-title">Sakura Dreaming</div>
-                <div class="song-artist">Anime & Chill</div>
-                <button class="play-btn">Listen 🎶</button>
-            </div>
-
-            <div class="song-card" data-category="tpop">
-                <div class="song-category">T-Pop</div>
-                <div class="song-title">Rising Star Anthem</div>
-                <div class="song-artist">Thai Pop Hits</div>
-                <button class="play-btn">Listen 🎶</button>
-            </div>
-        </div>
+  <!-- แถบนำทางด้านบน -->
+  <nav class="navbar">
+    <div class="brand">
+      <img src="DeliaLogo.png" alt="Delia" style="height: 32px; width: 32px; object-fit: cover; border-radius: 50%; border: 2px solid white;"> 
+      Princess Randomdance
     </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-outline hidden admin-only" id="btn-admin-export" onclick="exportDJ()"><i class="fa-solid fa-file-export"></i></button>
+      <button class="btn btn-outline hidden admin-only" id="btn-admin-playlist" onclick="openPlaylistManager()"><i class="fa-solid fa-wand-magic-sparkles"></i> Playlist</button>
+      <button class="btn btn-outline" id="btn-admin-login" onclick="openModal('adminLoginModal')"><i class="fa-solid fa-crown"></i> Login</button>
+    </div>
+  </nav>
 
-    <footer>
-        Designed with Princess Floral Concept &bull; Hosted on GitHub Pages
-    </footer>
+  <!-- View 1: Calendar -->
+  <div class="container" id="view-calendar">
+    <div class="header-section">
+      <h1>Royal Event Calendar</h1>
+      <p style="color:var(--text-muted);">เลือกวันที่จัดงานเพื่อเข้าสู่งานเต้นรำ</p>
+    </div>
+    <div class="card-container">
+      <div class="calendar-header">
+        <button class="btn btn-outline" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <h2 id="month-year-display">Loading...</h2>
+        <button class="btn btn-outline" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+  </div>
 
-    <script>
-        function filterSongs(category) {
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+  <!-- View 2: Song List -->
+  <div class="container hidden" id="view-songs">
+    <div class="header-section">
+      <button class="btn btn-outline" style="position: absolute; left: 0; top: 0;" onclick="goBackToCalendar()"><i class="fa-solid fa-arrow-left"></i></button>
+      <h1 id="view-event-title">Song Requests</h1>
+      <p id="view-event-status" style="font-weight: 500; margin-bottom: 20px;"></p>
+      
+      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+        <button class="btn btn-primary" id="btn-add-song-main" onclick="checkQuotaAndOpenModal()"><i class="fa-solid fa-music"></i> เสนอเพลง</button>
+        <button class="btn btn-outline hidden admin-only" onclick="openEditEventModal()"><i class="fa-solid fa-pen"></i> แก้ไขงาน</button>
+      </div>
+    </div>
+    
+    <div class="search-wrapper">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาบทเพลง ศิลปิน..." oninput="filterSongs()">
+    </div>
+    <div class="card-container" style="padding: 15px;">
+      <div id="song-list-content"><div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div></div>
+    </div>
+  </div>
 
-            const cards = document.querySelectorAll('.song-card');
-            cards.forEach(card => {
-                if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-    </script>
+  <!-- View 3: Playlist Manager (Drag & Drop) -->
+  <div class="container hidden" id="view-playlist" style="max-width: 1200px;">
+    <div class="header-section">
+      <button class="btn btn-outline" style="position: absolute; left: 0; top: 0;" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h1 id="playlist-event-title">Setlist Manager</h1>
+      <p style="color: var(--text-muted);">ลากและวางการ์ดเพลงลงในหมวดหมู่ที่ต้องการ (ระบบจะสุ่มสลับ ชาย/หญิง อัตโนมัติเมื่อกดสุ่ม)</p>
+      
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+        <button class="btn btn-outline" onclick="importFromVotes()"><i class="fa-solid fa-download"></i> ดึงจากโหวต</button>
+        <button class="btn btn-primary" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> บันทึก Setlist</button>
+      </div>
+    </div>
+    
+    <div class="playlist-board">
+      <div class="list-col">
+        <div class="list-col-header"><h3>📦 กองกลาง</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-pool')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div id="list-pool" class="drop-zone"></div>
+      </div>
+      <div class="list-col">
+        <div class="list-col-header"><h3>💖 K-Pop</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-kpop')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div id="list-kpop" class="drop-zone"></div>
+      </div>
+      <div class="list-col">
+        <div class="list-col-header"><h3>👑 T-Pop</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-tpop')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div id="list-tpop" class="drop-zone"></div>
+      </div>
+      <div class="list-col">
+        <div class="list-col-header"><h3>🌍 MixSong</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-mix')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div id="list-mix" class="drop-zone"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab-btn hidden admin-only" onclick="openModal('addEventModal')" title="สร้างงานใหม่"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Event Intro Modal -->
+  <div class="modal-overlay" id="eventIntroModal">
+    <div class="modal-content event-intro-card">
+      <div class="intro-header"><i class="fa-solid fa-ticket"></i></div>
+      <h2 id="intro-title" style="margin-bottom: 5px;">Event Name</h2>
+      <p id="intro-date" style="color: var(--primary); font-weight: 500; margin-top: 0;"></p>
+      <div class="intro-details">
+        <div class="intro-row"><i class="fa-solid fa-location-dot"></i> <span id="intro-loc"></span></div>
+        <div class="intro-row"><i class="fa-regular fa-clock"></i> <span id="intro-time"></span></div>
+        <div class="intro-row"><i class="fa-solid fa-circle-info"></i> <span id="intro-det"></span></div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('eventIntroModal')">ยกเลิก</button>
+        <button class="btn btn-primary" style="flex: 2;" onclick="enterSongList()">เข้าสู่รายการเพลง <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Song Modal -->
+  <div class="modal-overlay" id="addSongModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
+      <h2 class="text-center"><i class="fa-solid fa-music"></i> เสนอเพลง</h2>
+      <p class="text-center" style="color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(แปะลิงก์ YouTube เพื่อให้ระบบล้างชื่ออัตโนมัติ)</p>
+      
+      <div class="form-group">
+        <label>ลิงก์ YouTube</label>
+        <input type="url" id="song-link" class="form-control" placeholder="https://youtu.be/..." onblur="autoFillYoutube()">
+      </div>
+      <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
+      <div class="form-group"><label>ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
+      
+      <div class="form-group">
+        <label>เพศของศิลปิน (มีผลต่อระบบสุ่ม)</label>
+        <select id="song-gender" class="form-control">
+          <option value="Mix">รวม/ผสม (Mixed)</option>
+          <option value="F">ศิลปินหญิง (Girl Group/Solo)</option>
+          <option value="M">ศิลปินชาย (Boy Group/Solo)</option>
+        </select>
+      </div>
+      
+      <label class="checkbox-container">
+        <input type="checkbox" id="song-breakdance"> เพลงนี้เป็น Breakdance ใช่มั้ย?
+      </label>
+
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <div class="form-group" style="flex:1;"><label>เริ่ม (น:ว)</label><input type="text" id="song-start" class="form-control" placeholder="1:00"></div>
+        <div class="form-group" style="flex:1;"><label>จบ (น:ว)</label><input type="text" id="song-end" class="form-control" placeholder="1:30"></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit">ส่งบทเพลง</button>
+    </div>
+  </div>
+
+  <!-- Song Detail Modal -->
+  <div class="modal-overlay" id="songDetailModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('songDetailModal')"></i>
+      <div class="detail-header">
+        <div class="detail-title" id="det-title">Song Name</div>
+        <div style="color: var(--text-muted);" id="det-artist">Artist Name</div>
+      </div>
+      <div class="detail-info">
+        <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-tag"></i> หมวดหมู่</span><span style="font-weight:500;" id="det-tag"></span></div>
+        <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-headphones"></i> ท่อนที่เต้น</span><span style="font-weight:500;" id="det-time"></span></div>
+        <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-users"></i> คนโหวต</span><span style="font-weight:600; color:var(--primary)" id="det-votes"></span></div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <a id="det-link" href="#" target="_blank" class="btn btn-outline hidden" style="flex: 1;"><i class="fa-brands fa-youtube"></i> ฟังเพลง</a>
+        <button class="btn btn-outline" style="flex: 1;" onclick="shareSong()"><i class="fa-solid fa-share-nodes"></i> แชร์</button>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="btn-toggle-vote" onclick="handleVote()"><i class="fa-solid fa-heart"></i> โหวตเพลงนี้</button>
+      
+      <div class="admin-panel hidden admin-only" id="admin-song-controls">
+        <div style="display: flex; gap: 5px;">
+          <button class="btn btn-outline" style="flex:1; border-color:var(--success); color:var(--success);" onclick="adminUpdateStatus('Approved')"><i class="fa-solid fa-check"></i></button>
+          <button class="btn btn-outline" style="flex:1;" onclick="adminUpdateStatus('Played')"><i class="fa-solid fa-check-double"></i></button>
+          <button class="btn btn-danger" style="flex:1;" onclick="adminDeleteSong()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay" id="adminLoginModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('adminLoginModal')"></i>
+      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-shield-halved"></i> Admin Login</h2>
+      <div class="form-group"><label>Username</label><input type="text" id="admin-user" class="form-control"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="admin-pass" class="form-control" onkeypress="if(event.key === 'Enter') handleLogin()"></div>
+      <button class="btn btn-primary btn-full" onclick="handleLogin()" id="btn-login-submit">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+  
+  <!-- Add Event Modal -->
+  <div class="modal-overlay" id="addEventModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addEventModal')"></i>
+      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-calendar-plus"></i> สร้างงานใหม่</h2>
+      <div class="form-group"><label>วันที่จัดงาน</label><input type="date" id="event-date" class="form-control"></div>
+      <div class="form-group"><label>ชื่องาน <span style="color:var(--primary)">*</span></label><input type="text" id="event-name" class="form-control"></div>
+      <div class="form-group"><label>สถานที่</label><input type="text" id="event-loc" class="form-control"></div>
+      <div class="form-group"><label>เวลาเปิดรับขอเพลง</label><input type="datetime-local" id="event-open" class="form-control"></div>
+      <div class="form-group"><label>เวลาปิดรับขอเพลง</label><input type="datetime-local" id="event-close" class="form-control"></div>
+      <div class="form-group"><label>รายละเอียด</label><input type="text" id="event-det" class="form-control"></div>
+      <button class="btn btn-primary btn-full" onclick="handleAddEvent()" id="btn-event-submit">สร้างกำหนดการ</button>
+    </div>
+  </div>
+
+  <!-- Edit Event Modal -->
+  <div class="modal-overlay" id="editEventModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editEventModal')"></i>
+      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-pen"></i> แก้ไขงาน</h2>
+      <input type="hidden" id="edit-event-id">
+      <div class="form-group"><label>วันที่จัดงาน</label><input type="date" id="edit-event-date" class="form-control"></div>
+      <div class="form-group"><label>ชื่องาน</label><input type="text" id="edit-event-name" class="form-control"></div>
+      <div class="form-group"><label>สถานที่</label><input type="text" id="edit-event-loc" class="form-control"></div>
+      <div class="form-group"><label>เวลาเปิดรับขอเพลง</label><input type="datetime-local" id="edit-event-open" class="form-control"></div>
+      <div class="form-group"><label>เวลาปิดรับขอเพลง</label><input type="datetime-local" id="edit-event-close" class="form-control"></div>
+      <div class="form-group"><label>รายละเอียด</label><input type="text" id="edit-event-det" class="form-control"></div>
+      <button class="btn btn-primary btn-full" onclick="handleEditEvent()" id="btn-event-edit-submit">บันทึกการแก้ไข</button>
+    </div>
+  </div>
+
+  <!-- Alert & Confirm Modals -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-content text-center">
+      <h3 id="alert-title">แจ้งเตือน</h3>
+      <p id="alert-message"></p>
+      <button class="btn btn-primary btn-full" onclick="closeModal('alertModal')">ตกลง</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-content text-center">
+      <h3 id="confirm-message">เพลงซ้ำ!</h3>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-outline btn-full" onclick="closeModal('confirmModal')">ยกเลิก</button>
+        <button class="btn btn-primary btn-full" onclick="executeAddSong()">เพิ่มต่อไป</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- เชื่อมต่อไฟล์ JS -->
+  <script src="app.js"></script>
 </body>
 </html>
