@@ -15,6 +15,7 @@ if (!userUUID) { userUUID = 'delia-' + Date.now().toString(36) + Math.random().t
 
 let allEvents = [], currentSongs = [], filteredSongs = [], playlistSongs = [];
 let activeEvent = null, selectedSongId = "", isEventOpenForRequest = false, isAdminLoggedIn = false;
+let pendingSongData = null;
 
 const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 const today = new Date();
@@ -29,7 +30,7 @@ window.onload = () => {
   });
 };
 
-// --- Utilities (Safe Toggle & Toasts) ---
+// --- Utilities ---
 function safeToggle(id, show) { const el = document.getElementById(id); if (el) { if (show) el.classList.remove('hidden'); else el.classList.add('hidden'); } }
 function showToast(title, message, type = "success") {
   const container = document.getElementById('toast-container');
@@ -44,6 +45,17 @@ function showToast(title, message, type = "success") {
 function customAlert(title, message) { document.getElementById('alert-title').innerText = title; document.getElementById('alert-message').innerText = message; openModal('alertModal'); }
 function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function toDateTimeLocal(timeStr) {
+  if (!timeStr) return "";
+  if (timeStr.includes('T')) return timeStr.substring(0, 16); 
+  const d = new Date(timeStr);
+  if (!isNaN(d.getTime())) {
+    const pad = n => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  return timeStr;
+}
 
 function fetchAPI(action, payload, onSuccess, onError) {
   fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: action, payload: payload }) })
@@ -73,7 +85,6 @@ async function autoFillYoutube() {
     }
   } catch(e) { console.log(e); }
 }
-
 function formatYoutubeLink(url, startStr) {
   if (!url || !url.includes("youtu")) return url;
   try {
@@ -134,9 +145,7 @@ function enterSongList() {
   document.getElementById('view-event-status').innerHTML = timeText;
   
   safeToggle('btn-add-song-main', isEventOpenForRequest); safeToggle('event-closed-msg', !isEventOpenForRequest);
-  
-  const adminEls = document.querySelectorAll('.admin-only');
-  adminEls.forEach(el => isAdminLoggedIn ? el.classList.remove('hidden') : el.classList.add('hidden'));
+  document.querySelectorAll('.admin-only').forEach(el => isAdminLoggedIn ? el.classList.remove('hidden') : el.classList.add('hidden'));
 
   document.getElementById('song-list-content').innerHTML = '<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>';
   showView('songs');
@@ -223,34 +232,22 @@ function handleLogin() {
       btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; isAdminLoggedIn = true; closeModal('adminLoginModal');
       safeToggle('btn-admin-login', false); safeToggle('btn-admin-export', true); safeToggle('btn-admin-playlist', true); safeToggle('fab-admin-add', true);
       document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      
+      // สั่งให้ปฏิทินรีเฟรชใหม่หลังจากล็อกอิน เพื่อให้วันที่ว่างสามารถกดคลิกเพื่อเพิ่มงานได้ทันที
+      renderCalendar(); 
+      
       showToast("สำเร็จ", "ปลดล็อกสิทธิ์ผู้ดูแลระบบ");
     }, () => { btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; }
   );
 }
 
-// ฟังก์ชันช่วยแปลงเวลาให้เข้ากับฟอร์มของ HTML5
-function toDateTimeLocal(timeStr) {
-  if (!timeStr) return "";
-  if (timeStr.includes('T')) return timeStr.substring(0, 16); 
-  const d = new Date(timeStr);
-  if (!isNaN(d.getTime())) {
-    const pad = n => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-  return timeStr;
-}
-
-// อัปเดตฟังก์ชันสำหรับดึงข้อมูลลงมาแสดงตอนกด "แก้ไขงาน"
 function openEditEventModal() {
   document.getElementById('edit-event-id').value = activeEvent.id; 
   document.getElementById('edit-event-date').value = activeEvent.date; 
   document.getElementById('edit-event-name').value = activeEvent.name; 
   document.getElementById('edit-event-loc').value = activeEvent.location; 
-  
-  // ใช้ฟังก์ชันแปลงเวลาเข้าช่วย
   document.getElementById('edit-event-open').value = toDateTimeLocal(activeEvent.openTime); 
   document.getElementById('edit-event-close').value = toDateTimeLocal(activeEvent.closeTime); 
-  
   document.getElementById('edit-event-det').value = activeEvent.details; 
   openModal('editEventModal');
 }
@@ -278,7 +275,9 @@ function exportDJ() {
 
 // --- Playlist Manager ---
 function openPlaylistManager() {
-  showView('playlist'); document.getElementById('playlist-content').innerHTML = '<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>';
+  showView('playlist'); 
+  document.getElementById('playlist-event-title').innerText = `Playlist: ${activeEvent.name}`;
+  document.getElementById('playlist-content').innerHTML = '<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>';
   fetchAPI("getPlaylist", { eventId: activeEvent.id, date: activeEvent.date }, res => { playlistSongs = res; renderPlaylist(); });
 }
 function importFromVotes() {
