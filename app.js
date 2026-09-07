@@ -2,45 +2,15 @@
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec";
 
 // --- Security: Anti-Inspect & Anti-Console ---
-
-// 1. บล็อกคลิกขวา
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-});
-
-// 2. บล็อกคีย์ลัดสำหรับเปิด Developer Tools และการดู Source Code
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 document.onkeydown = function(e) {
-  // บล็อก F12
-  if(e.keyCode === 123) {
-    return false;
-  }
-  // บล็อก Ctrl+Shift+I (เปิด Inspect)
-  if(e.ctrlKey && e.shiftKey && e.keyCode === 73) { // 'I'
-    return false;
-  }
-  // บล็อก Ctrl+Shift+C (เปิด Inspect Element)
-  if(e.ctrlKey && e.shiftKey && e.keyCode === 67) { // 'C'
-    return false;
-  }
-  // บล็อก Ctrl+Shift+J (เปิด Console)
-  if(e.ctrlKey && e.shiftKey && e.keyCode === 74) { // 'J'
-    return false;
-  }
-  // บล็อก Ctrl+U (เปิดดู View Source)
-  if(e.ctrlKey && e.keyCode === 85) { // 'U'
-    return false;
-  }
+  if(e.keyCode === 123) return false;
+  if(e.ctrlKey && e.shiftKey && e.keyCode === 73) return false;
+  if(e.ctrlKey && e.shiftKey && e.keyCode === 67) return false;
+  if(e.ctrlKey && e.shiftKey && e.keyCode === 74) return false;
+  if(e.ctrlKey && e.keyCode === 85) return false;
 };
-
-// 3. ป้องกันการฝืนเปิด Console (Debugger Trap)
-// หากมีคนพยายามเปิด Console ระบบจะค้างอยู่ที่โหมด Debug ทันทีทำให้ดูโค้ดไม่ได้
-setInterval(function() {
-  (function() {
-    return false;
-  }
-  ['constructor']('debugger')
-  ());
-}, 100);
+setInterval(function() { (function() { return false; } ['constructor']('debugger') ()); }, 100);
 
 // UUID System
 let userUUID = localStorage.getItem("delia_rd_uuid");
@@ -49,7 +19,7 @@ if (!userUUID) { userUUID = 'delia-' + Date.now().toString(36) + Math.random().t
 let allEvents = [];
 let currentSongs = [];
 let filteredSongs = [];
-let activeEvent = null; // เก็บ Object ของ Event ที่เลือก
+let activeEvent = null; 
 let selectedSongId = "";
 let isEventOpenForRequest = false;
 let isAdminLoggedIn = false;
@@ -65,8 +35,6 @@ window.onload = () => {
   fetchAPI("getEvents", {}, res => {
     allEvents = res;
     renderCalendar();
-    
-    // URL Routing: ตรวจสอบว่ามี ?e=... ต่อท้ายไหม
     const urlParams = new URLSearchParams(window.location.search);
     const eventIdFromUrl = urlParams.get('e');
     if (eventIdFromUrl) {
@@ -76,8 +44,8 @@ window.onload = () => {
   });
 };
 
-// --- API Helper ---
-function fetchAPI(action, payload, onSuccess) {
+// --- API Helper (เพิ่มระบบ onError เพื่อป้องกันปุ่มค้าง) ---
+function fetchAPI(action, payload, onSuccess, onError) {
   fetch(GAS_API_URL, {
     method: 'POST',
     body: JSON.stringify({ action: action, payload: payload })
@@ -85,9 +53,15 @@ function fetchAPI(action, payload, onSuccess) {
   .then(response => response.json())
   .then(data => {
     if (data.success) onSuccess(data.data);
-    else customAlert("ข้อผิดพลาด", data.message);
+    else {
+      customAlert("ข้อผิดพลาด", data.message);
+      if(onError) onError(); // ถ้าพังให้มารีเซ็ตปุ่มตรงนี้
+    }
   })
-  .catch(err => customAlert("Error", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: " + err.message));
+  .catch(err => {
+    customAlert("Error", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: " + err.message);
+    if(onError) onError();
+  });
 }
 
 // --- UI Navigation ---
@@ -96,13 +70,11 @@ function showView(view) {
   document.getElementById('view-songs').classList.add('hidden');
   if (view === 'calendar') {
     document.getElementById('view-calendar').classList.remove('hidden');
-    // Clear URL param without reloading
     window.history.pushState({}, '', window.location.pathname);
   }
   if (view === 'songs') { 
     document.getElementById('view-songs').classList.remove('hidden'); 
     document.getElementById('search-bar').value = ''; 
-    // Set URL param for sharing
     window.history.pushState({}, '', '?e=' + activeEvent.id);
   }
 }
@@ -137,6 +109,12 @@ function checkAdminAdd(dateStr) { if (isAdminLoggedIn) { document.getElementById
 
 // --- Event Flow ---
 function openEventIntro(eventId) {
+  // ดักจับบัคงานเวอร์ชันเก่าที่ไม่มี ID
+  if(eventId === 'undefined' || !eventId) {
+    customAlert("ข้อผิดพลาด", "กำหนดการนี้มาจากระบบเวอร์ชันเก่า (ไม่มี ID) กรุณาเข้าไปลบแถวในชีต Events และสร้างใหม่ครับ");
+    return;
+  }
+
   activeEvent = allEvents.find(e => e.id === eventId);
   if (!activeEvent) return;
 
@@ -222,7 +200,7 @@ function formatYoutubeLink(url, startStr) {
 
 function shareSong() {
   const song = currentSongs.find(s => s.id === selectedSongId);
-  const url = window.location.href; // Will include ?e=...
+  const url = window.location.href; 
   const text = `🔥 ช่วยโหวตเพลง "${song.name}" ในงาน ${activeEvent.name}\nโหวตได้ที่ลิงก์นี้: ${url}`;
   navigator.clipboard.writeText(text).then(() => customAlert("คัดลอกแล้ว", "นำไปวางในแชทเพื่อชวนเพื่อนโหวตได้เลย!"));
 }
@@ -256,7 +234,12 @@ function openSongDetail(songId) {
 function handleVote() {
   const btn = document.getElementById('btn-toggle-vote');
   btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังประมวลผล...`; btn.disabled = true;
-  fetchAPI("voteSong", { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, res => { currentSongs = res; filterSongs(); btn.disabled = false; openSongDetail(selectedSongId); });
+  fetchAPI(
+    "voteSong", 
+    { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, 
+    res => { currentSongs = res; filterSongs(); btn.disabled = false; openSongDetail(selectedSongId); },
+    () => { btn.disabled = false; openSongDetail(selectedSongId); } // รีเซ็ตปุ่มถ้า Error
+  );
 }
 
 function checkQuotaAndOpenModal() {
@@ -282,29 +265,44 @@ function preCheckAddSong() {
 function executeAddSong() {
   closeModal('confirmModal');
   const btn = document.getElementById('btn-song-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID }, res => {
-    btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input').forEach(i => i.value = '');
-  });
+  fetchAPI(
+    "addSong", 
+    { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID }, 
+    res => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input').forEach(i => i.value = ''); },
+    () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; } // รีเซ็ตปุ่มถ้า Error
+  );
 }
 
 // --- Admin ---
 function handleLogin() {
   const btn = document.getElementById('btn-login-submit'); btn.innerText = "Checking..."; btn.disabled = true;
-  fetchAPI("adminLogin", { username: document.getElementById('admin-user').value, password: document.getElementById('admin-pass').value }, res => {
-    btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; isAdminLoggedIn = true; closeModal('adminLoginModal');
-    document.getElementById('btn-admin-login').classList.add('hidden'); document.getElementById('btn-admin-add').classList.remove('hidden'); document.getElementById('btn-admin-export').classList.remove('hidden');
-    customAlert("สำเร็จ", "ปลดล็อกสิทธิ์ผู้ดูแลระบบ");
-  });
+  fetchAPI(
+    "adminLogin", 
+    { username: document.getElementById('admin-user').value, password: document.getElementById('admin-pass').value }, 
+    res => {
+      btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; isAdminLoggedIn = true; closeModal('adminLoginModal');
+      document.getElementById('btn-admin-login').classList.add('hidden'); document.getElementById('btn-admin-add').classList.remove('hidden'); document.getElementById('btn-admin-export').classList.remove('hidden');
+      customAlert("สำเร็จ", "ปลดล็อกสิทธิ์ผู้ดูแลระบบ");
+    },
+    () => { btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; } // รีเซ็ตปุ่มถ้า Error
+  );
 }
+
 function handleAddEvent() {
   const name = document.getElementById('event-name').value; const date = document.getElementById('event-date').value;
   if(!date || !name) return customAlert("ข้อมูลไม่ครบ", "กรุณาระบุวันที่และชื่องาน");
   const btn = document.getElementById('btn-event-submit'); btn.innerText = "กำลังสร้าง..."; btn.disabled = true;
-  fetchAPI("createEvent", { name: name, date: date, location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value, closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value }, res => {
-    allEvents = res; renderCalendar(); closeModal('addEventModal'); btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; document.querySelectorAll('#addEventModal input').forEach(i => i.value = '');
-    customAlert("สำเร็จ", "เพิ่มงานเรียบร้อย");
-  });
+  fetchAPI(
+    "createEvent", 
+    { name: name, date: date, location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value, closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value }, 
+    res => {
+      allEvents = res; renderCalendar(); closeModal('addEventModal'); btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; document.querySelectorAll('#addEventModal input').forEach(i => i.value = '');
+      customAlert("สำเร็จ", "เพิ่มงานเรียบร้อย");
+    },
+    () => { btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; } // รีเซ็ตปุ่มถ้า Error
+  );
 }
+
 function adminDeleteSong() {
   if(!confirm("ลบเพลงนี้?")) return;
   closeModal('songDetailModal'); fetchAPI("deleteSong", { eventId: activeEvent.id, songId: selectedSongId }, res => { currentSongs = res; filterSongs(); });
