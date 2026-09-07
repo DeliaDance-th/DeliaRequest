@@ -13,7 +13,6 @@
 </head>
 <body>
 
-  <!-- Toast Notification Container -->
   <div id="toast-container"></div>
 
   <nav class="navbar">
@@ -28,7 +27,6 @@
     </div>
   </nav>
 
-  <!-- View 1: Calendar -->
   <div class="container" id="view-calendar">
     <div class="header-section">
       <h1>Event Calendar</h1>
@@ -44,7 +42,6 @@
     </div>
   </div>
 
-  <!-- View 2: Song List -->
   <div class="container hidden" id="view-songs">
     <div class="header-section">
       <button class="btn btn-outline" style="position: absolute; left: 20px;" onclick="goBackToCalendar()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -60,19 +57,18 @@
     
     <div class="search-wrapper">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาชื่อเพลง ศิลปิน หรือแท็ก..." oninput="filterSongs()">
+      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาชื่อเพลง ศิลปิน หรือหมวดหมู่..." oninput="filterSongs()">
     </div>
     <div class="song-list-container">
       <div id="song-list-content"><div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div></div>
     </div>
   </div>
 
-  <!-- View 3: Playlist Manager (Admin Only) -->
   <div class="container hidden" id="view-playlist">
     <div class="header-section">
       <button class="btn btn-outline" style="position: absolute; left: 20px;" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
       <h1 id="playlist-event-title">จัดการ Playlist</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">ลากสลับตำแหน่งไม่ได้ ให้ใช้ปุ่มลูกศรแทน หรือกดปุ่มสุ่มลำดับ</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">จัดเรียงลำดับเพลงสำหรับใช้เปิดในงานจริง</p>
       
       <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 15px;">
         <button class="btn btn-outline" onclick="importFromVotes()"><i class="fa-solid fa-download"></i> ดึงจากผลโหวต</button>
@@ -80,16 +76,12 @@
         <button class="btn btn-primary" id="btn-save-playlist" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet</button>
       </div>
     </div>
-    
     <div class="song-list-container">
       <div id="playlist-content"><div class="loader">ไม่มีเพลงใน Playlist กดปุ่ม "ดึงจากผลโหวต" เพื่อเริ่มต้น</div></div>
     </div>
   </div>
 
-  <!-- FAB -->
   <button id="fab-admin-add" class="fab-btn hidden admin-only" onclick="openModal('addEventModal')" title="สร้างงานใหม่"><i class="fa-solid fa-plus"></i></button>
-
-  <!-- ================= MODALS ================= -->
 
   <div class="modal-overlay" id="eventIntroModal">
     <div class="modal-content event-intro-card">
@@ -108,28 +100,25 @@
     </div>
   </div>
 
-  <!-- Add Song Modal -->
   <div class="modal-overlay" id="addSongModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
       <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> เสนอเพลง</h2>
-      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(โควตา 3 เพลงต่อคน)</p>
+      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(ระบบช่วยแกะชื่อให้อัตโนมัติ)</p>
       
       <div class="form-group">
-        <label>ลิงก์ Youtube <span style="color:var(--primary); font-size:0.8rem;">(วางลิงก์เพื่อดึงชื่ออัตโนมัติ)</span></label>
+        <label>ลิงก์ Youtube</label>
         <input type="url" id="song-link" class="form-control" placeholder="https://youtu.be/..." onblur="autoFillYoutube()">
       </div>
       <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
       <div class="form-group"><label>ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
       <div class="form-group">
-        <label>แท็กหมวดหมู่</label>
+        <label>หมวดหมู่ / ประเภทเพลง</label>
         <select id="song-tag" class="form-control">
-          <option value="Boy Group">Boy Group</option>
-          <option value="Girl Group">Girl Group</option>
-          <option value="Solo">Solo</option>
-          <option value="T-Pop">T-Pop</option>
-          <option value="J-Pop">J-Pop</option>
-          <option value="General">ทั่วไป</option>
+          <option value="K-Pop Random">K-Pop Random</option>
+          <option value="T-Pop Random">T-Pop Random</option>
+          <option value="MixSong">MixSong</option>
+          <option value="Breakdance">Breakdance</option>
         </select>
       </div>
       <div style="display: flex; gap: 10px;">
