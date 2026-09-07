@@ -10,8 +10,8 @@ document.onkeydown = e => {
 };
 setInterval(() => { (function() { return false; } ['constructor']('debugger') ()); }, 100);
 
-let userUUID = localStorage.getItem("princess_rd_uuid");
-if (!userUUID) { userUUID = 'prncs-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9); localStorage.setItem("princess_rd_uuid", userUUID); }
+let userUUID = localStorage.getItem("delia_rd_uuid");
+if (!userUUID) { userUUID = 'delia-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9); localStorage.setItem("delia_rd_uuid", userUUID); }
 
 let allEvents = [], currentSongs = [], filteredSongs = [], playlistSongs = [];
 let activeEvent = null, selectedSongId = "", isEventOpenForRequest = false, isAdminLoggedIn = false;
@@ -33,8 +33,8 @@ window.onload = () => {
 function safeToggle(id, show) { const el = document.getElementById(id); if (el) { if (show) el.classList.remove('hidden'); else el.classList.add('hidden'); } }
 function showToast(title, message, type = "success") {
   const container = document.getElementById('toast-container');
-  const icon = type === "success" ? "fa-wand-magic-sparkles" : "fa-circle-xmark";
-  const color = type === "success" ? "var(--primary)" : "#E74C3C";
+  const icon = type === "success" ? "fa-circle-check" : "fa-circle-xmark";
+  const color = type === "success" ? "var(--success)" : "#E74C3C";
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `<i class="fa-solid ${icon}" style="font-size: 1.5rem; color: ${color};"></i> <div><strong style="display:block; font-size:0.95rem;">${title}</strong><span style="font-size:0.85rem; color:var(--text-muted);">${message}</span></div>`;
@@ -58,11 +58,11 @@ function fetchAPI(action, payload, onSuccess, onError) {
 
 // --- Smart YouTube Extractor ---
 function getYoutubeThumb(url) {
-  if(!url) return "https://via.placeholder.com/100x65.png?text=No+Cover";
+  if(!url) return "https://via.placeholder.com/90x60.png?text=No+Cover";
   let vid = "";
   if (url.includes('v=')) vid = url.split('v=')[1].split('&')[0];
   else if (url.includes('youtu.be/')) vid = url.split('youtu.be/')[1].split('?')[0];
-  return vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : "https://via.placeholder.com/100x65.png?text=No+Cover";
+  return vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : "https://via.placeholder.com/90x60.png?text=No+Cover";
 }
 
 async function autoFillYoutube() {
@@ -73,12 +73,10 @@ async function autoFillYoutube() {
     const data = await res.json();
     if(data && data.title) {
       let title = data.title;
-      // ล้างคำขยะ
       const garbages = [ /\[.*?\]/g, /\(.*?\)/g, /【.*?】/g, /「.*?」/g, /SMTOWN\s*\|?/gi, /JYP Entertainment\s*\|?/gi, /YG ENTERTAINMENT\s*\|?/gi, /HYBE LABELS\s*\|?/gi, /1theK\s*\(.*?\)\s*\|?/gi, /Stone Music Entertainment\s*\|?/gi, /Music Video/gi, /Official/gi, /MV/gi, /Teaser/gi, /Performance/gi, /HD/gi ];
       garbages.forEach(g => { title = title.replace(g, ''); });
       title = title.trim();
 
-      // ตัดแยกศิลปินและเพลง
       let parts = title.split(/\s*[-–|~]\s*/);
       if (parts.length >= 2) {
          document.getElementById('song-artist').value = parts[0].trim();
@@ -87,7 +85,7 @@ async function autoFillYoutube() {
          document.getElementById('song-name').value = title;
          document.getElementById('song-artist').value = data.author_name ? data.author_name.replace(/ - Topic/gi, '') : '';
       }
-      showToast("เวทมนตร์ทำงาน!", "ล้างชื่อเพลงและศิลปินอัตโนมัติ", "success");
+      showToast("ดึงข้อมูลสำเร็จ", "ล้างชื่อเพลงและศิลปินอัตโนมัติ", "success");
     }
   } catch(e) { console.log(e); }
 }
@@ -174,7 +172,7 @@ function renderSongList() {
     const thumb = getYoutubeThumb(song.link);
     
     let genderIcon = song.gender === 'M' ? '<i class="fa-solid fa-mars" style="color:#3498DB;"></i>' : (song.gender === 'F' ? '<i class="fa-solid fa-venus" style="color:#E74C3C;"></i>' : '<i class="fa-solid fa-venus-mars" style="color:#9B59B6;"></i>');
-    let breakdancePill = song.isBreakdance ? `<span class="pill pill-breakdance">Breakdance</span>` : '';
+    let breakdancePill = song.isBreakdance ? `<span class="pill-breakdance">Breakdance</span>` : '';
 
     container.innerHTML += `
       <div class="song-item status-${song.status}" onclick="openSongDetail('${song.id}')">
@@ -210,7 +208,7 @@ function openSongDetail(songId) {
 
 function shareSong() {
   const song = currentSongs.find(s => s.id === selectedSongId);
-  navigator.clipboard.writeText(`✨ โหวตเพลง "${song.name}" ให้หน่อยในงาน ${activeEvent.name}\nคลิก: ${window.location.href}`).then(() => showToast("คัดลอกแล้ว", "นำไปส่งในแชทได้เลย"));
+  navigator.clipboard.writeText(`🔥 ช่วยโหวตเพลง "${song.name}" งาน ${activeEvent.name}\nคลิก: ${window.location.href}`).then(() => showToast("คัดลอกแล้ว", "นำไปส่งในแชทได้เลย"));
 }
 
 function handleVote() {
@@ -225,13 +223,14 @@ function checkQuotaAndOpenModal() {
 function preCheckAddSong() {
   const name = document.getElementById('song-name').value; if(!name) return showToast("ข้อมูลไม่ครบ", "กรุณาระบุชื่อเพลง", "error");
   const dup = currentSongs.find(s => s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''));
-  pendingSongData = { name: name, artist: document.getElementById('song-artist').value, link: document.getElementById('song-link').value, start: document.getElementById('song-start').value, end: document.getElementById('song-end').value, gender: document.getElementById('song-gender').value, isBreakdance: document.getElementById('song-breakdance').checked };
+  // ไม่ส่งค่า gender ไปจากฟอร์ม ปล่อยให้ Code.gs วิเคราะห์เอง
+  pendingSongData = { name: name, artist: document.getElementById('song-artist').value, link: document.getElementById('song-link').value, start: document.getElementById('song-start').value, end: document.getElementById('song-end').value, isBreakdance: document.getElementById('song-breakdance').checked };
   if (dup) { document.getElementById('confirm-message').innerText = `มีคนขอเพลง "${dup.name}" ไว้แล้ว เพิ่มซ้ำหรือไม่?`; closeModal('addSongModal'); openModal('confirmModal'); } else executeAddSong();
 }
 
 function executeAddSong() {
   closeModal('confirmModal'); const btn = document.getElementById('btn-song-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => { btn.innerText = "ส่งบทเพลง"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input[type="text"], #addSongModal input[type="url"]').forEach(i => i.value = ''); document.getElementById('song-breakdance').checked = false; showToast("สำเร็จ", "เสนอเพลงเรียบร้อย"); }, () => { btn.innerText = "ส่งบทเพลง"; btn.disabled = false; });
+  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input[type="text"], #addSongModal input[type="url"]').forEach(i => i.value = ''); document.getElementById('song-breakdance').checked = false; showToast("สำเร็จ", "เสนอเพลงเรียบร้อย"); }, () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; });
 }
 
 // --- Admin ---
