@@ -1,4 +1,4 @@
-// ใส่ URL Web App ที่ได้จาก Google Apps Script ที่นี่
+// ใส่ URL Web App อันล่าสุดที่ได้จาก Google Apps Script ที่นี่
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec";
 
 // --- Security: Anti-Inspect & Anti-Console ---
@@ -12,7 +12,6 @@ document.onkeydown = function(e) {
 };
 setInterval(function() { (function() { return false; } ['constructor']('debugger') ()); }, 100);
 
-// UUID System
 let userUUID = localStorage.getItem("delia_rd_uuid");
 if (!userUUID) { userUUID = 'delia-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9); localStorage.setItem("delia_rd_uuid", userUUID); }
 
@@ -30,7 +29,6 @@ const today = new Date();
 let currentMonth = today.getMonth(), currentYear = today.getFullYear();
 const realMonth = today.getMonth(), realYear = today.getFullYear();
 
-// --- Initialization ---
 window.onload = () => {
   fetchAPI("getEvents", {}, res => {
     allEvents = res;
@@ -44,7 +42,6 @@ window.onload = () => {
   });
 };
 
-// --- API Helper (เพิ่มระบบ onError เพื่อป้องกันปุ่มค้าง) ---
 function fetchAPI(action, payload, onSuccess, onError) {
   fetch(GAS_API_URL, {
     method: 'POST',
@@ -53,18 +50,11 @@ function fetchAPI(action, payload, onSuccess, onError) {
   .then(response => response.json())
   .then(data => {
     if (data.success) onSuccess(data.data);
-    else {
-      customAlert("ข้อผิดพลาด", data.message);
-      if(onError) onError(); // ถ้าพังให้มารีเซ็ตปุ่มตรงนี้
-    }
+    else { customAlert("ข้อผิดพลาด", data.message); if(onError) onError(); }
   })
-  .catch(err => {
-    customAlert("Error", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: " + err.message);
-    if(onError) onError();
-  });
+  .catch(err => { customAlert("Error", "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: " + err.message); if(onError) onError(); });
 }
 
-// --- UI Navigation ---
 function showView(view) {
   document.getElementById('view-calendar').classList.add('hidden');
   document.getElementById('view-songs').classList.add('hidden');
@@ -96,39 +86,30 @@ function renderCalendar() {
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
     const ev = allEvents.find(e => e.date === dateStr);
-    
     let cellHtml = `<div class="date-num">${i}</div>`;
     if (ev) cellHtml += `<div class="event-name-cal" title="${ev.name}">${ev.name}</div>`;
-    grid.innerHTML += `<div class="day-cell ${ev ? 'has-event' : ''}" onclick="${ev ? `openEventIntro('${ev.id}')` : `checkAdminAdd('${dateStr}')`}">${cellHtml}</div>`;
+    grid.innerHTML += `<div class="day-cell ${ev ? 'has-event' : ''}" onclick="${ev ? `openEventIntro('${ev.id}')` : (isAdminLoggedIn ? `checkAdminAdd('${dateStr}')` : '')}">${cellHtml}</div>`;
   }
   document.getElementById('btn-prev-month').disabled = (currentMonth === realMonth && currentYear === realYear);
   document.getElementById('btn-next-month').disabled = (currentMonth === (realMonth + 1 > 11 ? 0 : realMonth + 1));
 }
 function changeMonth(step) { currentMonth += step; if (currentMonth > 11) { currentMonth = 0; currentYear++; } if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); }
-function checkAdminAdd(dateStr) { if (isAdminLoggedIn) { document.getElementById('event-date').value = dateStr; openModal('addEventModal'); } }
+function checkAdminAdd(dateStr) { document.getElementById('event-date').value = dateStr; openModal('addEventModal'); }
 
 // --- Event Flow ---
 function openEventIntro(eventId) {
-  // ดักจับบัคงานเวอร์ชันเก่าที่ไม่มี ID
-  if(eventId === 'undefined' || !eventId) {
-    customAlert("ข้อผิดพลาด", "กำหนดการนี้มาจากระบบเวอร์ชันเก่า (ไม่มี ID) กรุณาเข้าไปลบแถวในชีต Events และสร้างใหม่ครับ");
-    return;
-  }
-
+  if(eventId === 'undefined' || !eventId) return customAlert("ข้อผิดพลาด", "ระบบเวอร์ชันเก่า");
   activeEvent = allEvents.find(e => e.id === eventId);
   if (!activeEvent) return;
 
   const thDate = `${parseInt(activeEvent.date.split('-')[2])} ${monthNames[parseInt(activeEvent.date.split('-')[1])-1]} ${activeEvent.date.split('-')[0]}`;
-  
   document.getElementById('intro-title').innerText = activeEvent.name;
   document.getElementById('intro-date').innerText = thDate;
   document.getElementById('intro-loc').innerText = activeEvent.location || "ไม่ได้ระบุสถานที่";
   document.getElementById('intro-det').innerText = activeEvent.details || "-";
   
   let timeStr = "เปิดรับตลอด";
-  if (activeEvent.openTime && activeEvent.closeTime) {
-    timeStr = `${new Date(activeEvent.openTime).toLocaleString('th-TH')} - ${new Date(activeEvent.closeTime).toLocaleString('th-TH')}`;
-  }
+  if (activeEvent.openTime && activeEvent.closeTime) { timeStr = `${new Date(activeEvent.openTime).toLocaleString('th-TH')} - ${new Date(activeEvent.closeTime).toLocaleString('th-TH')}`; }
   document.getElementById('intro-time').innerText = timeStr;
   
   openModal('eventIntroModal');
@@ -147,8 +128,12 @@ function enterSongList() {
     else { timeText = `<span style="color:var(--success);"><i class="fa-solid fa-lock-open"></i> เปิดรับขอเพลงและโหวต</span>`; }
   }
   document.getElementById('view-event-status').innerHTML = timeText;
+  
   document.getElementById('btn-add-song-main').classList.toggle('hidden', !isEventOpenForRequest);
   document.getElementById('event-closed-msg').classList.toggle('hidden', isEventOpenForRequest);
+  
+  // Show edit button for admins
+  document.getElementById('btn-edit-event').classList.toggle('hidden', !isAdminLoggedIn);
   
   document.getElementById('song-list-content').innerHTML = '<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>';
   showView('songs');
@@ -234,11 +219,9 @@ function openSongDetail(songId) {
 function handleVote() {
   const btn = document.getElementById('btn-toggle-vote');
   btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังประมวลผล...`; btn.disabled = true;
-  fetchAPI(
-    "voteSong", 
-    { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, 
+  fetchAPI("voteSong", { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, 
     res => { currentSongs = res; filterSongs(); btn.disabled = false; openSongDetail(selectedSongId); },
-    () => { btn.disabled = false; openSongDetail(selectedSongId); } // รีเซ็ตปุ่มถ้า Error
+    () => { btn.disabled = false; openSongDetail(selectedSongId); }
   );
 }
 
@@ -253,7 +236,6 @@ function preCheckAddSong() {
   
   const searchName = name.toLowerCase().replace(/\s/g, '');
   const dup = currentSongs.find(s => s.name.toLowerCase().replace(/\s/g, '') === searchName);
-  
   pendingSongData = { name: name, artist: document.getElementById('song-artist').value, link: document.getElementById('song-link').value, start: document.getElementById('song-start').value, end: document.getElementById('song-end').value };
 
   if (dup) {
@@ -265,11 +247,9 @@ function preCheckAddSong() {
 function executeAddSong() {
   closeModal('confirmModal');
   const btn = document.getElementById('btn-song-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI(
-    "addSong", 
-    { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID }, 
+  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID }, 
     res => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input').forEach(i => i.value = ''); },
-    () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; } // รีเซ็ตปุ่มถ้า Error
+    () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; }
   );
 }
 
@@ -281,10 +261,13 @@ function handleLogin() {
     { username: document.getElementById('admin-user').value, password: document.getElementById('admin-pass').value }, 
     res => {
       btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; isAdminLoggedIn = true; closeModal('adminLoginModal');
-      document.getElementById('btn-admin-login').classList.add('hidden'); document.getElementById('btn-admin-add').classList.remove('hidden'); document.getElementById('btn-admin-export').classList.remove('hidden');
+      document.getElementById('btn-admin-login').classList.add('hidden'); 
+      document.getElementById('btn-admin-export').classList.remove('hidden');
+      document.getElementById('fab-admin-add').classList.remove('hidden'); // แสดงปุ่มลอย FAB
+      if (activeEvent) document.getElementById('btn-edit-event').classList.remove('hidden'); // แสดงปุ่มแก้ไขงาน
       customAlert("สำเร็จ", "ปลดล็อกสิทธิ์ผู้ดูแลระบบ");
     },
-    () => { btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; } // รีเซ็ตปุ่มถ้า Error
+    () => { btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; }
   );
 }
 
@@ -299,7 +282,45 @@ function handleAddEvent() {
       allEvents = res; renderCalendar(); closeModal('addEventModal'); btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; document.querySelectorAll('#addEventModal input').forEach(i => i.value = '');
       customAlert("สำเร็จ", "เพิ่มงานเรียบร้อย");
     },
-    () => { btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; } // รีเซ็ตปุ่มถ้า Error
+    () => { btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; }
+  );
+}
+
+// ฟังก์ชันเปิด Modal สำหรับแก้ไขงาน
+function openEditEventModal() {
+  document.getElementById('edit-event-id').value = activeEvent.id;
+  document.getElementById('edit-event-date').value = activeEvent.date;
+  document.getElementById('edit-event-name').value = activeEvent.name;
+  document.getElementById('edit-event-loc').value = activeEvent.location;
+  document.getElementById('edit-event-open').value = activeEvent.openTime;
+  document.getElementById('edit-event-close').value = activeEvent.closeTime;
+  document.getElementById('edit-event-det').value = activeEvent.details;
+  openModal('editEventModal');
+}
+
+// ฟังก์ชันบันทึกการแก้ไขงาน
+function handleEditEvent() {
+  const p = {
+    id: document.getElementById('edit-event-id').value,
+    date: document.getElementById('edit-event-date').value,
+    name: document.getElementById('edit-event-name').value,
+    location: document.getElementById('edit-event-loc').value,
+    openTime: document.getElementById('edit-event-open').value,
+    closeTime: document.getElementById('edit-event-close').value,
+    details: document.getElementById('edit-event-det').value
+  };
+  const btn = document.getElementById('btn-event-edit-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
+  fetchAPI(
+    "editEvent", p, 
+    res => {
+      allEvents = res; activeEvent = allEvents.find(e => e.id === p.id); renderCalendar(); closeModal('editEventModal'); btn.innerText = "บันทึกการแก้ไข"; btn.disabled = false;
+      
+      // รีเฟรชหน้าต่างเพื่อให้เวลาและสถานะอัปเดตใหม่
+      openEventIntro(p.id); 
+      enterSongList();
+      customAlert("สำเร็จ", "อัปเดตข้อมูลและเวลาของงานเรียบร้อยแล้ว");
+    },
+    () => { btn.innerText = "บันทึกการแก้ไข"; btn.disabled = false; }
   );
 }
 
@@ -312,16 +333,8 @@ function adminUpdateStatus(status) {
 }
 function exportDJ() {
   if(currentSongs.length === 0) return customAlert("ไม่มีข้อมูล", "ยังไม่มีเพลงในรายการ");
-  
-  // เรียงลำดับข้อมูลโหวตจากมากไปน้อยก่อน Export
   const sortedSongs = [...currentSongs].sort((a, b) => b.votes - a.votes);
-  
   let text = `🔥 Playlist: ${activeEvent.name}\n\n`;
-  sortedSongs.forEach((s, i) => { 
-    text += `${i+1}. ${s.name} - ${s.artist} [${s.start}-${s.end}] (${s.votes} โหวต)\n`; 
-    if(s.link) text += `Link: ${formatYoutubeLink(s.link, s.start)}\n`; 
-    text += `\n`; 
-  });
-  
+  sortedSongs.forEach((s, i) => { text += `${i+1}. ${s.name} - ${s.artist} [${s.start}-${s.end}] (${s.votes} โหวต)\n`; if(s.link) text += `Link: ${formatYoutubeLink(s.link, s.start)}\n`; text += `\n`; });
   navigator.clipboard.writeText(text).then(() => customAlert("สำเร็จ", "คัดลอกรายชื่อเพลง (เรียงตามคะแนนโหวต) เรียบร้อย"));
 }
