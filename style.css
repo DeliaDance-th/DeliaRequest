@@ -1,35 +1,49 @@
 :root {
-  --primary: #D81B60; --primary-light: #FCE4EC; --secondary: #2C3E50; 
-  --bg: #F8F9FA; --surface: #FFFFFF; --text: #333333; --text-muted: #7F8C8D;
-  --border: #E0E0E0; --shadow: 0 10px 30px rgba(0,0,0,0.05); --radius: 16px;
-  --gold: #F1C40F; --success: #2ECC71;
+  --primary: #D81B60; /* สีชมพูหลัก */
+  --primary-light: #FCE4EC; 
+  --secondary: #900C3F; /* สีชมพูเข้ม/แดงเลือดหมูสำหรับฟอนต์เน้น */
+  --bg: #FFF0F5; /* พื้นหลังสีชมพูอ่อน Pastel */
+  --surface: #FFFFFF; /* กล่องข้อความสีขาว */
+  --text: #333333; 
+  --text-muted: #7F8C8D;
+  --border: #F8BBD0; /* ขอบกล่องสีชมพูอ่อน */
+  --shadow: 0 10px 30px rgba(216, 27, 96, 0.08); 
+  --radius: 16px;
+  --gold: #F1C40F; 
+  --success: #2ECC71;
 }
 body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
 .text-center { text-align: center; }
 
-/* Navbar */
-.navbar { background: var(--surface); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 100; }
-.brand { font-weight: 600; font-size: 1.2rem; color: var(--primary); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+/* Navbar สีชมพูล้วน */
+.navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+.brand { font-weight: 600; font-size: 1.2rem; color: #FFFFFF; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.navbar .btn-outline { color: #FFFFFF; border: 1px solid #FFFFFF; }
+.navbar .btn-outline:hover { background: #FFFFFF; color: var(--primary); }
 
 /* Buttons */
 .btn { padding: 10px 20px; border-radius: 30px; border: none; font-family: inherit; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .btn-primary { background: var(--primary); color: var(--surface); box-shadow: 0 4px 15px rgba(216, 27, 96, 0.2); }
 .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216, 27, 96, 0.3); }
-.btn-outline { background: transparent; color: var(--secondary); border: 1px solid var(--border); }
-.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outline:hover { border-color: var(--primary); background: var(--primary); color: #FFFFFF; }
 .btn-full { width: 100%; padding: 12px; margin-top: 10px; }
 .btn-danger { background: transparent; border: 1px solid #E74C3C; color: #E74C3C; }
 .btn-danger:hover { background: #E74C3C; color: white; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none !important; }
 
+/* Floating Action Button (ปุ่มสร้างงานลอย) */
+.fab-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4); font-size: 1.5rem; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 99; transition: transform 0.3s ease; }
+.fab-btn:hover { transform: scale(1.1); }
+
 /* Layout & Calendar */
 .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
 .header-section { text-align: center; margin-bottom: 30px; }
 .header-section h1 { font-weight: 600; color: var(--secondary); margin-bottom: 5px; }
-.calendar-container { background: var(--surface); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); }
-.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.calendar-container { background: var(--surface); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: var(--secondary); }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; }
-.day-name { font-weight: 500; color: var(--text-muted); font-size: 0.9rem; padding-bottom: 10px; }
+.day-name { font-weight: 500; color: var(--primary); font-size: 0.9rem; padding-bottom: 10px; }
 .day-cell { min-height: 80px; display: flex; flex-direction: column; align-items: center; padding: 10px 5px; border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; background: var(--surface); }
 .day-cell:hover:not(.empty) { background: var(--primary-light); }
 .day-cell.empty { background: transparent; cursor: default; }
@@ -44,10 +58,10 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .search-box { width: 100%; padding: 12px 15px 12px 40px; border: 1px solid var(--border); border-radius: 30px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; background: var(--surface); box-shadow: var(--shadow); transition: 0.3s; }
 .search-box:focus { border-color: var(--primary); }
 
-.song-list-container { background: var(--surface); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.song-list-container { background: var(--surface); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); }
 .song-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
 .song-item:last-child { border-bottom: none; }
-.song-item:hover { background: var(--bg); border-radius: 8px; border-bottom-color: transparent; }
+.song-item:hover { background: var(--primary-light); border-radius: 8px; border-bottom-color: transparent; }
 .song-item.status-Played { opacity: 0.6; filter: grayscale(1); }
 .song-title { font-weight: 500; color: var(--secondary); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
 .song-time { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
@@ -55,7 +69,7 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .badge-top10 { color: var(--gold); font-size: 1.1rem; }
 .badge-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; margin-left: 5px; }
 .badge-Approved { background: #E8F8F5; color: var(--success); }
-.badge-Played { background: #E5E7E9; color: var(--secondary); }
+.badge-Played { background: #E5E7E9; color: var(--text-muted); }
 
 /* Modals */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18, 18, 18, 0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000; padding: 20px; box-sizing: border-box;}
