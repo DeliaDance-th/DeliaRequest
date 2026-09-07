@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SortableJS สำหรับระบบลากวาง Playlist -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <link rel="stylesheet" href="style.css">
   <meta name="robots" content="noindex, nofollow, noarchive">
@@ -14,11 +15,13 @@
 </head>
 <body>
 
+  <!-- Toast Notification -->
   <div id="toast-container"></div>
 
+  <!-- Navbar -->
   <nav class="navbar">
     <div class="brand">
-      <img src="DeliaLogo.png" alt="Delia Logo" style="height: 28px; width: 28px; object-fit: cover; border-radius: 50%;"> 
+      <img src="DeliaLogo.png" alt="Delia Logo" style="height: 30px; width: 30px; object-fit: cover; border-radius: 50%;"> 
       Delia Randomdance
     </div>
     <div style="display: flex; gap: 5px;">
@@ -34,7 +37,7 @@
       <h1>Event Calendar</h1>
       <p>เลือกกำหนดการเพื่อดูรายละเอียดและขอเพลง</p>
     </div>
-    <div class="calendar-container">
+    <div class="card-container">
       <div class="calendar-header">
         <button class="btn btn-outline" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
         <h2 id="month-year-display">Loading...</h2>
@@ -67,12 +70,12 @@
     </div>
   </div>
 
-  <!-- View 3: Playlist Manager (Drag & Drop) -->
+  <!-- View 3: Playlist Manager (Drag & Drop 4 Columns) -->
   <div class="container hidden" id="view-playlist" style="max-width: 1200px;">
     <div class="header-section">
       <button class="btn btn-outline" style="position: absolute; left: 20px; top: 0;" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
       <h1 id="playlist-event-title">Setlist Manager</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">ลากการ์ดเพลงไปตามหมวดหมู่ (ระบบจะสุ่มสลับ M/F เมื่อกดสุ่ม)</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">ลากการ์ดเพลงไปตามหมวดหมู่ (ระบบจะสุ่มสลับ ชาย/หญิง เมื่อกดสุ่ม)</p>
       
       <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 15px;">
         <button class="btn btn-outline" onclick="importFromVotes()"><i class="fa-solid fa-download"></i> ดึงจากผลโหวต</button>
@@ -100,6 +103,7 @@
     </div>
   </div>
 
+  <!-- FAB Admin Add Event -->
   <button id="fab-admin-add" class="fab-btn hidden admin-only" onclick="openModal('addEventModal')" title="สร้างงานใหม่"><i class="fa-solid fa-plus"></i></button>
 
   <!-- ================= MODALS ================= -->
@@ -146,6 +150,28 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="editSongModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editSongModal')"></i>
+      <h2 class="text-center" style="color:var(--primary); margin-top:0;"><i class="fa-solid fa-pen"></i> แก้ไขข้อมูลเพลง</h2>
+      
+      <div class="form-group">
+        <label>ลิงก์ Youtube</label>
+        <input type="url" id="edit-song-link" class="form-control" onblur="autoFillYoutubeEdit()">
+      </div>
+      <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="edit-song-name" class="form-control"></div>
+      <div class="form-group"><label>ศิลปิน</label><input type="text" id="edit-song-artist" class="form-control"></div>
+      <label class="checkbox-container">
+        <input type="checkbox" id="edit-song-breakdance"> เพลงนี้มี Breakdance ใช่มั้ย?
+      </label>
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <div class="form-group" style="flex:1;"><label>เริ่ม (น:ว)</label><input type="text" id="edit-song-start" class="form-control"></div>
+        <div class="form-group" style="flex:1;"><label>จบ (น:ว)</label><input type="text" id="edit-song-end" class="form-control"></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="executeEditSong()" id="btn-song-edit-submit">บันทึกการแก้ไข</button>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="songDetailModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('songDetailModal')"></i>
@@ -165,6 +191,7 @@
       </div>
 
       <button class="btn btn-primary btn-full" id="btn-toggle-vote" onclick="handleVote()"><i class="fa-solid fa-heart"></i> โหวตเพลงนี้</button>
+      <button class="btn btn-outline btn-full hidden" id="btn-edit-mysong" onclick="openUserEditSong()"><i class="fa-solid fa-pen"></i> แก้ไขข้อมูลเพลง</button>
       
       <div class="admin-panel hidden admin-only" id="admin-song-controls">
         <div style="display: flex; gap: 5px;">
@@ -227,7 +254,6 @@
     </div>
   </div>
 
-  <!-- Alert Modal -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-content text-center">
       <div style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"><i class="fa-solid fa-circle-info"></i></div>
