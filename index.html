@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Delia Randomdance</title>
+  <!-- กำหนดโลโก้ที่แท็บเบราว์เซอร์ -->
+  <link rel="icon" type="image/png" href="DeliaLogo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,11 +15,16 @@
 <body>
 
   <nav class="navbar">
-    <div class="brand"><i class="fa-solid fa-music"></i> Delia Randomdance</div>
+    <!-- ใส่รูปภาพโลโก้แทนไอคอนตัวโน้ต -->
+    <div class="brand">
+      <img src="DeliaLogo.png" alt="Delia Logo" style="height: 28px; width: 28px; object-fit: cover; border-radius: 50%;"> 
+      Delia Randomdance
+    </div>
     <div>
       <button class="btn btn-outline hidden" id="btn-admin-export" style="border-color:var(--success); color:var(--success);" onclick="exportDJ()"><i class="fa-solid fa-file-export"></i></button>
       <button class="btn btn-outline hidden" id="btn-admin-add" onclick="openModal('addEventModal')"><i class="fa-solid fa-calendar-plus"></i></button>
-      <button class="btn btn-outline" id="btn-admin-login" onclick="openModal('adminLoginModal')"><i class="fa-solid fa-lock"></i></button>
+      <!-- เพิ่มคำว่า Login -->
+      <button class="btn btn-outline" id="btn-admin-login" onclick="openModal('adminLoginModal')"><i class="fa-solid fa-lock"></i> Login</button>
     </div>
   </nav>
 
@@ -60,7 +67,7 @@
 
   <!-- ================= MODALS ================= -->
 
-  <!-- 1. Event Intro Modal (แสดงก่อนเข้างาน) -->
+  <!-- 1. Event Intro Modal -->
   <div class="modal-overlay" id="eventIntroModal">
     <div class="modal-content event-intro-card">
       <div class="intro-header">
@@ -114,7 +121,7 @@
     </div>
   </div>
 
-  <!-- 3. Add Song Modal (User) -->
+  <!-- 3. Add Song Modal -->
   <div class="modal-overlay" id="addSongModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
@@ -162,6 +169,8 @@
       <button class="btn btn-primary btn-full" onclick="handleLogin()" id="btn-login-submit">เข้าสู่ระบบ</button>
     </div>
   </div>
+  
+  <!-- Add Event Modal (ปรับ Layout ใหม่ไม่ให้บีบกัน) -->
   <div class="modal-overlay" id="addEventModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addEventModal')"></i>
@@ -169,10 +178,11 @@
       <div class="form-group"><label>วันที่จัดงาน</label><input type="date" id="event-date" class="form-control"></div>
       <div class="form-group"><label>ชื่องาน <span style="color:var(--primary)">*</span></label><input type="text" id="event-name" class="form-control"></div>
       <div class="form-group"><label>สถานที่</label><input type="text" id="event-loc" class="form-control"></div>
-      <div style="display: flex; gap: 10px;">
-        <div class="form-group" style="flex:1;"><label>เวลาเปิดรับ</label><input type="datetime-local" id="event-open" class="form-control"></div>
-        <div class="form-group" style="flex:1;"><label>เวลาปิดรับ</label><input type="datetime-local" id="event-close" class="form-control"></div>
-      </div>
+      
+      <!-- แยกบรรทัดให้พอดี ไม่ใช้ flex -->
+      <div class="form-group"><label>เวลาเปิดรับขอเพลง</label><input type="datetime-local" id="event-open" class="form-control"></div>
+      <div class="form-group"><label>เวลาปิดรับขอเพลง</label><input type="datetime-local" id="event-close" class="form-control"></div>
+      
       <div class="form-group"><label>รายละเอียด</label><input type="text" id="event-det" class="form-control"></div>
       <button class="btn btn-primary btn-full" onclick="handleAddEvent()" id="btn-event-submit">สร้างกำหนดการ</button>
     </div>
