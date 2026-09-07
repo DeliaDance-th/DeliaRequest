@@ -221,8 +221,15 @@ function preCheckAddSong() {
 }
 
 function executeAddSong() {
-  closeModal('confirmModal'); const btn = document.getElementById('btn-song-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID }, res => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input').forEach(i => i.value = ''); showToast("สำเร็จ", "เสนอเพลงเรียบร้อย"); }, () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; });
+  closeModal('confirmModal');
+  const btn = document.getElementById('btn-song-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
+  
+  // ส่งค่า isAdminLoggedIn พ่วงไปด้วย
+  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => {
+    btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); 
+    document.querySelectorAll('#addSongModal input').forEach(i => i.value = ''); 
+    showToast("สำเร็จ", "เสนอเพลงเรียบร้อย"); 
+  }, () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; });
 }
 
 // --- Admin ---
