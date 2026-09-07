@@ -15,7 +15,7 @@ if (!userUUID) { userUUID = 'delia-' + Date.now().toString(36) + Math.random().t
 let allEvents = [], currentSongs = [], filteredSongs = [], playlistSongs = [];
 let activeEvent = null, selectedSongId = "", isEventOpenForRequest = false, isAdminLoggedIn = false;
 let pendingSongData = null;
-let currentAIGender = "Mix"; // ตัวแปรเก็บเพศที่ Gemini วิเคราะห์ได้
+let currentAIGender = "Mix";
 
 const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 const today = new Date();
@@ -64,7 +64,6 @@ function getYoutubeThumb(url) {
   return vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : "https://via.placeholder.com/90x60.png?text=No+Cover";
 }
 
-// ฟังก์ชันหลักที่ส่งข้อมูลไปให้ Gemini วิเคราะห์
 async function processYoutubeLink(inputId, nameId, artistId) {
   const url = document.getElementById(inputId).value;
   if(!url.includes('youtu')) return;
@@ -77,16 +76,14 @@ async function processYoutubeLink(inputId, nameId, artistId) {
     const res = await fetch(`https://noembed.com/embed?dataType=json&url=${url}`);
     const data = await res.json();
     if(data && data.title) {
-      // โยนข้อมูลตั้งต้นส่งไปให้ Gemini
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, aiRes => {
         document.getElementById(nameId).value = aiRes.song;
         document.getElementById(artistId).value = aiRes.artist;
-        currentAIGender = aiRes.gender || "Mix"; // บันทึกเพศที่ AI หาได้ไว้ใช้ตอนกด Save
+        currentAIGender = aiRes.gender || "Mix"; 
         
         showToast("Gemini ทำงานสำเร็จ!", "ล้างชื่อและวิเคราะห์เพศให้อัตโนมัติ", "success");
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       }, () => {
-        // Fallback ถ้า AI ไม่ตอบสนอง
         document.getElementById(nameId).value = data.title;
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       });
@@ -208,24 +205,23 @@ function openSongDetail(songId) {
   const btnVote = document.getElementById('btn-toggle-vote');
   const btnEditMySong = document.getElementById('btn-edit-mysong');
   
+  btnEditMySong.classList.add('hidden'); // รีเซ็ตปุ่มซ่อนไว้ก่อน
+  
   if (!isEventOpenForRequest || song.status === "Played") { 
     btnVote.innerHTML = `<i class="fa-solid fa-lock"></i> ปิดโหวต`; btnVote.style.background = "var(--text-muted)"; btnVote.disabled = true; 
-    btnEditMySong.classList.add('hidden');
   }
   else if (song.creator === userUUID) { 
     btnVote.innerHTML = `<i class="fa-solid fa-star"></i> เพลงของคุณ`; btnVote.style.background = "var(--text-muted)"; btnVote.disabled = true; 
-    btnEditMySong.classList.remove('hidden'); // เจ้าของแก้เพลงตัวเองได้
+    btnEditMySong.classList.remove('hidden'); // โชว์ปุ่มแก้ไขให้เจ้าของเพลง
   } 
   else if (song.voters.includes(userUUID)) { 
     btnVote.innerHTML = `<i class="fa-solid fa-heart-crack"></i> ถอนโหวต`; btnVote.style.background = "var(--text-muted)"; btnVote.disabled = false; 
-    btnEditMySong.classList.add('hidden');
   } 
   else { 
     btnVote.innerHTML = `<i class="fa-solid fa-heart"></i> โหวตเพลงนี้`; btnVote.style.background = "var(--primary)"; btnVote.disabled = false; 
-    btnEditMySong.classList.add('hidden');
   }
   
-  if(isAdminLoggedIn) btnEditMySong.classList.remove('hidden');
+  if(isAdminLoggedIn) btnEditMySong.classList.remove('hidden'); // แอดมินแก้ได้ทุกเพลง
   openModal('songDetailModal');
 }
 
@@ -237,7 +233,7 @@ function openUserEditSong() {
   document.getElementById('edit-song-start').value = song.start;
   document.getElementById('edit-song-end').value = song.end;
   document.getElementById('edit-song-breakdance').checked = (song.isBreakdance === 'Yes' || song.isBreakdance === true);
-  currentAIGender = song.gender; // ตั้งค่าเพศตั้งต้นไว้ก่อน เผื่อเค้าไม่ได้แก้ลิงก์
+  currentAIGender = song.gender;
   closeModal('songDetailModal');
   openModal('editSongModal');
 }
@@ -250,7 +246,7 @@ function executeEditSong() {
     link: document.getElementById('edit-song-link').value, 
     start: document.getElementById('edit-song-start').value, end: document.getElementById('edit-song-end').value, 
     isBreakdance: document.getElementById('edit-song-breakdance').checked,
-    gender: currentAIGender // นำเพศที่ AI หาให้ไปบันทึก
+    gender: currentAIGender
   };
   const btn = document.getElementById('btn-song-edit-submit'); btn.innerText = "บันทึก..."; btn.disabled = true;
   fetchAPI("editSong", { eventId: activeEvent.id, songId: selectedSongId, songData: updatedData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => { 
@@ -280,7 +276,7 @@ function preCheckAddSong() {
     link: document.getElementById('song-link').value, 
     start: document.getElementById('song-start').value, end: document.getElementById('song-end').value, 
     isBreakdance: document.getElementById('song-breakdance').checked,
-    gender: currentAIGender // ส่งเพศให้หลังบ้านด้วย
+    gender: currentAIGender
   };
   if (dup) { document.getElementById('confirm-message').innerText = `มีคนขอเพลง "${dup.name}" ไว้แล้ว เพิ่มซ้ำหรือไม่?`; closeModal('addSongModal'); openModal('confirmModal'); } else executeAddSong();
 }
@@ -300,7 +296,7 @@ function handleLogin() {
   );
 }
 
-// --- Playlist Manager ---
+// --- Playlist Manager & AI Magic Setlist ---
 let sortables = {};
 function initSortables() {
   const lists = ['list-pool', 'list-kpop', 'list-tpop', 'list-mix'];
@@ -338,7 +334,7 @@ function importFromVotes() {
 function createDragItem(song) {
   const div = document.createElement('div');
   div.className = 'drag-item';
-  div.dataset.name = song.name; div.dataset.artist = song.artist; div.dataset.gender = song.gender; div.dataset.breakdance = song.isBreakdance; div.dataset.time = song.start ? `${song.start}-${song.end}` : song.time; div.dataset.link = song.link;
+  div.dataset.id = song.id; div.dataset.name = song.name; div.dataset.artist = song.artist; div.dataset.gender = song.gender; div.dataset.breakdance = song.isBreakdance; div.dataset.time = song.start ? `${song.start}-${song.end}` : song.time; div.dataset.link = song.link;
   
   let bdPill = song.isBreakdance === 'true' || song.isBreakdance === true || song.isBreakdance === 'Yes' ? '<span class="pill" style="background:#FFDAB9; color:#8B008B; border:none;">BD</span>' : '';
   let genderPill = song.gender === 'M' ? '<span class="pill">Boy Group</span>' : (song.gender === 'F' ? '<span class="pill">Girl Group</span>' : '<span class="pill">Mix</span>');
@@ -390,9 +386,32 @@ function moveSong(btnEl, direction) {
   if (direction === 'down' && item.nextElementSibling) { container.insertBefore(item.nextElementSibling, item); }
 }
 
-function removeSongFromPlaylist(iconEl) {
-  const item = iconEl.closest('.drag-item');
-  item.remove();
+function removeSongFromPlaylist(iconEl) { iconEl.closest('.drag-item').remove(); }
+
+// ฟีเจอร์ใหม่: ให้ AI จัด Setlist ให้
+function aiMagicSetlist() {
+  const poolContainer = document.getElementById('list-pool');
+  const items = Array.from(poolContainer.children);
+  if(items.length < 2) return showToast("ข้อมูลน้อยไป", "ต้องมีเพลงในกองกลางอย่างน้อย 2 เพลง", "error");
+  
+  const songDataList = items.map(item => ({
+     id: item.dataset.id, name: item.dataset.name, artist: item.dataset.artist,
+     gender: item.dataset.gender, isBreakdance: item.dataset.breakdance
+  }));
+
+  const btn = document.getElementById('btn-ai-setlist');
+  btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> AI กำลังคิด...`; btn.disabled = true;
+
+  fetchAPI("aiMagicSetlist", { songs: songDataList }, res => {
+     res.forEach(id => {
+        const el = items.find(item => item.dataset.id === id);
+        if(el) poolContainer.appendChild(el);
+     });
+     btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ให้ AI จัด Setlist ให้`; btn.disabled = false;
+     showToast("เวทมนตร์ทำงาน!", "AI จัดเรียง Setlist ให้เหมาะสมที่สุดแล้ว", "success");
+  }, () => {
+     btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ให้ AI จัด Setlist ให้`; btn.disabled = false;
+  });
 }
 
 function savePlaylistData() {
@@ -402,7 +421,7 @@ function savePlaylistData() {
     const container = document.getElementById(lId);
     const listName = lId.split('-')[1].toUpperCase();
     Array.from(container.children).forEach(item => {
-       exportData.push({ listName: listName, name: item.dataset.name, artist: item.dataset.artist, gender: item.dataset.gender, isBreakdance: (item.dataset.breakdance === 'true' || item.dataset.breakdance === 'Yes'), time: item.dataset.time, link: item.dataset.link });
+       exportData.push({ id: item.dataset.id, listName: listName, name: item.dataset.name, artist: item.dataset.artist, gender: item.dataset.gender, isBreakdance: (item.dataset.breakdance === 'true' || item.dataset.breakdance === 'Yes'), time: item.dataset.time, link: item.dataset.link });
     });
   });
   const btn = document.getElementById('btn-save-playlist'); btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> บันทึก...`; btn.disabled = true;
