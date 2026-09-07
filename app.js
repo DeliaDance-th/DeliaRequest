@@ -64,11 +64,13 @@ function getYoutubeThumb(url) {
   return vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : "https://via.placeholder.com/90x60.png?text=No+Cover";
 }
 
+// อัปเดตฟังก์ชัน processYoutubeLink
 async function processYoutubeLink(inputId, nameId, artistId) {
   const url = document.getElementById(inputId).value;
   if(!url.includes('youtu')) return;
   
   const btnId = inputId === 'song-link' ? 'btn-song-submit' : 'btn-song-edit-submit';
+  const genderId = inputId === 'song-link' ? 'song-gender' : 'edit-song-gender'; // หา ID ช่องเพศ
   const btn = document.getElementById(btnId);
   if(btn) { btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> AI กำลังวิเคราะห์...`; btn.disabled = true; }
 
@@ -79,19 +81,21 @@ async function processYoutubeLink(inputId, nameId, artistId) {
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, aiRes => {
         document.getElementById(nameId).value = aiRes.song;
         document.getElementById(artistId).value = aiRes.artist;
-        currentAIGender = aiRes.gender || "Mix"; 
+        
+        // สั่งเปลี่ยนช่อง Dropdown เพศ ให้อัตโนมัติ!
+        if (document.getElementById(genderId)) {
+           document.getElementById(genderId).value = aiRes.gender === "M" || aiRes.gender === "F" ? aiRes.gender : "Mix";
+        }
         
         let vibeMsg = aiRes.vibe && aiRes.vibe !== "ไม่ทราบ" ? `วิเคราะห์สไตล์: ${aiRes.vibe} 💃` : "ล้างชื่อและวิเคราะห์เพศให้อัตโนมัติ";
-        showToast("Gemini ทำงานสำเร็จ!", vibeMsg, "success");
-        
+        showToast("ทำงานสำเร็จ!", vibeMsg, "success");
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       }, () => {
+        // แผนสำรอง
         let title = data.title;
-        // เพิ่ม /Lyrics?/gi และ /Color Coded/gi เพื่อลบคำขยะในแผนสำรองหน้าเว็บ
         const garbages = [ /\[.*?\]/g, /【.*?】/g, /「.*?」/g, /SMTOWN\s*\|?/gi, /JYP Entertainment\s*\|?/gi, /YG ENTERTAINMENT\s*\|?/gi, /HYBE LABELS\s*\|?/gi, /1theK\s*\(.*?\)\s*\|?/gi, /Stone Music Entertainment\s*\|?/gi, /Music Video/gi, /Official/gi, /MV/gi, /Teaser/gi, /Performance/gi, /HD/gi, /Lyrics?/gi, /Color Coded/gi ];
         garbages.forEach(g => { title = title.replace(g, ''); });
         document.getElementById(nameId).value = title.trim();
-        
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       });
     }
@@ -99,6 +103,51 @@ async function processYoutubeLink(inputId, nameId, artistId) {
     console.log(e); 
     if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
   }
+}
+
+// อัปเดต preCheckAddSong ให้ดึงค่าจาก Dropdown
+function preCheckAddSong() {
+  const name = document.getElementById('song-name').value; 
+  if(!name) return showToast("ข้อมูลไม่ครบ", "กรุณาระบุชื่อเพลง", "error");
+  const dup = currentSongs.find(s => s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''));
+  pendingSongData = { 
+    name: name, artist: document.getElementById('song-artist').value, 
+    link: document.getElementById('song-link').value, 
+    start: document.getElementById('song-start').value, end: document.getElementById('song-end').value, 
+    isBreakdance: document.getElementById('song-breakdance').checked,
+    gender: document.getElementById('song-gender').value // ดึงค่าจาก Dropdown ที่ User มองเห็น
+  };
+  if (dup) { document.getElementById('confirm-message').innerText = `มีคนขอเพลง "${dup.name}" ไว้แล้ว เพิ่มซ้ำหรือไม่?`; closeModal('addSongModal'); openModal('confirmModal'); } else executeAddSong();
+}
+
+// อัปเดตฝั่งแก้ไขเพลง (openUserEditSong และ executeEditSong)
+function openUserEditSong() {
+  const song = currentSongs.find(s => s.id === selectedSongId);
+  document.getElementById('edit-song-link').value = song.link;
+  document.getElementById('edit-song-name').value = song.name;
+  document.getElementById('edit-song-artist').value = song.artist;
+  document.getElementById('edit-song-start').value = song.start;
+  document.getElementById('edit-song-end').value = song.end;
+  document.getElementById('edit-song-breakdance').checked = (song.isBreakdance === 'Yes' || song.isBreakdance === true);
+  document.getElementById('edit-song-gender').value = song.gender === "M" || song.gender === "F" ? song.gender : "Mix";
+  closeModal('songDetailModal');
+  openModal('editSongModal');
+}
+
+function executeEditSong() {
+  const name = document.getElementById('edit-song-name').value;
+  if(!name) return showToast("ข้อมูลไม่ครบ", "กรุณาระบุชื่อเพลง", "error");
+  const updatedData = { 
+    name: name, artist: document.getElementById('edit-song-artist').value, 
+    link: document.getElementById('edit-song-link').value, 
+    start: document.getElementById('edit-song-start').value, end: document.getElementById('edit-song-end').value, 
+    isBreakdance: document.getElementById('edit-song-breakdance').checked,
+    gender: document.getElementById('edit-song-gender').value
+  };
+  const btn = document.getElementById('btn-song-edit-submit'); btn.innerText = "บันทึก..."; btn.disabled = true;
+  fetchAPI("editSong", { eventId: activeEvent.id, songId: selectedSongId, songData: updatedData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => { 
+    btn.innerText = "บันทึกการแก้ไข"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('editSongModal'); showToast("สำเร็จ", "อัปเดตเพลงเรียบร้อย"); 
+  }, () => { btn.innerText = "บันทึกการแก้ไข"; btn.disabled = false; });
 }
 
 function autoFillYoutube() { processYoutubeLink('song-link', 'song-name', 'song-artist'); }
