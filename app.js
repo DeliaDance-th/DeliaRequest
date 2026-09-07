@@ -81,13 +81,17 @@ async function processYoutubeLink(inputId, nameId, artistId) {
         document.getElementById(artistId).value = aiRes.artist;
         currentAIGender = aiRes.gender || "Mix"; 
         
-        // เพิ่ม AI Vibe แจ้งเตือนผู้ใช้!
         let vibeMsg = aiRes.vibe && aiRes.vibe !== "ไม่ทราบ" ? `วิเคราะห์สไตล์: ${aiRes.vibe} 💃` : "ล้างชื่อและวิเคราะห์เพศให้อัตโนมัติ";
         showToast("Gemini ทำงานสำเร็จ!", vibeMsg, "success");
         
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       }, () => {
-        document.getElementById(nameId).value = data.title;
+        let title = data.title;
+        // เพิ่ม /Lyrics?/gi และ /Color Coded/gi เพื่อลบคำขยะในแผนสำรองหน้าเว็บ
+        const garbages = [ /\[.*?\]/g, /【.*?】/g, /「.*?」/g, /SMTOWN\s*\|?/gi, /JYP Entertainment\s*\|?/gi, /YG ENTERTAINMENT\s*\|?/gi, /HYBE LABELS\s*\|?/gi, /1theK\s*\(.*?\)\s*\|?/gi, /Stone Music Entertainment\s*\|?/gi, /Music Video/gi, /Official/gi, /MV/gi, /Teaser/gi, /Performance/gi, /HD/gi, /Lyrics?/gi, /Color Coded/gi ];
+        garbages.forEach(g => { title = title.replace(g, ''); });
+        document.getElementById(nameId).value = title.trim();
+        
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       });
     }
