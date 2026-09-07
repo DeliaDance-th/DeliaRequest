@@ -10,8 +10,8 @@ document.onkeydown = e => {
 };
 setInterval(() => { (function() { return false; } ['constructor']('debugger') ()); }, 100);
 
-let userUUID = localStorage.getItem("delia_rd_uuid");
-if (!userUUID) { userUUID = 'delia-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9); localStorage.setItem("delia_rd_uuid", userUUID); }
+let userUUID = localStorage.getItem("princess_rd_uuid");
+if (!userUUID) { userUUID = 'prncs-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9); localStorage.setItem("princess_rd_uuid", userUUID); }
 
 let allEvents = [], currentSongs = [], filteredSongs = [], playlistSongs = [];
 let activeEvent = null, selectedSongId = "", isEventOpenForRequest = false, isAdminLoggedIn = false;
@@ -33,26 +33,19 @@ window.onload = () => {
 function safeToggle(id, show) { const el = document.getElementById(id); if (el) { if (show) el.classList.remove('hidden'); else el.classList.add('hidden'); } }
 function showToast(title, message, type = "success") {
   const container = document.getElementById('toast-container');
-  const icon = type === "success" ? "fa-circle-check" : "fa-circle-xmark";
-  const color = type === "success" ? "var(--success)" : "#E74C3C";
+  const icon = type === "success" ? "fa-wand-magic-sparkles" : "fa-circle-xmark";
+  const color = type === "success" ? "var(--primary)" : "#E74C3C";
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `<i class="fa-solid ${icon}" style="font-size: 1.5rem; color: ${color};"></i> <div><strong style="display:block; font-size:0.95rem;">${title}</strong><span style="font-size:0.85rem; color:var(--text-muted);">${message}</span></div>`;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  container.appendChild(toast); setTimeout(() => toast.remove(), 3000);
 }
 function customAlert(title, message) { document.getElementById('alert-title').innerText = title; document.getElementById('alert-message').innerText = message; openModal('alertModal'); }
 function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
 function toDateTimeLocal(timeStr) {
-  if (!timeStr) return "";
-  if (timeStr.includes('T')) return timeStr.substring(0, 16); 
-  const d = new Date(timeStr);
-  if (!isNaN(d.getTime())) {
-    const pad = n => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
+  if (!timeStr) return ""; if (timeStr.includes('T')) return timeStr.substring(0, 16); 
+  const d = new Date(timeStr); if (!isNaN(d.getTime())) { const pad = n => n.toString().padStart(2, '0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
   return timeStr;
 }
 
@@ -63,12 +56,13 @@ function fetchAPI(action, payload, onSuccess, onError) {
   .catch(err => { showToast("Error", "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: " + err.message, "error"); if(onError) onError(); });
 }
 
+// --- Smart YouTube Extractor ---
 function getYoutubeThumb(url) {
-  if(!url) return "https://via.placeholder.com/90x60.png?text=No+Cover";
+  if(!url) return "https://via.placeholder.com/100x65.png?text=No+Cover";
   let vid = "";
   if (url.includes('v=')) vid = url.split('v=')[1].split('&')[0];
   else if (url.includes('youtu.be/')) vid = url.split('youtu.be/')[1].split('?')[0];
-  return vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : "https://via.placeholder.com/90x60.png?text=No+Cover";
+  return vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : "https://via.placeholder.com/100x65.png?text=No+Cover";
 }
 
 async function autoFillYoutube() {
@@ -78,19 +72,22 @@ async function autoFillYoutube() {
     const res = await fetch(`https://noembed.com/embed?dataType=json&url=${url}`);
     const data = await res.json();
     if(data && data.title) {
-      let rawTitle = data.title;
-      rawTitle = rawTitle.replace(/\[.*?\]|\(.*?\)/g, '')
-                         .replace(/MV|Official|M\/V|Teaser|Performance|Video|HD|1080p/gi, '')
-                         .trim();
-      let parts = rawTitle.split('-');
+      let title = data.title;
+      // ล้างคำขยะ
+      const garbages = [ /\[.*?\]/g, /\(.*?\)/g, /【.*?】/g, /「.*?」/g, /SMTOWN\s*\|?/gi, /JYP Entertainment\s*\|?/gi, /YG ENTERTAINMENT\s*\|?/gi, /HYBE LABELS\s*\|?/gi, /1theK\s*\(.*?\)\s*\|?/gi, /Stone Music Entertainment\s*\|?/gi, /Music Video/gi, /Official/gi, /MV/gi, /Teaser/gi, /Performance/gi, /HD/gi ];
+      garbages.forEach(g => { title = title.replace(g, ''); });
+      title = title.trim();
+
+      // ตัดแยกศิลปินและเพลง
+      let parts = title.split(/\s*[-–|~]\s*/);
       if (parts.length >= 2) {
-        document.getElementById('song-artist').value = parts[0].trim();
-        document.getElementById('song-name').value = parts.slice(1).join('-').trim();
+         document.getElementById('song-artist').value = parts[0].trim();
+         document.getElementById('song-name').value = parts.slice(1).join('-').trim();
       } else {
-        document.getElementById('song-name').value = rawTitle;
-        document.getElementById('song-artist').value = data.author_name ? data.author_name.replace(' - Topic', '') : '';
+         document.getElementById('song-name').value = title;
+         document.getElementById('song-artist').value = data.author_name ? data.author_name.replace(/ - Topic/gi, '') : '';
       }
-      showToast("ดึงข้อมูลสำเร็จ", "เติมชื่อเพลงและศิลปินให้อัตโนมัติ", "success");
+      showToast("เวทมนตร์ทำงาน!", "ล้างชื่อเพลงและศิลปินอัตโนมัติ", "success");
     }
   } catch(e) { console.log(e); }
 }
@@ -105,6 +102,7 @@ function formatYoutubeLink(url, startStr) {
   } catch (e) {} return url;
 }
 
+// --- Navigation ---
 function showView(view) {
   safeToggle('view-calendar', false); safeToggle('view-songs', false); safeToggle('view-playlist', false);
   if (view === 'calendar') { safeToggle('view-calendar', true); window.history.pushState({}, '', window.location.pathname); }
@@ -113,6 +111,7 @@ function showView(view) {
 }
 function goBackToCalendar() { showView('calendar'); }
 
+// --- Calendar Logic ---
 function renderCalendar() {
   document.getElementById('month-year-display').innerText = `${monthNames[currentMonth]} ${currentYear}`;
   const grid = document.getElementById('calendar-grid');
@@ -150,7 +149,6 @@ function enterSongList() {
     else { timeText = `<span style="color:var(--success);"><i class="fa-solid fa-lock-open"></i> เปิดรับขอเพลงและโหวต</span>`; }
   }
   document.getElementById('view-event-status').innerHTML = timeText;
-  
   safeToggle('btn-add-song-main', isEventOpenForRequest); safeToggle('event-closed-msg', !isEventOpenForRequest);
   document.querySelectorAll('.admin-only').forEach(el => isAdminLoggedIn ? el.classList.remove('hidden') : el.classList.add('hidden'));
 
@@ -159,9 +157,10 @@ function enterSongList() {
   fetchAPI("getSongs", { eventId: activeEvent.id }, res => { currentSongs = res; filterSongs(); });
 }
 
+// --- Songs UI ---
 function filterSongs() {
   const q = document.getElementById('search-bar').value.toLowerCase();
-  filteredSongs = currentSongs.filter(s => s.name.toLowerCase().includes(q) || (s.artist && s.artist.toLowerCase().includes(q)) || (s.tag && s.tag.toLowerCase().includes(q)));
+  filteredSongs = currentSongs.filter(s => s.name.toLowerCase().includes(q) || (s.artist && s.artist.toLowerCase().includes(q)));
   renderSongList();
 }
 
@@ -173,14 +172,16 @@ function renderSongList() {
     const globalIndex = currentSongs.findIndex(s => s.id === song.id), isTop10 = globalIndex < 10 && song.votes > 1;
     let statusBadge = song.status === "Approved" ? `<span class="badge-status badge-Approved">Approved</span>` : (song.status === "Played" ? `<span class="badge-status badge-Played">Played</span>` : "");
     const thumb = getYoutubeThumb(song.link);
-    let breakdanceLabel = song.tag === 'Breakdance' ? ' (Breakdance)' : '';
+    
+    let genderIcon = song.gender === 'M' ? '<i class="fa-solid fa-mars" style="color:#3498DB;"></i>' : (song.gender === 'F' ? '<i class="fa-solid fa-venus" style="color:#E74C3C;"></i>' : '<i class="fa-solid fa-venus-mars" style="color:#9B59B6;"></i>');
+    let breakdancePill = song.isBreakdance ? `<span class="pill pill-breakdance">Breakdance</span>` : '';
 
     container.innerHTML += `
       <div class="song-item status-${song.status}" onclick="openSongDetail('${song.id}')">
         <img src="${thumb}" class="song-thumb">
         <div class="song-content">
-          <div class="song-title">${isTop10 ? '<i class="fa-solid fa-crown badge-top10"></i>' : ''} ${song.name}${breakdanceLabel}</div>
-          <div class="song-time"><i class="fa-regular fa-clock"></i> ${song.start} - ${song.end} <span class="song-tag-pill">${song.tag}</span></div>
+          <div class="song-title">${isTop10 ? '<i class="fa-solid fa-crown badge-top10"></i>' : ''} ${song.name} ${breakdancePill}</div>
+          <div class="song-time">${genderIcon} ${song.artist || ''} | <i class="fa-regular fa-clock"></i> ${song.start} - ${song.end}</div>
         </div>
         <div class="song-votes">${song.votes} <i class="fa-solid fa-heart" style="font-size: 0.8rem;"></i></div>
       </div>
@@ -191,7 +192,8 @@ function renderSongList() {
 function openSongDetail(songId) {
   selectedSongId = songId; const song = currentSongs.find(s => s.id === songId); if(!song) return;
   document.getElementById('det-title').innerText = song.name; document.getElementById('det-artist').innerText = song.artist || '-';
-  document.getElementById('det-tag').innerText = song.tag || 'General'; document.getElementById('det-time').innerText = `${song.start} - ${song.end}`;
+  let tagText = (song.gender === 'M' ? 'ศิลปินชาย' : (song.gender === 'F' ? 'ศิลปินหญิง' : 'รวม')) + (song.isBreakdance ? ' + Breakdance' : '');
+  document.getElementById('det-tag').innerText = tagText; document.getElementById('det-time').innerText = `${song.start} - ${song.end}`;
   document.getElementById('det-votes').innerText = song.votes + " คน";
   document.getElementById('det-status').innerHTML = song.status === "Approved" ? `<span style="color:var(--success)">อนุมัติแล้ว</span>` : (song.status === "Played" ? `<span style="color:var(--text-muted)">เล่นไปแล้ว</span>` : song.status);
   
@@ -208,7 +210,7 @@ function openSongDetail(songId) {
 
 function shareSong() {
   const song = currentSongs.find(s => s.id === selectedSongId);
-  navigator.clipboard.writeText(`🔥 โหวตเพลง "${song.name}" งาน ${activeEvent.name}\nคลิก: ${window.location.href}`).then(() => showToast("คัดลอกแล้ว", "นำไปวางในแชทได้เลย"));
+  navigator.clipboard.writeText(`✨ โหวตเพลง "${song.name}" ให้หน่อยในงาน ${activeEvent.name}\nคลิก: ${window.location.href}`).then(() => showToast("คัดลอกแล้ว", "นำไปส่งในแชทได้เลย"));
 }
 
 function handleVote() {
@@ -217,59 +219,118 @@ function handleVote() {
 }
 
 function checkQuotaAndOpenModal() {
-  if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= 3) {
-    showToast("โควตาเต็ม", "1 บัญชีขอได้ 3 เพลง", "error"); 
-  } else { 
-    openModal('addSongModal'); 
-  }
+  if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= 3) { showToast("โควตาเต็ม", "1 บัญชีขอได้ 3 เพลง", "error"); } else { openModal('addSongModal'); }
 }
 
 function preCheckAddSong() {
   const name = document.getElementById('song-name').value; if(!name) return showToast("ข้อมูลไม่ครบ", "กรุณาระบุชื่อเพลง", "error");
   const dup = currentSongs.find(s => s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''));
-  pendingSongData = { name: name, artist: document.getElementById('song-artist').value, link: document.getElementById('song-link').value, start: document.getElementById('song-start').value, end: document.getElementById('song-end').value, tag: document.getElementById('song-tag').value };
+  pendingSongData = { name: name, artist: document.getElementById('song-artist').value, link: document.getElementById('song-link').value, start: document.getElementById('song-start').value, end: document.getElementById('song-end').value, gender: document.getElementById('song-gender').value, isBreakdance: document.getElementById('song-breakdance').checked };
   if (dup) { document.getElementById('confirm-message').innerText = `มีคนขอเพลง "${dup.name}" ไว้แล้ว เพิ่มซ้ำหรือไม่?`; closeModal('addSongModal'); openModal('confirmModal'); } else executeAddSong();
 }
 
 function executeAddSong() {
   closeModal('confirmModal'); const btn = document.getElementById('btn-song-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input').forEach(i => i.value = ''); showToast("สำเร็จ", "เสนอเพลงเรียบร้อย"); }, () => { btn.innerText = "ส่งข้อมูล"; btn.disabled = false; });
+  fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => { btn.innerText = "ส่งบทเพลง"; btn.disabled = false; currentSongs = res; filterSongs(); closeModal('addSongModal'); document.querySelectorAll('#addSongModal input[type="text"], #addSongModal input[type="url"]').forEach(i => i.value = ''); document.getElementById('song-breakdance').checked = false; showToast("สำเร็จ", "เสนอเพลงเรียบร้อย"); }, () => { btn.innerText = "ส่งบทเพลง"; btn.disabled = false; });
 }
 
+// --- Admin ---
 function handleLogin() {
   const btn = document.getElementById('btn-login-submit'); btn.innerText = "Checking..."; btn.disabled = true;
   fetchAPI("adminLogin", { username: document.getElementById('admin-user').value, password: document.getElementById('admin-pass').value }, res => {
       btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; isAdminLoggedIn = true; closeModal('adminLoginModal');
-      safeToggle('btn-admin-login', false); safeToggle('btn-admin-export', true); safeToggle('btn-admin-playlist', true); safeToggle('fab-admin-add', true);
-      document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-      renderCalendar(); 
-      showToast("สำเร็จ", "ปลดล็อกสิทธิ์ผู้ดูแลระบบ");
+      safeToggle('btn-admin-login', false); safeToggle('btn-admin-export', true); safeToggle('btn-admin-playlist', true);
+      document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden')); renderCalendar(); showToast("สำเร็จ", "ปลดล็อกสิทธิ์ผู้ดูแลระบบ");
     }, () => { btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; }
   );
 }
 
-function openEditEventModal() {
-  document.getElementById('edit-event-id').value = activeEvent.id; 
-  document.getElementById('edit-event-date').value = activeEvent.date; 
-  document.getElementById('edit-event-name').value = activeEvent.name; 
-  document.getElementById('edit-event-loc').value = activeEvent.location; 
-  document.getElementById('edit-event-open').value = toDateTimeLocal(activeEvent.openTime); 
-  document.getElementById('edit-event-close').value = toDateTimeLocal(activeEvent.closeTime); 
-  document.getElementById('edit-event-det').value = activeEvent.details; 
-  openModal('editEventModal');
+// --- Playlist Manager (Drag & Drop + Alternating Gender Randomize) ---
+let sortables = {};
+function initSortables() {
+  const lists = ['list-pool', 'list-kpop', 'list-tpop', 'list-mix'];
+  lists.forEach(id => {
+    if(sortables[id]) sortables[id].destroy(); 
+    sortables[id] = new Sortable(document.getElementById(id), { group: 'shared', animation: 150, ghostClass: 'sortable-ghost' });
+  });
 }
 
-function handleEditEvent() {
-  const p = { id: document.getElementById('edit-event-id').value, date: document.getElementById('edit-event-date').value, name: document.getElementById('edit-event-name').value, location: document.getElementById('edit-event-loc').value, openTime: document.getElementById('edit-event-open').value, closeTime: document.getElementById('edit-event-close').value, details: document.getElementById('edit-event-det').value };
-  const btn = document.getElementById('btn-event-edit-submit'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI("editEvent", p, res => { allEvents = res; activeEvent = allEvents.find(e => e.id === p.id); renderCalendar(); closeModal('editEventModal'); btn.innerText = "บันทึกการแก้ไข"; btn.disabled = false; openEventIntro(p.id); enterSongList(); showToast("สำเร็จ", "แก้ไขข้อมูลงานเรียบร้อย"); }, () => { btn.innerText = "บันทึกการแก้ไข"; btn.disabled = false; });
+function openPlaylistManager() {
+  showView('playlist'); document.getElementById('playlist-event-title').innerText = `Setlist: ${activeEvent.name}`;
+  const pools = ['list-pool', 'list-kpop', 'list-tpop', 'list-mix']; pools.forEach(id => document.getElementById(id).innerHTML = '');
+  
+  fetchAPI("getPlaylist", { eventId: activeEvent.id, date: activeEvent.date }, res => {
+    if(res.length > 0) {
+      res.forEach(song => {
+         const listId = `list-${song.listName.toLowerCase()}`;
+         const container = document.getElementById(listId) || document.getElementById('list-pool');
+         container.appendChild(createDragItem(song));
+      });
+    }
+    initSortables();
+  });
 }
 
-function handleAddEvent() {
-  const btn = document.getElementById('btn-event-submit'); btn.innerText = "กำลังสร้าง..."; btn.disabled = true;
-  fetchAPI("createEvent", { name: document.getElementById('event-name').value, date: document.getElementById('event-date').value, location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value, closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value }, res => { allEvents = res; renderCalendar(); closeModal('addEventModal'); btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; showToast("สำเร็จ", "สร้างงานใหม่เรียบร้อย"); }, () => { btn.innerText = "สร้างกำหนดการ"; btn.disabled = false; });
+function importFromVotes() {
+  if(!confirm("จะนำเพลงที่ถูกโหวตมาสร้าง Playlist ใหม่ (ข้อมูลเดิมจะถูกทับ) ยืนยันหรือไม่?")) return;
+  const pools = ['list-pool', 'list-kpop', 'list-tpop', 'list-mix']; pools.forEach(id => document.getElementById(id).innerHTML = '');
+  const topSongs = [...currentSongs].filter(s => s.votes > 0).sort((a, b) => b.votes - a.votes);
+  const pool = document.getElementById('list-pool');
+  topSongs.forEach(s => pool.appendChild(createDragItem(s)));
+  initSortables(); showToast("ดึงข้อมูลสำเร็จ", "เพลงอยู่ในกองกลางแล้ว ลากแยกประเภทได้เลย");
 }
 
+function createDragItem(song) {
+  const div = document.createElement('div');
+  div.className = 'drag-item';
+  div.dataset.name = song.name; div.dataset.artist = song.artist; div.dataset.gender = song.gender; div.dataset.breakdance = song.isBreakdance; div.dataset.time = song.start ? `${song.start}-${song.end}` : song.time; div.dataset.link = song.link;
+  let bdText = song.isBreakdance === 'true' || song.isBreakdance === true ? ' <span style="color:var(--primary); font-weight:bold;">(BD)</span>' : '';
+  let genderIcon = song.gender === 'M' ? '🔵' : (song.gender === 'F' ? '🔴' : '🟣');
+  div.innerHTML = `<div class="drag-title">${song.name}${bdText}</div><div class="drag-info"><span>${genderIcon} ${song.artist}</span><span>${div.dataset.time}</span></div>`;
+  return div;
+}
+
+function randomizeAlternate(listId) {
+  const container = document.getElementById(listId);
+  const items = Array.from(container.children);
+  if(items.length === 0) return;
+
+  const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+  let males = shuffle(items.filter(item => item.dataset.gender === 'M'));
+  let females = shuffle(items.filter(item => item.dataset.gender === 'F'));
+  let mixes = shuffle(items.filter(item => item.dataset.gender === 'Mix'));
+
+  container.innerHTML = ''; 
+  let mIdx = 0, fIdx = 0, mixIdx = 0, turn = 'M';
+
+  while(mIdx < males.length || fIdx < females.length || mixIdx < mixes.length) {
+    if(turn === 'M') {
+      if(mIdx < males.length) { container.appendChild(males[mIdx++]); turn = 'F'; } else turn = 'F';
+    } else if(turn === 'F') {
+      if(fIdx < females.length) { container.appendChild(females[fIdx++]); turn = 'Mix'; } else turn = 'Mix';
+    } else if(turn === 'Mix') {
+      if(mixIdx < mixes.length) { container.appendChild(mixes[mixIdx++]); turn = 'M'; } else turn = 'M';
+    }
+  }
+  showToast("สุ่มสำเร็จ", "จัดเรียงสลับ ชาย/หญิง แบบสุ่มเรียบร้อย", "success");
+}
+
+function savePlaylistData() {
+  const lists = ['list-pool', 'list-kpop', 'list-tpop', 'list-mix'];
+  let exportData = [];
+  lists.forEach(lId => {
+    const container = document.getElementById(lId);
+    const listName = lId.split('-')[1].toUpperCase();
+    Array.from(container.children).forEach(item => {
+       exportData.push({ listName: listName, name: item.dataset.name, artist: item.dataset.artist, gender: item.dataset.gender, isBreakdance: item.dataset.breakdance === 'true', time: item.dataset.time, link: item.dataset.link });
+    });
+  });
+  fetchAPI("savePlaylist", { eventId: activeEvent.id, date: activeEvent.date, lists: exportData }, res => showToast("บันทึกสำเร็จ", "บันทึก Setlist ลง Sheet แล้ว"));
+}
+
+function openEditEventModal() { document.getElementById('edit-event-id').value = activeEvent.id; document.getElementById('edit-event-date').value = activeEvent.date; document.getElementById('edit-event-name').value = activeEvent.name; document.getElementById('edit-event-loc').value = activeEvent.location; document.getElementById('edit-event-open').value = toDateTimeLocal(activeEvent.openTime); document.getElementById('edit-event-close').value = toDateTimeLocal(activeEvent.closeTime); document.getElementById('edit-event-det').value = activeEvent.details; openModal('editEventModal'); }
+function handleEditEvent() { const p = { id: document.getElementById('edit-event-id').value, date: document.getElementById('edit-event-date').value, name: document.getElementById('edit-event-name').value, location: document.getElementById('edit-event-loc').value, openTime: document.getElementById('edit-event-open').value, closeTime: document.getElementById('edit-event-close').value, details: document.getElementById('edit-event-det').value }; fetchAPI("editEvent", p, res => { allEvents = res; activeEvent = allEvents.find(e => e.id === p.id); renderCalendar(); closeModal('editEventModal'); openEventIntro(p.id); enterSongList(); showToast("สำเร็จ", "แก้ไขข้อมูลงานเรียบร้อย"); }); }
+function handleAddEvent() { fetchAPI("createEvent", { name: document.getElementById('event-name').value, date: document.getElementById('event-date').value, location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value, closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value }, res => { allEvents = res; renderCalendar(); closeModal('addEventModal'); showToast("สำเร็จ", "สร้างงานใหม่เรียบร้อย"); }); }
 function adminDeleteSong() { if(!confirm("ลบเพลงนี้?")) return; closeModal('songDetailModal'); fetchAPI("deleteSong", { eventId: activeEvent.id, songId: selectedSongId }, res => { currentSongs = res; filterSongs(); showToast("ลบแล้ว", "ลบเพลงสำเร็จ"); }); }
 function adminUpdateStatus(status) { closeModal('songDetailModal'); fetchAPI("updateSongStatus", { eventId: activeEvent.id, songId: selectedSongId, status: status }, res => { currentSongs = res; filterSongs(); }); }
 
@@ -278,65 +339,10 @@ function exportDJ() {
   const sorted = [...currentSongs].sort((a, b) => b.votes - a.votes); 
   let text = `🔥 Playlist: ${activeEvent.name}\n\n`;
   sorted.forEach((s, i) => { 
-    let tagLabel = s.tag === 'Breakdance' ? ' (Breakdance)' : '';
+    let tagLabel = s.isBreakdance ? ' (Breakdance)' : '';
     text += `${i+1}. ${s.name}${tagLabel} - ${s.artist} [${s.start}-${s.end}]\n`; 
     if(s.link) text += `Link: ${formatYoutubeLink(s.link, s.start)}\n`; 
     text += `\n`; 
   });
   navigator.clipboard.writeText(text).then(() => showToast("สำเร็จ", "คัดลอกข้อความให้ DJ แล้ว"));
-}
-
-function openPlaylistManager() {
-  showView('playlist'); 
-  document.getElementById('playlist-event-title').innerText = `Playlist: ${activeEvent.name}`;
-  document.getElementById('playlist-content').innerHTML = '<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>';
-  fetchAPI("getPlaylist", { eventId: activeEvent.id, date: activeEvent.date }, res => { playlistSongs = res; renderPlaylist(); });
-}
-
-function importFromVotes() {
-  if(!confirm("จะนำเพลงที่ถูกโหวตมาสร้าง Playlist ใหม่ (ข้อมูลเดิมจะถูกทับ) ยืนยันหรือไม่?")) return;
-  const topSongs = [...currentSongs].filter(s => s.votes > 0).sort((a, b) => b.votes - a.votes);
-  playlistSongs = topSongs.map(s => ({ id: s.id, name: s.name, artist: s.artist, tag: s.tag, time: `${s.start}-${s.end}`, link: s.link }));
-  renderPlaylist(); showToast("ดึงข้อมูลสำเร็จ", "ดึงเพลงจากผลโหวตแล้ว อย่าลืมกดบันทึก");
-}
-
-function randomizePlaylist() {
-  for (let i = playlistSongs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [playlistSongs[i], playlistSongs[j]] = [playlistSongs[j], playlistSongs[i]]; }
-  renderPlaylist();
-}
-
-function moveSong(index, direction) {
-  if (direction === 'up' && index > 0) { [playlistSongs[index - 1], playlistSongs[index]] = [playlistSongs[index], playlistSongs[index - 1]]; }
-  if (direction === 'down' && index < playlistSongs.length - 1) { [playlistSongs[index + 1], playlistSongs[index]] = [playlistSongs[index], playlistSongs[index + 1]]; }
-  renderPlaylist();
-}
-
-function removeSongFromPlaylist(index) { playlistSongs.splice(index, 1); renderPlaylist(); }
-
-function renderPlaylist() {
-  const container = document.getElementById('playlist-content'); container.innerHTML = "";
-  if(playlistSongs.length === 0) { container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">ไม่มีเพลงใน Playlist<br>กด "ดึงจากผลโหวต" เพื่อสร้างรายการอัตโนมัติ</div>`; return; }
-  playlistSongs.forEach((song, i) => {
-    let tagLabel = song.tag === 'Breakdance' ? ' <span style="color:var(--primary); font-weight:bold;">(Breakdance)</span>' : '';
-    container.innerHTML += `
-      <div class="playlist-item">
-        <div style="font-weight:600; color:var(--primary); width:30px;">${i+1}</div>
-        <div style="flex-grow:1; overflow:hidden;">
-          <div style="font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.name}${tagLabel}</div>
-          <div style="font-size:0.8rem; color:var(--text-muted);">${song.artist} <span class="song-tag-pill">${song.tag}</span></div>
-        </div>
-        <div class="playlist-controls">
-          <button class="btn-icon" onclick="moveSong(${i}, 'up')"><i class="fa-solid fa-chevron-up"></i></button>
-          <button class="btn-icon" onclick="moveSong(${i}, 'down')"><i class="fa-solid fa-chevron-down"></i></button>
-        </div>
-        <button class="btn-icon" style="color:#E74C3C; background:transparent;" onclick="removeSongFromPlaylist(${i})"><i class="fa-solid fa-trash"></i></button>
-      </div>`;
-  });
-}
-
-function savePlaylistData() {
-  const btn = document.getElementById('btn-save-playlist'); btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> บันทึก...`; btn.disabled = true;
-  fetchAPI("savePlaylist", { eventId: activeEvent.id, date: activeEvent.date, list: playlistSongs }, res => {
-    btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet`; btn.disabled = false; showToast("บันทึกสำเร็จ", "เซฟ Playlist ลงชีตใหม่แล้ว");
-  }, () => { btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet`; btn.disabled = false; });
 }
