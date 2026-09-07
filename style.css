@@ -1,8 +1,8 @@
 :root {
-  --primary: #D81B60; /* สีชมพูเข้มแบบในภาพ */
+  --primary: #D81B60; 
   --primary-light: #FCE4EC; 
   --secondary: #641E3B; 
-  --bg: #FDF1F6; /* สีพื้นหลังชมพูอ่อน */
+  --bg: #FDF1F6; 
   --surface: #FFFFFF; 
   --text: #333333; 
   --text-muted: #7F8C8D;
@@ -22,7 +22,6 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
-/* Navbar สีชมพูเข้ม */
 .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
 .brand { font-weight: 600; font-size: 1.4rem; color: #FFFFFF; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
 .navbar .btn-outline { color: #FFFFFF; border: 1px solid #FFFFFF; }
@@ -34,6 +33,9 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
 .btn-outline:hover { background: var(--primary-light); color: var(--primary); }
 .btn-full { width: 100%; padding: 12px; margin-top: 10px; }
+.btn-danger { background: transparent; border: 1px solid #E74C3C; color: #E74C3C; }
+.btn-danger:hover { background: #E74C3C; color: white; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none !important; }
 
 .fab-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4); font-size: 1.5rem; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 99; transition: transform 0.3s ease; }
 .fab-btn:hover { transform: scale(1.1); }
@@ -48,6 +50,7 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .day-name { font-weight: 500; color: var(--text-muted); font-size: 0.9rem; padding-bottom: 10px; }
 .day-cell { min-height: 80px; display: flex; flex-direction: column; align-items: center; padding: 10px 5px; border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; background: #fbfbfb; }
 .day-cell:hover:not(.empty) { background: var(--primary-light); }
+.day-cell.empty { background: transparent; cursor: default; }
 .day-cell.has-event { border-color: var(--primary); box-shadow: 0 4px 10px rgba(216, 27, 96, 0.1); background: white;}
 .date-num { font-size: 1.1rem; font-weight: 500; }
 .has-event .date-num { color: var(--primary); font-weight: 600; margin-bottom: 5px; }
@@ -62,21 +65,23 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .song-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--primary-light); cursor: pointer; transition: 0.2s; gap: 15px; }
 .song-item:last-child { border-bottom: none; }
 .song-item:hover { background: var(--bg); border-radius: 8px; border-bottom-color: transparent; }
+.song-item.status-Played { opacity: 0.5; filter: grayscale(0.8); }
+
 .song-thumb { width: 90px; height: 60px; border-radius: 8px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .song-content { flex-grow: 1; overflow: hidden; }
 .song-title { font-weight: 500; color: var(--text); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .song-time { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; display: flex; gap: 6px; align-items: center;}
 .pill { background: var(--primary-light); color: var(--primary); font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border); }
+.pill-breakdance { background: #FFDAB9; color: #8B008B; border-color: #DDA0DD; font-weight: 600;}
 .song-votes { background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; flex-shrink: 0;}
 
-/* Playlist Manager (Drag & Drop) */
+/* Playlist Manager Styles */
 .playlist-board { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; align-items: flex-start; }
 .list-col { background: rgba(255,255,255,0.5); border: 1px solid var(--border); border-radius: 16px; min-width: 320px; flex: 1; display: flex; flex-direction: column; }
 .list-col-header { padding: 15px; text-align: center; border-bottom: 2px dashed var(--border); }
 .list-col-header h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.2rem; }
 .drop-zone { min-height: 250px; padding: 15px; }
 
-/* Drag Item - ดีไซน์ใหม่ตามรูปภาพ */
 .drag-item { background: white; border: 1px solid var(--border); padding: 12px 15px; border-radius: 12px; margin-bottom: 12px; cursor: grab; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(216,27,96,0.05); transition: transform 0.2s;}
 .drag-item:active { cursor: grabbing; transform: scale(1.02); box-shadow: 0 5px 15px rgba(216,27,96,0.15);}
 .drag-num { color: var(--primary); font-weight: 700; font-size: 1.1rem; width: 20px; text-align: center; }
@@ -87,11 +92,18 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .btn-updown { background: var(--primary-light); color: var(--primary); border: none; border-radius: 4px; padding: 3px 8px; cursor: pointer; transition: 0.2s; }
 .btn-updown:hover { background: var(--primary); color: white; }
 
+/* Modals */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000; padding: 20px; box-sizing: border-box;}
 .modal-overlay.active { opacity: 1; visibility: visible; }
 .modal-content { background: var(--surface); width: 100%; max-width: 450px; border-radius: var(--radius); padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: all 0.3s ease; position: relative; max-height: 90vh; overflow-y: auto; box-sizing: border-box;}
 .modal-overlay.active .modal-content { transform: translateY(0); }
 .modal-close { position: absolute; top: 20px; right: 20px; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; }
+
+.event-intro-card { text-align: center; padding-top: 40px; }
+.intro-header { width: 60px; height: 60px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; margin: 0 auto 15px auto; }
+.intro-details { background: var(--bg); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
+.intro-row { margin-bottom: 10px; font-size: 0.95rem; color: var(--secondary); display: flex; gap: 10px; align-items: flex-start;}
+.intro-row i { color: var(--primary); margin-top: 3px; width: 16px; text-align: center;}
 
 .form-group { margin-bottom: 15px; text-align: left; }
 .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text); font-weight: 500; }
@@ -104,5 +116,6 @@ body { font-family: 'Prompt', sans-serif; background-color: var(--bg); color: va
 .detail-title { font-size: 1.5rem; font-weight: 600; color: var(--primary); margin-bottom: 5px; }
 .detail-info { background: var(--bg); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border);}
 .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+.admin-panel { margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); }
 .hidden { display: none !important; }
 .loader { text-align: center; padding: 40px; color: var(--primary); }
