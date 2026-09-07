@@ -81,7 +81,10 @@ async function processYoutubeLink(inputId, nameId, artistId) {
         document.getElementById(artistId).value = aiRes.artist;
         currentAIGender = aiRes.gender || "Mix"; 
         
-        showToast("Gemini ทำงานสำเร็จ!", "ล้างชื่อและวิเคราะห์เพศให้อัตโนมัติ", "success");
+        // เพิ่ม AI Vibe แจ้งเตือนผู้ใช้!
+        let vibeMsg = aiRes.vibe && aiRes.vibe !== "ไม่ทราบ" ? `วิเคราะห์สไตล์: ${aiRes.vibe} 💃` : "ล้างชื่อและวิเคราะห์เพศให้อัตโนมัติ";
+        showToast("Gemini ทำงานสำเร็จ!", vibeMsg, "success");
+        
         if(btn) { btn.innerText = inputId === 'song-link' ? "ส่งข้อมูล" : "บันทึกการแก้ไข"; btn.disabled = false; }
       }, () => {
         document.getElementById(nameId).value = data.title;
