@@ -228,8 +228,31 @@ function handleLogin() {
   );
 }
 
+// ฟังก์ชันช่วยแปลงเวลาให้เข้ากับฟอร์มของ HTML5
+function toDateTimeLocal(timeStr) {
+  if (!timeStr) return "";
+  if (timeStr.includes('T')) return timeStr.substring(0, 16); 
+  const d = new Date(timeStr);
+  if (!isNaN(d.getTime())) {
+    const pad = n => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  return timeStr;
+}
+
+// อัปเดตฟังก์ชันสำหรับดึงข้อมูลลงมาแสดงตอนกด "แก้ไขงาน"
 function openEditEventModal() {
-  document.getElementById('edit-event-id').value = activeEvent.id; document.getElementById('edit-event-date').value = activeEvent.date; document.getElementById('edit-event-name').value = activeEvent.name; document.getElementById('edit-event-loc').value = activeEvent.location; document.getElementById('edit-event-open').value = activeEvent.openTime; document.getElementById('edit-event-close').value = activeEvent.closeTime; document.getElementById('edit-event-det').value = activeEvent.details; openModal('editEventModal');
+  document.getElementById('edit-event-id').value = activeEvent.id; 
+  document.getElementById('edit-event-date').value = activeEvent.date; 
+  document.getElementById('edit-event-name').value = activeEvent.name; 
+  document.getElementById('edit-event-loc').value = activeEvent.location; 
+  
+  // ใช้ฟังก์ชันแปลงเวลาเข้าช่วย
+  document.getElementById('edit-event-open').value = toDateTimeLocal(activeEvent.openTime); 
+  document.getElementById('edit-event-close').value = toDateTimeLocal(activeEvent.closeTime); 
+  
+  document.getElementById('edit-event-det').value = activeEvent.details; 
+  openModal('editEventModal');
 }
 
 function handleEditEvent() {
