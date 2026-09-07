@@ -134,7 +134,16 @@
       </div>
       <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
       <div class="form-group"><label>ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
-      
+      <!-- เพิ่มโค้ดนี้กลับเข้าไปใน Modal เสนอเพลง และ แก้ไขเพลง -->
+      <div class="form-group">
+        <label>เพศของศิลปิน (AI จะเลือกให้อัตโนมัติ)</label>
+        <select id="song-gender" class="form-control">
+          <option value="Mix">รวม/ผสม (Mix)</option>
+          <option value="M">ศิลปินชาย (Boy Group)</option>
+          <option value="F">ศิลปินหญิง (Girl Group)</option>
+        </select>
+      </div>
+      <!-- ใน editSongModal ให้เปลี่ยน id เป็น id="edit-song-gender" นะครับ -->
       <label class="checkbox-container">
         <input type="checkbox" id="song-breakdance"> เพลงนี้มี Breakdance ใช่มั้ย?
       </label>
