@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- SortableJS สำหรับระบบลากวาง Playlist -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <link rel="stylesheet" href="style.css">
   <meta name="robots" content="noindex, nofollow, noarchive">
@@ -15,10 +14,8 @@
 </head>
 <body>
 
-  <!-- Toast Notification -->
   <div id="toast-container"></div>
 
-  <!-- Navbar -->
   <nav class="navbar">
     <div class="brand">
       <img src="DeliaLogo.png" alt="Delia Logo" style="height: 30px; width: 30px; object-fit: cover; border-radius: 50%;"> 
@@ -31,7 +28,6 @@
     </div>
   </nav>
 
-  <!-- View 1: Calendar -->
   <div class="container" id="view-calendar">
     <div class="header-section">
       <h1>Event Calendar</h1>
@@ -47,7 +43,6 @@
     </div>
   </div>
 
-  <!-- View 2: Song List -->
   <div class="container hidden" id="view-songs">
     <div class="header-section">
       <button class="btn btn-outline" style="position: absolute; left: 20px; top: 0;" onclick="goBackToCalendar()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -70,7 +65,6 @@
     </div>
   </div>
 
-  <!-- View 3: Playlist Manager (Drag & Drop 4 Columns) -->
   <div class="container hidden" id="view-playlist" style="max-width: 1200px;">
     <div class="header-section">
       <button class="btn btn-outline" style="position: absolute; left: 20px; top: 0;" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
@@ -85,25 +79,28 @@
     
     <div class="playlist-board">
       <div class="list-col">
-        <div class="list-col-header"><h3>📦 กองกลาง</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-pool')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div class="list-col-header">
+          <h3>📦 กองกลาง</h3>
+          <button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem; width:100%; margin-bottom: 5px;" onclick="randomizeAlternate('list-pool')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button>
+          <button class="btn btn-outline" id="btn-ai-setlist" style="padding: 5px 10px; font-size: 0.8rem; width:100%; border-color:#9B59B6; color:#9B59B6;" onclick="aiMagicSetlist()"><i class="fa-solid fa-wand-magic-sparkles"></i> ให้ AI จัด Setlist ให้</button>
+        </div>
         <div id="list-pool" class="drop-zone"></div>
       </div>
       <div class="list-col">
-        <div class="list-col-header"><h3>💖 K-Pop</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-kpop')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div class="list-col-header"><h3>💖 K-Pop</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem; width:100%;" onclick="randomizeAlternate('list-kpop')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
         <div id="list-kpop" class="drop-zone"></div>
       </div>
       <div class="list-col">
-        <div class="list-col-header"><h3>👑 T-Pop</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-tpop')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div class="list-col-header"><h3>👑 T-Pop</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem; width:100%;" onclick="randomizeAlternate('list-tpop')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
         <div id="list-tpop" class="drop-zone"></div>
       </div>
       <div class="list-col">
-        <div class="list-col-header"><h3>🌍 MixSong</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;" onclick="randomizeAlternate('list-mix')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
+        <div class="list-col-header"><h3>🌍 MixSong</h3><button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem; width:100%;" onclick="randomizeAlternate('list-mix')"><i class="fa-solid fa-shuffle"></i> สุ่มสลับ (M/F)</button></div>
         <div id="list-mix" class="drop-zone"></div>
       </div>
     </div>
   </div>
 
-  <!-- FAB Admin Add Event -->
   <button id="fab-admin-add" class="fab-btn hidden admin-only" onclick="openModal('addEventModal')" title="สร้างงานใหม่"><i class="fa-solid fa-plus"></i></button>
 
   <!-- ================= MODALS ================= -->
@@ -129,7 +126,7 @@
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
       <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> เสนอเพลง</h2>
-      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(ระบบจะวิเคราะห์เพศศิลปินให้อัตโนมัติ)</p>
+      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(ระบบ AI จะวิเคราะห์เพศศิลปินให้อัตโนมัติ)</p>
       
       <div class="form-group">
         <label>ลิงก์ Youtube</label>
