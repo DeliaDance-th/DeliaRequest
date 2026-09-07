@@ -312,7 +312,16 @@ function adminUpdateStatus(status) {
 }
 function exportDJ() {
   if(currentSongs.length === 0) return customAlert("ไม่มีข้อมูล", "ยังไม่มีเพลงในรายการ");
+  
+  // เรียงลำดับข้อมูลโหวตจากมากไปน้อยก่อน Export
+  const sortedSongs = [...currentSongs].sort((a, b) => b.votes - a.votes);
+  
   let text = `🔥 Playlist: ${activeEvent.name}\n\n`;
-  currentSongs.forEach((s, i) => { text += `${i+1}. ${s.name} - ${s.artist} [${s.start}-${s.end}] (${s.votes} โหวต)\n`; if(s.link) text += `Link: ${formatYoutubeLink(s.link, s.start)}\n`; text += `\n`; });
-  navigator.clipboard.writeText(text).then(() => customAlert("สำเร็จ", "คัดลอกรายชื่อเพลง (Export to DJ) เรียบร้อย"));
+  sortedSongs.forEach((s, i) => { 
+    text += `${i+1}. ${s.name} - ${s.artist} [${s.start}-${s.end}] (${s.votes} โหวต)\n`; 
+    if(s.link) text += `Link: ${formatYoutubeLink(s.link, s.start)}\n`; 
+    text += `\n`; 
+  });
+  
+  navigator.clipboard.writeText(text).then(() => customAlert("สำเร็จ", "คัดลอกรายชื่อเพลง (เรียงตามคะแนนโหวต) เรียบร้อย"));
 }
