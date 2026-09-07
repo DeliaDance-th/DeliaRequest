@@ -13,14 +13,17 @@
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
   <nav class="navbar">
     <div class="brand">
       <img src="DeliaLogo.png" alt="Delia Logo" style="height: 28px; width: 28px; object-fit: cover; border-radius: 50%;"> 
       Delia Randomdance
     </div>
-    <div>
+    <div style="display: flex; gap: 5px;">
       <button class="btn btn-outline hidden" id="btn-admin-export" onclick="exportDJ()"><i class="fa-solid fa-file-export"></i></button>
+      <button class="btn btn-outline hidden" id="btn-admin-playlist" onclick="openPlaylistManager()"><i class="fa-solid fa-list-ol"></i></button>
       <button class="btn btn-outline" id="btn-admin-login" onclick="openModal('adminLoginModal')"><i class="fa-solid fa-lock"></i> Login</button>
     </div>
   </nav>
@@ -33,9 +36,9 @@
     </div>
     <div class="calendar-container">
       <div class="calendar-header">
-        <button class="btn btn-outline" onclick="changeMonth(-1)" id="btn-prev-month"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="btn btn-outline" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
         <h2 id="month-year-display">Loading...</h2>
-        <button class="btn btn-outline" onclick="changeMonth(1)" id="btn-next-month"><i class="fa-solid fa-chevron-right"></i></button>
+        <button class="btn btn-outline" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
     </div>
@@ -48,45 +51,56 @@
       <h1 id="view-event-title">Song Requests</h1>
       <p id="view-event-status" style="font-weight: 500; margin-bottom: 20px;"></p>
       
-      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
         <button class="btn btn-primary" id="btn-add-song-main" onclick="checkQuotaAndOpenModal()"><i class="fa-solid fa-plus"></i> ขอเพลงใหม่</button>
-        <!-- ปุ่มแก้ไขงาน จะแสดงเมื่อแอดมินล็อกอิน -->
-        <button class="btn btn-outline hidden" id="btn-edit-event" onclick="openEditEventModal()"><i class="fa-solid fa-pen"></i> แก้ไขงาน</button>
+        <button class="btn btn-outline hidden admin-only" id="btn-edit-event" onclick="openEditEventModal()"><i class="fa-solid fa-pen"></i> แก้ไขงาน</button>
       </div>
-      
       <p id="event-closed-msg" class="hidden" style="color: var(--primary); font-weight: 600;"><i class="fa-solid fa-lock"></i> ปิดรับการขอเพลงแล้ว</p>
     </div>
     
     <div class="search-wrapper">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาชื่อเพลง หรือ ศิลปิน..." oninput="filterSongs()">
+      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาชื่อเพลง ศิลปิน หรือแท็ก..." oninput="filterSongs()">
     </div>
-
     <div class="song-list-container">
       <div id="song-list-content"><div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div></div>
     </div>
   </div>
 
-  <!-- Floating Action Button สำหรับสร้างงานใหม่ -->
-  <button id="fab-admin-add" class="fab-btn hidden" onclick="openModal('addEventModal')" title="สร้างงานใหม่">
-    <i class="fa-solid fa-plus"></i>
-  </button>
+  <!-- View 3: Playlist Manager (Admin Only) -->
+  <div class="container hidden" id="view-playlist">
+    <div class="header-section">
+      <button class="btn btn-outline" style="position: absolute; left: 20px;" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
+      <h1>จัดการ Playlist</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">ลากสลับตำแหน่งไม่ได้ ให้ใช้ปุ่มลูกศรแทน หรือกดปุ่มสุ่มลำดับ</p>
+      
+      <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 15px;">
+        <button class="btn btn-outline" onclick="importFromVotes()"><i class="fa-solid fa-download"></i> ดึงจากผลโหวต</button>
+        <button class="btn btn-outline" onclick="randomizePlaylist()"><i class="fa-solid fa-shuffle"></i> สุ่มลำดับ</button>
+        <button class="btn btn-primary" id="btn-save-playlist" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet</button>
+      </div>
+    </div>
+    
+    <div class="song-list-container">
+      <div id="playlist-content"><div class="loader">ไม่มีเพลงใน Playlist กดปุ่ม "ดึงจากผลโหวต" เพื่อเริ่มต้น</div></div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button id="fab-admin-add" class="fab-btn hidden admin-only" onclick="openModal('addEventModal')" title="สร้างงานใหม่"><i class="fa-solid fa-plus"></i></button>
 
   <!-- ================= MODALS ================= -->
 
-  <!-- 1. Event Intro Modal -->
   <div class="modal-overlay" id="eventIntroModal">
     <div class="modal-content event-intro-card">
       <div class="intro-header"><i class="fa-solid fa-ticket"></i></div>
       <h2 id="intro-title" style="margin-bottom: 5px;">Event Name</h2>
       <p id="intro-date" style="color: var(--primary); font-weight: 500; margin-top: 0;"></p>
-      
       <div class="intro-details">
         <div class="intro-row"><i class="fa-solid fa-location-dot"></i> <span id="intro-loc"></span></div>
         <div class="intro-row"><i class="fa-regular fa-clock"></i> <span id="intro-time"></span></div>
         <div class="intro-row"><i class="fa-solid fa-circle-info"></i> <span id="intro-det"></span></div>
       </div>
-      
       <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('eventIntroModal')">ยกเลิก</button>
         <button class="btn btn-primary" style="flex: 2;" onclick="enterSongList()">เข้าสู่รายการเพลง <i class="fa-solid fa-arrow-right"></i></button>
@@ -94,7 +108,38 @@
     </div>
   </div>
 
-  <!-- 2. Song Detail Modal -->
+  <!-- Add Song Modal -->
+  <div class="modal-overlay" id="addSongModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
+      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> เสนอเพลง</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(โควตา 3 เพลงต่อคน)</p>
+      
+      <div class="form-group">
+        <label>ลิงก์ Youtube <span style="color:var(--primary); font-size:0.8rem;">(วางลิงก์เพื่อดึงชื่ออัตโนมัติ)</span></label>
+        <input type="url" id="song-link" class="form-control" placeholder="https://youtu.be/..." onblur="autoFillYoutube()">
+      </div>
+      <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
+      <div class="form-group"><label>ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
+      <div class="form-group">
+        <label>แท็กหมวดหมู่</label>
+        <select id="song-tag" class="form-control">
+          <option value="Boy Group">Boy Group</option>
+          <option value="Girl Group">Girl Group</option>
+          <option value="Solo">Solo</option>
+          <option value="T-Pop">T-Pop</option>
+          <option value="J-Pop">J-Pop</option>
+          <option value="General">ทั่วไป</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex:1;"><label>เริ่ม (นาที:วินาที)</label><input type="text" id="song-start" class="form-control" placeholder="1:00"></div>
+        <div class="form-group" style="flex:1;"><label>จบ (นาที:วินาที)</label><input type="text" id="song-end" class="form-control" placeholder="1:30"></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit">ส่งข้อมูล</button>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="songDetailModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('songDetailModal')"></i>
@@ -103,9 +148,9 @@
         <div style="color: var(--text-muted);" id="det-artist">Artist Name</div>
       </div>
       <div class="detail-info">
+        <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-tag"></i> หมวดหมู่</span><span style="font-weight:500;" id="det-tag"></span></div>
         <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-headphones"></i> ท่อนที่เต้น</span><span style="font-weight:500;" id="det-time"></span></div>
         <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-users"></i> คนโหวต</span><span style="font-weight:600; color:var(--primary)" id="det-votes"></span></div>
-        <div class="info-row"><span style="color:var(--text-muted)"><i class="fa-solid fa-flag"></i> สถานะ</span><span style="font-weight:600;" id="det-status"></span></div>
       </div>
       
       <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -115,8 +160,7 @@
 
       <button class="btn btn-primary btn-full" id="btn-toggle-vote" onclick="handleVote()"><i class="fa-solid fa-heart"></i> โหวตเพลงนี้</button>
       
-      <!-- Admin Controls -->
-      <div class="admin-panel hidden" id="admin-song-controls">
+      <div class="admin-panel hidden admin-only" id="admin-song-controls">
         <div style="display: flex; gap: 5px;">
           <button class="btn btn-outline" style="flex:1; border-color:var(--success); color:var(--success);" onclick="adminUpdateStatus('Approved')"><i class="fa-solid fa-check"></i></button>
           <button class="btn btn-outline" style="flex:1;" onclick="adminUpdateStatus('Played')"><i class="fa-solid fa-check-double"></i></button>
@@ -126,32 +170,6 @@
     </div>
   </div>
 
-  <!-- 3. Add Song Modal -->
-  <div class="modal-overlay" id="addSongModal">
-    <div class="modal-content">
-      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
-      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> เสนอเพลง</h2>
-      <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top:-10px;">(โควตา 3 เพลงต่อคน)</p>
-      <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
-      <div class="form-group"><label>ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
-      <div class="form-group"><label>ลิงก์ Youtube</label><input type="url" id="song-link" class="form-control" placeholder="https://youtube.com/..."></div>
-      <div style="display: flex; gap: 10px;">
-        <div class="form-group" style="flex:1;"><label>เริ่ม (เช่น 1:00)</label><input type="text" id="song-start" class="form-control" placeholder="1:00"></div>
-        <div class="form-group" style="flex:1;"><label>จบ (เช่น 1:30)</label><input type="text" id="song-end" class="form-control" placeholder="1:30"></div>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit">ส่งข้อมูล</button>
-    </div>
-  </div>
-
-  <!-- 4. Alert & Confirm Modals -->
-  <div class="modal-overlay" id="alertModal">
-    <div class="modal-content text-center">
-      <div style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"><i class="fa-solid fa-circle-info"></i></div>
-      <h3 id="alert-title" style="margin-top:0;">แจ้งเตือน</h3>
-      <p id="alert-message" style="color: var(--text-muted);"></p>
-      <button class="btn btn-primary btn-full" onclick="closeModal('alertModal')">ตกลง</button>
-    </div>
-  </div>
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-content text-center">
       <div style="font-size: 3rem; color: #F39C12; margin-bottom: 15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -164,22 +182,16 @@
     </div>
   </div>
 
-  <!-- 5. Admin Login Modal -->
   <div class="modal-overlay" id="adminLoginModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('adminLoginModal')"></i>
       <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-shield-halved"></i> Admin Login</h2>
       <div class="form-group"><label>Username</label><input type="text" id="admin-user" class="form-control"></div>
-      <!-- กด Enter เพื่อ Login -->
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="admin-pass" class="form-control" onkeypress="if(event.key === 'Enter') handleLogin()">
-      </div>
+      <div class="form-group"><label>Password</label><input type="password" id="admin-pass" class="form-control" onkeypress="if(event.key === 'Enter') handleLogin()"></div>
       <button class="btn btn-primary btn-full" onclick="handleLogin()" id="btn-login-submit">เข้าสู่ระบบ</button>
     </div>
   </div>
   
-  <!-- 6. Add Event Modal -->
   <div class="modal-overlay" id="addEventModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addEventModal')"></i>
@@ -194,7 +206,6 @@
     </div>
   </div>
 
-  <!-- 7. Edit Event Modal -->
   <div class="modal-overlay" id="editEventModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editEventModal')"></i>
