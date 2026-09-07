@@ -210,9 +210,19 @@ function handleVote() {
 }
 
 function checkQuotaAndOpenModal() {
-  if (currentSongs.filter(s => s.creator === userUUID).length >= 3) showToast("โควตาเต็ม", "1 บัญชีขอได้ 3 เพลง", "error"); else openModal('addSongModal');
+  // ถ้าเป็น Admin ให้เปิด Modal ได้ทันทีโดยไม่เช็กโควตา
+  if (isAdminLoggedIn) {
+    openModal('addSongModal');
+    return;
+  }
+  
+  // ถ้าเป็น User ทั่วไปค่อยเช็กโควตา 3 เพลง
+  if (currentSongs.filter(s => s.creator === userUUID).length >= 3) {
+    showToast("โควตาเต็ม", "1 บัญชีขอได้ 3 เพลง", "error"); 
+  } else {
+    openModal('addSongModal');
+  }
 }
-
 function preCheckAddSong() {
   const name = document.getElementById('song-name').value; if(!name) return showToast("ข้อมูลไม่ครบ", "กรุณาระบุชื่อเพลง", "error");
   const dup = currentSongs.find(s => s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''));
