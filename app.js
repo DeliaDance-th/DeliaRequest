@@ -1,8 +1,8 @@
-// ใส่ URL Web App ที่ได้จาก Google Apps Script ที่นี่
 // ==========================================
 // 1. ตั้งค่าพื้นฐาน (Configuration)
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec";
 // ==========================================
+// *** นำลิงก์ Web App URL ของคุณมาใส่ตรงนี้ ***
+const apiURL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec"; 
 
 // ตัวแปรระบบ
 let currentEvents = [];
