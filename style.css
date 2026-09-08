@@ -157,3 +157,33 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
   .pool-sidebar.collapsed { height: 0; width: 100%; transform: translateY(-20px); }
   .dynamic-board { overflow-y: visible; }
 }
+
+/* =========================================
+   10. Slide to Login & Language UI
+========================================= */
+.lang-btn {
+  border-color: var(--border-color); color: var(--text-muted); transition: 0.2s;
+}
+.lang-btn.active {
+  background: var(--primary); color: white; border-color: var(--primary);
+}
+
+.slider-wrapper {
+  position: relative; width: 100%; height: 50px; background: var(--primary-light);
+  border-radius: 25px; overflow: hidden; margin-top: 20px;
+}
+.slider-text {
+  position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  color: var(--primary); font-weight: 600; z-index: 1; pointer-events: none; transition: 0.2s;
+}
+.slider-thumb {
+  position: absolute; top: 0; left: 0; width: 50px; height: 50px;
+  background: var(--primary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;
+  z-index: 2; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.2s;
+}
+.slider-input {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; z-index: 3; cursor: grab; margin: 0;
+}
+.slider-input:active { cursor: grabbing; }
+
