@@ -74,11 +74,25 @@ function fetchAPI(action, payload, onSuccess, onError) {
 }
 
 // ==========================================
-// 4. Utils: การแสดงผล UI & รูป Thumbnail
+// 4. Utils: การแสดงผล UI & ควบคุม FAB
 // ==========================================
 function showView(viewId) {
-  document.getElementById('view-calendar').classList.add('hidden'); document.getElementById('view-songs').classList.add('hidden');
-  document.getElementById('view-playlist').classList.add('hidden'); document.getElementById('view-' + viewId).classList.remove('hidden');
+  document.getElementById('view-calendar').classList.add('hidden'); 
+  document.getElementById('view-songs').classList.add('hidden');
+  document.getElementById('view-playlist').classList.add('hidden'); 
+  document.getElementById('view-' + viewId).classList.remove('hidden');
+
+  // ควบคุมปุ่มลอย (FAB) ให้โชว์เฉพาะหน้าที่ถูกต้อง
+  if (viewId === 'calendar' && isAdminLoggedIn) {
+    document.getElementById('fab-admin-add').classList.remove('hidden');
+    document.getElementById('fab-add-category').classList.add('hidden');
+  } else if (viewId === 'playlist' && isAdminLoggedIn) {
+    document.getElementById('fab-admin-add').classList.add('hidden');
+    document.getElementById('fab-add-category').classList.remove('hidden');
+  } else {
+    document.getElementById('fab-admin-add').classList.add('hidden');
+    document.getElementById('fab-add-category').classList.add('hidden');
+  }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -92,19 +106,16 @@ function showToast(title, message, type = "success") {
   setTimeout(() => { toast.style.animation = 'slideInRight 0.3s reverse forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
-// ฟังก์ชันเปิด Modal รับค่าแบบพิมพ์ข้อความ (แทนที่ prompt())
 let inputModalCallback = null;
 function openInputModal(title, defaultVal, callback) {
   document.getElementById('input-modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ${title}`;
   document.getElementById('input-modal-value').value = defaultVal || "";
-  inputModalCallback = callback;
-  openModal('inputModal');
+  inputModalCallback = callback; openModal('inputModal');
   setTimeout(() => document.getElementById('input-modal-value').focus(), 100);
 }
 function submitInputModal() {
   const val = document.getElementById('input-modal-value').value.trim();
-  if (inputModalCallback) inputModalCallback(val);
-  closeModal('inputModal');
+  if (inputModalCallback) inputModalCallback(val); closeModal('inputModal');
 }
 
 let confirmCallback = null;
@@ -129,18 +140,12 @@ const monthNamesTh = ["มกราคม","กุมภาพันธ์","ม
 function loadEvents() {
   document.getElementById('calendar-grid').innerHTML = `<div class="loader" style="grid-column: 1 / -1;"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
   fetchAPI("getEvents", {}, res => { 
-    currentEvents = res; 
-    renderCalendar(); 
-    
-    // 🔥 ตรวจสอบ URL Parameter เพื่อเปิดงานอัตโนมัติ (Deep Link)
+    currentEvents = res; renderCalendar(); 
     const urlParams = new URLSearchParams(window.location.search);
     const sharedEventId = urlParams.get('eventId');
     if (sharedEventId) {
       const ev = currentEvents.find(e => e.id === sharedEventId);
-      if (ev) {
-        activeEvent = ev;
-        enterSongList(); // เข้าหน้ารายชื่อเพลงทันที
-      }
+      if (ev) { activeEvent = ev; enterSongList(); }
     }
   }, () => { document.getElementById('calendar-grid').innerHTML = `<p class="text-center text-muted" style="grid-column: 1 / -1;">โหลดข้อมูลไม่สำเร็จ</p>`; });
 }
@@ -178,16 +183,10 @@ function enterSongList() {
   if (activeEvent.status === 'Closed') { document.getElementById('view-event-status').innerHTML = '<span style="color:var(--danger)"><i class="fa-solid fa-lock"></i> ปิดรับขอเพลงแล้ว (โหวตได้อย่างเดียว)</span>'; document.getElementById('btn-add-song-main').classList.add('hidden'); } 
   else { document.getElementById('view-event-status').innerHTML = '<span style="color:var(--success)"><i class="fa-solid fa-lock-open"></i> เปิดรับขอเพลงและโหวต</span>'; document.getElementById('btn-add-song-main').classList.remove('hidden'); }
   showView('songs'); loadSongs();
-  
-  // ปรับ URL บน Address Bar ให้รองรับการแชร์ได้เลย
-  const newUrl = window.location.pathname + '?eventId=' + activeEvent.id;
-  window.history.replaceState({path: newUrl}, '', newUrl);
+  const newUrl = window.location.pathname + '?eventId=' + activeEvent.id; window.history.replaceState({path: newUrl}, '', newUrl);
 }
 
-function goBackToCalendar() { 
-  window.history.replaceState({}, document.title, window.location.pathname); // ลบ url param ออก
-  showView('calendar'); 
-}
+function goBackToCalendar() { window.history.replaceState({}, document.title, window.location.pathname); showView('calendar'); }
 
 function loadSongs() {
   const content = document.getElementById('song-list-content'); content.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
@@ -203,19 +202,13 @@ function filterSongs() {
 function renderSongs(songs) {
   const container = document.getElementById('song-list-content'); container.innerHTML = '';
   if (songs.length === 0) { container.innerHTML = `<p class="text-center text-muted" style="padding: 40px 0;">ยังไม่มีเพลงในรายการ<br>เป็นคนแรกที่ขอเพลงสิ!</p>`; return; }
-
-  // หาจำนวนโหวตที่เยอะที่สุด เพื่อติดมงกุฎ
-  let maxVotes = 0;
-  if (songs.length > 0) maxVotes = Math.max(...songs.map(s => s.votes));
+  let maxVotes = 0; if (songs.length > 0) maxVotes = Math.max(...songs.map(s => s.votes));
 
   songs.forEach(s => {
     const card = document.createElement('div');
-    
-    // ตรวจสอบความพิเศษของเพลง (Top Voted ✨)
     let isTopVoted = (s.votes === maxVotes && maxVotes > 0);
     let topClass = isTopVoted ? 'top-voted' : '';
     let crownIcon = isTopVoted ? '<i class="fa-solid fa-crown crown-icon"></i>' : '';
-    
     card.className = `song-card ${s.status === 'Approved' ? 'status-approved' : (s.status === 'Played' ? 'status-played' : '')} ${topClass}`;
     
     let tagsHTML = '';
@@ -223,21 +216,12 @@ function renderSongs(songs) {
     if (s.isBreakdance === 'Yes' || s.isBreakdance === true) tagsHTML += `<span class="tag tag-bd">Breakdance</span>`;
 
     let votedClass = (userUUID && s.voters && s.voters.includes(userUUID)) ? "background: var(--primary); color: white;" : "";
-    
     card.innerHTML = `
       <img src="${getYTThumb(s.link)}" class="song-thumbnail" alt="thumbnail">
-      <div class="song-info-main">
-        <div class="song-title">${crownIcon}${s.name}</div>
-        <div class="song-artist">${s.artist}</div>
-        <div class="song-tags">${tagsHTML}</div>
-      </div>
-      <div class="song-vote-box" style="${votedClass}">
-        <span class="vote-count">${s.votes}</span>
-        <span class="vote-label">VOTES</span>
-      </div>
+      <div class="song-info-main"><div class="song-title">${crownIcon}${s.name}</div><div class="song-artist">${s.artist}</div><div class="song-tags">${tagsHTML}</div></div>
+      <div class="song-vote-box" style="${votedClass}"><span class="vote-count">${s.votes}</span><span class="vote-label">VOTES</span></div>
     `;
-    card.onclick = () => openSongDetail(s.id);
-    container.appendChild(card);
+    card.onclick = () => openSongDetail(s.id); container.appendChild(card);
   });
 }
 
@@ -267,14 +251,9 @@ function handleVote() {
   fetchAPI("voteSong", { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, res => { currentSongs = res; filterSongs(); openSongDetail(selectedSongId); }, () => { btn.disabled = false; });
 }
 
-// แชร์ลิงก์
 function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
-  navigator.clipboard.writeText(url).then(() => {
-    showToast("คัดลอกลิงก์สำเร็จ", "นำลิงก์ไปแชร์ให้เพื่อนเพื่อเข้ามาโหวตได้เลย!", "success");
-  }).catch(() => {
-    showCustomConfirm("ลิงก์สำหรับแชร์", url, () => {});
-  });
+  navigator.clipboard.writeText(url).then(() => { showToast("คัดลอกลิงก์สำเร็จ", "นำลิงก์ไปแชร์ให้เพื่อนเพื่อเข้ามาโหวตได้เลย!", "success"); }).catch(() => { showCustomConfirm("ลิงก์สำหรับแชร์", url, () => {}); });
 }
 
 // ==========================================
@@ -349,11 +328,8 @@ function togglePoolSidebar() {
   const pool = document.getElementById('pool-sidebar');
   const text = document.getElementById('toggle-sidebar-text');
   isPoolOpen = !isPoolOpen;
-  if(isPoolOpen) {
-    pool.classList.remove('collapsed'); text.innerText = "ซ่อนกองกลาง";
-  } else {
-    pool.classList.add('collapsed'); text.innerText = "แสดงกองกลาง";
-  }
+  if(isPoolOpen) { pool.classList.remove('collapsed'); text.innerText = "ซ่อนกองกลาง"; } 
+  else { pool.classList.add('collapsed'); text.innerText = "แสดงกองกลาง"; }
 }
 
 function openPlaylistManager() {
@@ -361,23 +337,30 @@ function openPlaylistManager() {
   document.getElementById('list-pool').innerHTML = ''; document.getElementById('dynamic-board').innerHTML = '';
   
   fetchAPI("getPlaylist", { eventId: activeEvent.id, date: activeEvent.date }, savedLists => {
-    const categoryNames = [...new Set(savedLists.map(s => s.listName))].filter(n => n !== 'list-pool');
+    // แยก "list-pool" ออกจากชื่อที่แอดมินตั้ง
+    const categoryNames = [...new Set(savedLists.map(s => s.listName))].filter(n => n !== 'list-pool' && n !== 'POOL' && n !== 'กองกลาง');
+    
     if (categoryNames.length === 0 && savedLists.length === 0) {
-      // สร้างหมวดหมู่เริ่มต้น K-Pop และ T-Pop
-      createCategoryBox('K-Pop'); createCategoryBox('T-Pop');
       currentSongs.filter(s => s.status !== 'Played').sort((a,b) => b.votes - a.votes).forEach(s => document.getElementById('list-pool').appendChild(createPlaylistItem(s)));
     } else {
       categoryNames.forEach(cat => createCategoryBox(cat));
-      savedLists.forEach(s => { let target = document.querySelector(`.drop-zone[data-category="${s.listName}"]`); if (!target) target = document.getElementById('list-pool'); target.appendChild(createPlaylistItem(s)); });
+      savedLists.forEach(s => { 
+        let target = document.querySelector(`.drop-zone[data-category="${s.listName}"]`); 
+        if (!target) target = document.getElementById('list-pool'); // ถ้าหาไม่เจอ ให้โยนลง list-pool ฝั่งซ้าย
+        target.appendChild(createPlaylistItem(s)); 
+      });
     }
     initSortables();
   });
 }
 
 function addNewCategory() {
-  // ใช้ Input Modal ตัวใหม่ แทน prompt ธรรมดา
   openInputModal("ตั้งชื่อหมวดหมู่ใหม่", "K-Pop ช่วงที่ 1", (newTitle) => {
     if(!newTitle) return;
+    // ห้ามตั้งชื่อซ้ำกับระบบ
+    if(newTitle.toLowerCase() === 'pool' || newTitle === 'list-pool' || newTitle === 'กองกลาง') {
+      return showToast("ชื่อนี้ไม่อนุญาต", "ชื่อนี้ถูกสงวนไว้สำหรับระบบ กรุณาใช้ชื่ออื่น", "error");
+    }
     createCategoryBox(newTitle);
   });
 }
@@ -402,7 +385,7 @@ function renameCategory(zoneId) {
   const zone = document.getElementById(zoneId); if(!zone) return;
   const oldTitle = zone.getAttribute('data-category');
   openInputModal("เปลี่ยนชื่อหมวดหมู่", oldTitle, (newTitle) => {
-    if(newTitle && newTitle !== "") {
+    if(newTitle && newTitle !== "" && newTitle.toLowerCase() !== 'pool' && newTitle !== 'กองกลาง') {
       zone.setAttribute('data-category', newTitle);
       zone.previousElementSibling.querySelector('h3').innerHTML = `${newTitle} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${zoneId}')"></i> 
@@ -422,8 +405,10 @@ function deleteCategory(zoneId) {
 }
 
 function confirmImportFromVotes() {
-  showCustomConfirm("ดึงใหม่จากผลโหวต", "นำเพลงทั้งหมดกลับไปที่กองกลาง ยืนยันหรือไม่?", () => {
-    const pool = document.getElementById('list-pool'); document.querySelectorAll('.dynamic-board .drop-zone').forEach(zone => zone.innerHTML = ''); pool.innerHTML = '';
+  showCustomConfirm("รีเซ็ตจากผลโหวต", "นำเพลงทั้งหมดกลับไปที่กองกลาง ยืนยันหรือไม่?", () => {
+    const pool = document.getElementById('list-pool'); 
+    document.querySelectorAll('.dynamic-board .drop-zone').forEach(zone => zone.innerHTML = ''); 
+    pool.innerHTML = '';
     currentSongs.filter(s => s.status !== 'Played').sort((a,b) => b.votes - a.votes).forEach(s => pool.appendChild(createPlaylistItem(s)));
     showToast("ดึงข้อมูลสำเร็จ", "ย้ายรายชื่อทั้งหมดลงกองกลางแล้ว");
   });
@@ -478,6 +463,16 @@ function savePlaylistData() {
     const listName = zone.getAttribute('data-category'), items = zone.children;
     for (let i = 0; i < items.length; i++) { const s = currentSongs.find(song => song.id === items[i].dataset.id); if (s) lists.push({ listName: listName, id: s.id, name: s.name, artist: s.artist, gender: s.gender, isBreakdance: s.isBreakdance, time: `${s.start}-${s.end}`, link: s.link }); }
   });
-  const btn = document.getElementById('btn-save-playlist'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-  fetchAPI("savePlaylist", { eventId: activeEvent.id, date: activeEvent.date, lists: lists }, res => { btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet`; btn.disabled = false; showToast("บันทึกสำเร็จ", "ข้อมูล Setlist ถูกเซฟลง Sheet แล้ว"); }, () => { btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet`; btn.disabled = false; });
+  const btnTop = document.getElementById('btn-save-playlist-top'); const btnBot = document.getElementById('btn-save-playlist-bottom');
+  if(btnTop) { btnTop.innerText = "กำลังบันทึก..."; btnTop.disabled = true; }
+  if(btnBot) { btnBot.innerText = "กำลังบันทึก..."; btnBot.disabled = true; }
+  
+  fetchAPI("savePlaylist", { eventId: activeEvent.id, date: activeEvent.date, lists: lists }, res => { 
+    if(btnTop) { btnTop.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet`; btnTop.disabled = false; }
+    if(btnBot) { btnBot.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet`; btnBot.disabled = false; }
+    showToast("บันทึกสำเร็จ", "ข้อมูล Setlist ถูกเซฟลง Sheet แล้ว"); 
+  }, () => { 
+    if(btnTop) { btnTop.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet`; btnTop.disabled = false; }
+    if(btnBot) { btnBot.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet`; btnBot.disabled = false; }
+  });
 }
