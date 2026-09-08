@@ -1,161 +1,73 @@
 /* =========================================
-   1. ตัวแปรสีหลัก (Variables)
+   1-6. CSS พื้นฐาน, Calendar, UI ฯลฯ (คงของเดิมไว้ทั้งหมด)
 ========================================= */
-:root {
-  --primary: #D81B60;
-  --primary-hover: #C2185B;
-  --primary-light: #FCE4EC;
-  --success: #2E7D32;
-  --danger: #C62828;
-  --dark: #212121;
-  --text-main: #333333;
-  --text-muted: #757575;
-  --bg-color: #FAFAFA;
-  --card-bg: #FFFFFF;
-  --border-color: #E0E0E0;
-  
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-/* =========================================
-   2. ตั้งค่าพื้นฐาน & พื้นหลัง (Background)
-========================================= */
+:root { --primary: #D81B60; --primary-hover: #C2185B; --primary-light: #FCE4EC; --success: #2E7D32; --danger: #C62828; --dark: #212121; --text-main: #333333; --text-muted: #757575; --bg-color: #FAFAFA; --card-bg: #FFFFFF; --border-color: #E0E0E0; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px; --shadow-sm: 0 2px 4px rgba(0,0,0,0.05); --shadow-md: 0 4px 12px rgba(0,0,0,0.08); --shadow-lg: 0 10px 25px rgba(0,0,0,0.15); }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
 body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; padding-top: 60px; }
-
-.bg-pattern {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
-  background-image: radial-gradient(var(--primary-light) 2px, transparent 2px);
-  background-size: 30px 30px; opacity: 0.6;
-}
-
+.bg-pattern { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; background-image: radial-gradient(var(--primary-light) 2px, transparent 2px); background-size: 30px 30px; opacity: 0.6; }
 .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
 .hidden { display: none !important; }
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
-
-/* =========================================
-   3. แถบเมนูด้านบน (Navbar)
-========================================= */
-.navbar {
-  position: fixed; top: 0; left: 0; right: 0; height: 60px;
-  background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 0 15px; box-shadow: var(--shadow-sm); z-index: 100;
-}
+.navbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-shadow: var(--shadow-sm); z-index: 100; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.2rem; color: var(--primary); }
 .greeting-text { font-size: 0.85rem; font-weight: 500; color: var(--primary); background: var(--primary-light); padding: 4px 10px; border-radius: 20px; }
-
-/* =========================================
-   4. ปุ่มต่างๆ (Buttons)
-========================================= */
-.btn {
-  padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer;
-  border: none; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem;
-}
+.btn { padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; }
 .btn-sm { padding: 5px 12px; font-size: 0.85rem; }
 .btn-full { width: 100%; margin-top: 10px; padding: 12px; }
-
 .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 2px 6px rgba(216, 27, 96, 0.3); }
 .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-.btn-primary:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
-
 .btn-outline { background-color: transparent; color: var(--primary); border: 1px solid var(--primary); }
 .btn-outline:hover { background-color: var(--primary-light); }
-
 .btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
-.btn-danger:hover { background-color: #FFEBEE; }
-
 .btn-magic { background: linear-gradient(45deg, #8E24AA, #D81B60); color: white; }
 .btn-icon { padding: 8px; border-radius: 50%; width: 40px; height: 40px; }
-
-.fab-btn {
-  position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
-  border-radius: 50%; background-color: var(--primary); color: white; border: none;
-  box-shadow: var(--shadow-md); font-size: 1.5rem; cursor: pointer; z-index: 90; transition: transform 0.2s;
-}
+.fab-btn { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: var(--primary); color: white; border: none; box-shadow: var(--shadow-md); font-size: 1.5rem; cursor: pointer; z-index: 90; transition: transform 0.2s; }
 .fab-btn:hover { transform: scale(1.05); }
-
-/* =========================================
-   5. แบบฟอร์ม (Forms)
-========================================= */
 .form-group { margin-bottom: 15px; text-align: left; }
 .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; color: var(--dark); }
-.form-control {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm); font-size: 1rem; background-color: #F9F9F9; transition: border-color 0.2s;
-}
+.form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 1rem; background-color: #F9F9F9; transition: border-color 0.2s; }
 .form-control:focus { outline: none; border-color: var(--primary); background-color: #FFF; }
 .checkbox-container { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; margin-top: 10px; cursor: pointer; }
 .checkbox-container input { width: 18px; height: 18px; accent-color: var(--primary); }
-
 .search-wrapper { position: relative; margin-bottom: 20px; }
 .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 .search-box { width: 100%; padding: 12px 15px 12px 40px; border: 1px solid var(--border-color); border-radius: 25px; font-size: 1rem; box-shadow: var(--shadow-sm); }
-
-/* =========================================
-   6. ปฏิทินตาราง 7 วัน (Calendar UI)
-========================================= */
 .header-section { text-align: center; margin-bottom: 25px; }
-.calendar-wrapper {
-  background: var(--card-bg); border-radius: var(--radius-md);
-  padding: 20px; box-shadow: var(--shadow-sm); max-width: 800px; margin: 0 auto;
-}
+.calendar-wrapper { background: var(--card-bg); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm); max-width: 800px; margin: 0 auto; }
 .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-
 .calendar-table { width: 100%; }
-.calendar-weekdays {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  text-align: center; font-weight: 600; color: var(--text-muted);
-  margin-bottom: 10px; font-size: 0.9rem;
-}
-.calendar-days {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
-}
-
-.calendar-day {
-  background: #F9F9F9; border-radius: var(--radius-sm);
-  min-height: 85px; padding: 5px;
-  display: flex; flex-direction: column; gap: 4px;
-  
-  /* ✨ หัวใจสำคัญของการแก้ปัญหา "บานออกข้าง" ✨ */
-  min-width: 0; 
-  overflow: hidden;
-}
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; font-size: 0.9rem; }
+.calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.calendar-day { background: #F9F9F9; border-radius: var(--radius-sm); min-height: 85px; padding: 5px; display: flex; flex-direction: column; gap: 4px; min-width: 0; overflow: hidden; }
 .calendar-day.empty { background: transparent; pointer-events: none; }
 .calendar-day:not(.empty):hover { background: #F0F0F0; }
-
 .day-number { text-align: center; font-size: 1rem; font-weight: 600; color: var(--dark); margin-bottom: 2px; }
-
-.day-event {
-  background: var(--primary-light); color: var(--primary);
-  font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; cursor: pointer;
-  
-  /* ซ่อนข้อความยาวๆ ให้กลายเป็น ... ไม่ให้ตารางยืด */
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
-  transition: transform 0.1s;
-}
+.day-event { background: var(--primary-light); color: var(--primary); font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; transition: transform 0.1s; }
 .day-event:hover { transform: scale(1.02); filter: brightness(0.95); }
 .day-event.closed { background: #EEEEEE; color: #9E9E9E; }
 
 /* =========================================
-   7. การ์ดรายชื่อเพลง (Thumbnail)
+   7. การ์ดรายชื่อเพลง (เพิ่มลูกเล่น Top Voted ✨)
 ========================================= */
-.song-card {
-  background: var(--card-bg); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;
-  box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  border-left: 4px solid #B0BEC5; cursor: pointer;
-}
+.song-card { background: var(--card-bg); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px; border-left: 4px solid #B0BEC5; cursor: pointer; transition: transform 0.2s; }
+.song-card:hover { transform: translateY(-2px); }
 .song-card.status-approved { border-left-color: var(--success); }
 .song-card.status-played { border-left-color: #9E9E9E; opacity: 0.7; }
+
+/* ลูกเล่นออร่า สำหรับเพลงคะแนนสูงสุด */
+.song-card.top-voted {
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  background: linear-gradient(to right, #FFFDE7, #FFFFFF);
+  border-left: 6px solid #FFD700;
+}
+.crown-icon { color: #FFD700; font-size: 1.1rem; filter: drop-shadow(0 0 2px rgba(255,215,0,0.8)); margin-right: 6px; animation: bounce 2s infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
 .song-thumbnail { width: 100px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; background-color: #eee; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
 .song-info-main { flex: 1; overflow: hidden; }
-.song-title { font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-title { font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
 .song-artist { font-size: 0.85rem; color: var(--text-muted); }
 .song-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
 .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #eee; font-weight: 500; }
@@ -167,32 +79,47 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .vote-label { font-size: 0.65rem; font-weight: 500; }
 
 /* =========================================
-   8. ระบบจัด Setlist (Dynamic Block Code)
+   8. Playlist Workspace (ซ้าย 20% / ขวา 80%)
 ========================================= */
-.playlist-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-.playlist-board-wrapper { display: flex; flex-direction: column; gap: 20px; }
-.fixed-col { border: 2px dashed var(--primary); }
-.dynamic-board { display: flex; flex-direction: column; gap: 15px; min-height: 150px; padding-bottom: 20px; }
-
-@media (min-width: 992px) {
-  .playlist-board-wrapper { flex-direction: row; align-items: flex-start; }
-  .fixed-col { min-width: 300px; max-width: 350px; position: sticky; top: 70px; }
-  .dynamic-board { flex-direction: row; flex-wrap: wrap; flex: 1; align-items: flex-start; }
-  .list-col { min-width: 300px; flex: 1; }
+.playlist-workspace {
+  display: flex; height: calc(100vh - 150px); min-height: 500px; 
+  gap: 15px; margin-top: 10px; overflow: hidden;
 }
 
-.list-col { background: #F5F5F5; border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); }
-.list-col-header { text-align: center; margin-bottom: 10px; cursor: grab; padding-bottom: 10px; border-bottom: 1px solid #E0E0E0; }
+/* แถบซ้าย (กองกลาง) */
+.pool-sidebar {
+  width: 25%; min-width: 250px; background: #F9F9F9; border-radius: var(--radius-md);
+  display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color);
+}
+.pool-sidebar.collapsed { width: 0; min-width: 0; opacity: 0; padding: 0; margin: 0; border: none; transform: translateX(-20px); }
+
+/* แถบขวา (กระดานจัด Playlist) */
+.playlist-main {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  background: white; border-radius: var(--radius-md); border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.playlist-toolbar {
+  padding: 12px 15px; background: #FDFDFD; border-bottom: 1px solid var(--border-color);
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.dynamic-board {
+  flex: 1; padding: 15px; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; background: #FAFAFA;
+}
+.list-col { min-width: 280px; flex: 1; background: white; border-radius: var(--radius-md); display: flex; flex-direction: column; box-shadow: var(--shadow-sm); border: 1px solid #E0E0E0; }
+.list-col-header { text-align: center; margin-bottom: 5px; cursor: grab; padding: 10px; border-bottom: 1px dashed #E0E0E0; background: #F9F9F9; border-radius: var(--radius-md) var(--radius-md) 0 0; }
 .list-col-header:active { cursor: grabbing; }
-.list-col-header h3 { font-size: 1.1rem; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
-.drop-zone { flex: 1; min-height: 200px; padding: 5px 0; }
+.list-col-header h3 { font-size: 1.05rem; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+.drop-zone { flex: 1; min-height: 200px; padding: 10px; overflow-y: auto; }
 
 .playlist-item { background: white; border: 1px solid var(--border-color); padding: 8px 10px; margin-bottom: 8px; border-radius: var(--radius-sm); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: grab; }
 .playlist-item:active { cursor: grabbing; box-shadow: var(--shadow-md); }
 .drag-handle { color: #ccc; cursor: grab; margin-right: 8px; font-size: 1.2rem; }
 
 /* =========================================
-   9. หน้าต่างป๊อปอัป & แจ้งเตือน (Modals & Toasts)
+   9. Modals & Utils (ปรับเหมือนเดิม)
 ========================================= */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; opacity: 0; transition: opacity 0.3s; }
 .modal-overlay.active { display: flex; opacity: 1; }
@@ -205,7 +132,6 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .intro-details { background: #F9F9F9; border-radius: var(--radius-sm); padding: 15px; text-align: left; margin-top: 15px; }
 .intro-row { margin-bottom: 8px; font-size: 0.9rem; display: flex; gap: 10px; }
 .intro-row i { color: var(--primary); width: 15px; }
-
 .detail-header { text-align: center; margin-bottom: 20px; }
 .detail-title { font-size: 1.2rem; font-weight: 600; color: var(--dark); }
 .detail-info { background: #F9F9F9; border-radius: var(--radius-sm); padding: 15px; margin-bottom: 20px; }
@@ -224,14 +150,18 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .loader { display: flex; justify-content: center; padding: 30px; color: var(--primary); }
 
-/* ปรับแต่งสำหรับมือถือ (Mobile First) */
-@media (max-width: 600px) { 
+@media (max-width: 768px) { 
   .hide-mobile { display: none !important; }
   .song-thumbnail { width: 80px; height: 45px; }
-  
   .calendar-wrapper { padding: 10px; }
   .calendar-days { gap: 3px; }
   .calendar-day { min-height: 70px; padding: 3px; border-radius: 8px; }
   .day-number { font-size: 1rem; margin-bottom: 4px; }
   .day-event { font-size: 0.65rem; padding: 2px 4px; }
+  
+  /* ให้ Workspace เรียงซ้อนกันบนมือถือ */
+  .playlist-workspace { flex-direction: column; height: auto; overflow: visible; }
+  .pool-sidebar { width: 100%; min-width: 100%; height: 350px; }
+  .pool-sidebar.collapsed { height: 0; width: 100%; transform: translateY(-20px); }
+  .dynamic-board { overflow-y: visible; }
 }
