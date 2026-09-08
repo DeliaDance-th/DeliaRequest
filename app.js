@@ -20,7 +20,12 @@ const translations = {
     search_ph: "ค้นหาชื่อเพลง หรือ ศิลปิน...", setlist_title: "Setlist Manager", btn_back_list: "กลับหน้ารายการ", pool: "📦 กองกลาง",
     hide_pool: "ซ่อนกองกลาง", show_pool: "แสดงกองกลาง", btn_fetch_votes: "ดึงข้อมูลการขอเพลง", btn_add_cat: "เพิ่มหมวดหมู่", btn_save: "บันทึกลง Sheet",
     start_time: "เริ่ม (นาที:วินาที)", end_time: "จบ (นาที:วินาที)", btn_submit: "ส่งข้อมูล", admin_access: "🔑 เข้าสู่โหมด Admin", logout: "ออกจากระบบ",
-    admin_login: "Admin Login", admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน"
+    admin_login: "Admin Login", admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน",
+    
+    // ใหม่! แปลภาษาสำหรับหน้าต่าง Modal
+    btn_cancel: "ยกเลิก", btn_view_songs: "ดูรายการเพลง", yt_link: "ลิงก์ Youtube", song_name: "ชื่อเพลง", artist: "ศิลปิน",
+    gender: "เพศของศิลปิน", gender_mix: "รวม/ผสม (Mix)", gender_m: "ศิลปินชาย (Boy Group)", gender_f: "ศิลปินหญิง (Girl Group)",
+    has_breakdance: "เพลงนี้มี Breakdance ใช่มั้ย?", ex_time: "เช่น 1:30", edit_song: "แก้ไขข้อมูลเพลง"
   },
   en: {
     welcome: "Welcome", enter_name_prompt: "Enter your name here", slide_login: "Slide to Login", login: "Login",
@@ -29,7 +34,12 @@ const translations = {
     search_ph: "Search song or artist...", setlist_title: "Setlist Manager", btn_back_list: "Back to Requests", pool: "📦 Pool",
     hide_pool: "Hide Pool", show_pool: "Show Pool", btn_fetch_votes: "Fetch Song Requests", btn_add_cat: "Add Category", btn_save: "Save to Sheet",
     start_time: "Start (Min:Sec)", end_time: "End (Min:Sec)", btn_submit: "Submit", admin_access: "🔑 Admin Access", logout: "Logout",
-    admin_login: "Admin Login", admin_sub: "Enter admin username and password"
+    admin_login: "Admin Login", admin_sub: "Enter admin username and password",
+    
+    // ใหม่! แปลภาษาสำหรับหน้าต่าง Modal
+    btn_cancel: "Cancel", btn_view_songs: "View Songs", yt_link: "YouTube Link", song_name: "Song Name", artist: "Artist",
+    gender: "Artist Gender", gender_mix: "Mixed Group", gender_m: "Boy Group", gender_f: "Girl Group",
+    has_breakdance: "Has Breakdance?", ex_time: "e.g., 1:30", edit_song: "Edit Song Info"
   }
 };
 
@@ -54,7 +64,7 @@ function setLanguage(lang) {
   
   renderCalendarDays();
   if (currentEvents.length > 0) {
-    renderCalendar(); // สั่งรีเฟรชปฏิทินทันทีเพื่ออัปเดตเดือน
+    renderCalendar();
   }
 }
 
@@ -64,6 +74,23 @@ function renderCalendarDays() {
   const target = document.getElementById('calendar-weekdays');
   if(target) {
     target.innerHTML = (currentLang === 'th' ? daysTh : daysEn).map(d => `<div>${d}</div>`).join('');
+  }
+}
+
+// ฟังก์ชันแปลงเวลาแบบดิบ (2026-09-07T13:52) ให้อ่านง่าย (07/09/2026 13:52)
+function formatTime(dtStr) {
+  if (!dtStr || dtStr === "-") return "-";
+  try {
+    const d = new Date(dtStr);
+    if (isNaN(d)) return dtStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hrs = String(d.getHours()).padStart(2, '0');
+    const mins = String(d.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hrs}:${mins}`;
+  } catch(e) {
+    return dtStr;
   }
 }
 
@@ -121,7 +148,6 @@ function updateUserUI() {
   updateFABs();
 }
 
-// ควบคุม Slider
 function handleSlide(el) {
   const val = el.value;
   const thumb = document.getElementById('slider-thumb');
@@ -458,7 +484,10 @@ function openEventIntro(event) {
   document.getElementById('intro-date').innerText = `${d.getDate()} ${monthText} ${yearText}`;
   
   document.getElementById('intro-loc').innerText = event.location;
-  document.getElementById('intro-time').innerText = `${event.openTime} - ${event.closeTime}`;
+  
+  // อัปเดตการแสดงผลเวลาให้สวยงามด้วยฟังก์ชัน formatTime
+  document.getElementById('intro-time').innerText = `${formatTime(event.openTime)} - ${formatTime(event.closeTime)}`;
+  
   document.getElementById('intro-det').innerText = event.details || "-";
   openModal('eventIntroModal');
 }
