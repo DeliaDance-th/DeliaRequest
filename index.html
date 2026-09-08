@@ -17,20 +17,17 @@
 
   <!-- Navbar -->
   <nav class="navbar">
-    <!-- กดที่โลโก้เพื่อกลับหน้าแรก -->
     <div class="brand" onclick="goHome()" style="cursor: pointer;" title="กลับหน้าแรก">
       <img src="DeliaLogo.png" alt="Delia Logo" style="height: 30px; width: 30px; object-fit: cover; border-radius: 50%;"> 
       <span class="brand-text">Delia Randomdance</span>
     </div>
     
     <div style="display: flex; gap: 8px; align-items: center;">
-      <button class="btn btn-outline btn-sm hidden admin-only" id="btn-admin-playlist" onclick="openPlaylistManager()" title="จัดการ Playlist"><i class="fa-solid fa-list-ol"></i> <span class="hide-mobile">จัด Playlist</span></button>
-      
-      <!-- ปุ่มแสดงชื่อผู้ใช้ และคลิกเพื่อ Logout -->
+      <!-- ปุ่มแสดงชื่อผู้ใช้ และคลิกเพื่อเปิด Logout/Admin Menu -->
       <button class="btn btn-primary btn-sm hidden" id="btn-user-profile" onclick="openModal('logoutModal')"></button>
-      
-      <button class="btn btn-outline btn-sm" id="btn-login-main" onclick="openModal('authModal')">
-        <i class="fa-solid fa-user"></i> <span class="hide-mobile">เข้าสู่ระบบ</span>
+      <!-- ปุ่ม Login จะถูกซ่อนและโชว์ Modal อัตโนมัติเมื่อยังไม่ล็อกอิน -->
+      <button class="btn btn-outline btn-sm hidden" id="btn-login-main" onclick="openModal('welcomeModal')">
+        <i class="fa-solid fa-user"></i> <span class="hide-mobile" data-i18n="login">เข้าสู่ระบบ</span>
       </button>
     </div>
   </nav>
@@ -38,8 +35,8 @@
   <!-- View 1: Calendar -->
   <div class="container" id="view-calendar">
     <div class="header-section">
-      <h1>Event Calendar</h1>
-      <p>เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน</p>
+      <h1 data-i18n="calendar_title">Event Calendar</h1>
+      <p data-i18n="calendar_sub">เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน</p>
     </div>
     <div class="calendar-wrapper">
       <div class="calendar-header">
@@ -48,7 +45,7 @@
         <button class="btn btn-outline btn-icon" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
       <div class="calendar-table">
-        <div class="calendar-weekdays">
+        <div class="calendar-weekdays" id="calendar-weekdays">
           <div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div>
         </div>
         <div class="calendar-days" id="calendar-grid"></div>
@@ -59,21 +56,20 @@
   <!-- View 2: Song List -->
   <div class="container hidden" id="view-songs">
     <div class="header-section">
-      <button class="btn btn-outline btn-back" onclick="goBackToCalendar()"><i class="fa-solid fa-arrow-left"></i> กลับปฏิทิน</button>
-      <h1 id="view-event-title">Song Requests</h1>
+      <button class="btn btn-outline btn-back" onclick="goBackToCalendar()"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back">กลับปฏิทิน</span></button>
+      <h1 id="view-event-title" data-i18n="song_req_title">Song Requests</h1>
       <p id="view-event-status" style="font-weight: 500; margin-bottom: 20px;"></p>
       
-      <!-- ย้ายปุ่มคัดลอก DJ มาไว้ที่นี่ -->
       <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
-        <button class="btn btn-primary" id="btn-add-song-main" onclick="checkQuotaAndOpenModal()"><i class="fa-solid fa-plus"></i> ขอเพลงใหม่</button>
-        <button class="btn btn-outline hidden admin-only" id="btn-edit-event" onclick="openEditEventModal()"><i class="fa-solid fa-pen"></i> แก้ไขงาน</button>
-        <button class="btn btn-outline hidden admin-only" id="btn-admin-export" onclick="exportDJ()" title="คัดลอกรายชื่อให้ DJ"><i class="fa-solid fa-file-export"></i> คัดลอกให้ DJ</button>
+        <button class="btn btn-primary" id="btn-add-song-main" onclick="checkQuotaAndOpenModal()"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_song">ขอเพลงใหม่</span></button>
+        <button class="btn btn-outline hidden admin-only" onclick="openPlaylistManager()"><i class="fa-solid fa-list-ol"></i> <span data-i18n="btn_manage_pl">จัด Playlist</span></button>
+        <button class="btn btn-outline hidden admin-only" id="btn-admin-export" onclick="exportDJ()"><i class="fa-solid fa-file-export"></i> <span data-i18n="btn_copy_dj">คัดลอกให้ DJ</span></button>
       </div>
     </div>
     
     <div class="search-wrapper">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาชื่อเพลง หรือ ศิลปิน..." oninput="filterSongs()">
+      <input type="text" id="search-bar" class="search-box" placeholder="ค้นหาชื่อเพลง หรือ ศิลปิน..." data-i18n-ph="search_ph" oninput="filterSongs()">
     </div>
     <div class="song-list-container">
       <div id="song-list-content"><div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div></div>
@@ -83,15 +79,15 @@
   <!-- View 3: Playlist Manager -->
   <div class="container hidden playlist-container" id="view-playlist" style="max-width: 100%; padding: 0 15px;">
     <div class="header-section" style="margin-bottom: 10px;">
-      <button class="btn btn-outline btn-back" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารายการ</button>
-      <h1 id="playlist-event-title" style="margin-top: 10px;">Setlist Manager</h1>
+      <button class="btn btn-outline btn-back" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back_list">กลับหน้ารายการ</span></button>
+      <h1 id="playlist-event-title" style="margin-top: 10px;" data-i18n="setlist_title">Setlist Manager</h1>
     </div>
     
     <div class="playlist-workspace">
-      <!-- ฝั่งซ้าย: กองกลาง (20%) -->
+      <!-- ฝั่งซ้าย: กองกลาง -->
       <div class="pool-sidebar" id="pool-sidebar">
         <div class="list-col-header" style="background: white; border-bottom: 2px solid var(--primary-light);">
-          <h3>📦 กองกลาง</h3>
+          <h3 data-i18n="pool">📦 กองกลาง</h3>
           <div style="display: flex; gap: 5px; padding: 0 10px;">
             <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('list-pool')"><i class="fa-solid fa-shuffle"></i> สุ่ม (M/F)</button>
             <button class="btn btn-outline btn-full btn-sm btn-magic" id="btn-ai-setlist" onclick="aiMagicSetlist()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</button>
@@ -100,43 +96,78 @@
         <div id="list-pool" class="drop-zone" data-category="list-pool"></div>
       </div>
 
-      <!-- ฝั่งขวา: กระดานสร้าง Setlist (80%) -->
+      <!-- ฝั่งขวา: กระดาน -->
       <div class="playlist-main">
         <div class="playlist-toolbar">
-          <button class="btn btn-outline btn-sm" onclick="togglePoolSidebar()"><i class="fa-solid fa-bars-staggered"></i> <span id="toggle-sidebar-text">ซ่อนกองกลาง</span></button>
+          <button class="btn btn-outline btn-sm" onclick="togglePoolSidebar()"><i class="fa-solid fa-bars-staggered"></i> <span id="toggle-sidebar-text" data-i18n="hide_pool">ซ่อนกองกลาง</span></button>
           <div style="flex:1"></div>
-          <button class="btn btn-outline btn-sm" onclick="confirmImportFromVotes()"><i class="fa-solid fa-rotate-left"></i> รีเซ็ตจากผลโหวต</button>
-          <button class="btn btn-outline btn-sm" style="border-color:#F39C12; color:#F39C12;" onclick="addNewCategory()"><i class="fa-solid fa-folder-plus"></i> เพิ่มหมวดหมู่</button>
-          <button class="btn btn-primary btn-sm" id="btn-save-playlist-top" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet</button>
+          <button class="btn btn-outline btn-sm" onclick="confirmImportFromVotes()"><i class="fa-solid fa-rotate-left"></i> <span data-i18n="btn_fetch_votes">ดึงข้อมูลการขอเพลง</span></button>
+          <button class="btn btn-outline btn-sm" style="border-color:#F39C12; color:#F39C12;" onclick="addNewCategory()"><i class="fa-solid fa-folder-plus"></i> <span data-i18n="btn_add_cat">เพิ่มหมวดหมู่</span></button>
+          <button class="btn btn-primary btn-sm" id="btn-save-playlist-top" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">เซฟลง Sheet</span></button>
         </div>
         <div class="dynamic-board" id="dynamic-board"></div>
         <div style="padding: 15px; background: #FDFDFD; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
-          <button class="btn btn-primary" id="btn-save-playlist-bottom" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet</button>
+          <button class="btn btn-primary" id="btn-save-playlist-bottom" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">บันทึกลง Sheet</span></button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ปุ่มลอย (FAB) -->
   <button id="fab-add-category" class="fab-btn hidden admin-only" onclick="addNewCategory()" title="เพิ่มหมวดหมู่ใหม่" style="background-color: #F39C12;"><i class="fa-solid fa-folder-plus"></i></button>
 
   <!-- ================= MODALS ================= -->
   
-  <!-- Modal: Logout -->
-  <div class="modal-overlay" id="logoutModal">
+  <!-- 🌟 Modal: Welcome & Slide to Login -->
+  <div class="modal-overlay" id="welcomeModal">
     <div class="modal-content text-center">
-      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('logoutModal')"></i>
-      <div style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
-      <h3 style="margin-top:0;">ต้องการออกจากระบบ?</h3>
-      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">คุณจะต้องเข้าสู่ระบบใหม่เพื่อทำการขอเพลงหรือโหวต</p>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-outline btn-full" onclick="closeModal('logoutModal')">ยกเลิก</button>
-        <button class="btn btn-primary btn-full" onclick="executeLogout()">ออกจากระบบ</button>
+      <div style="display: flex; justify-content: flex-end; gap: 5px; margin-bottom: 10px;">
+        <button class="btn btn-sm btn-outline lang-btn" onclick="setLanguage('th')" style="padding: 2px 8px; border-radius: 20px;">TH</button>
+        <button class="btn btn-sm btn-outline lang-btn" onclick="setLanguage('en')" style="padding: 2px 8px; border-radius: 20px;">EN</button>
+      </div>
+      <h2 style="margin-top: 0; color: var(--primary);"><i class="fa-solid fa-hand-sparkles"></i> <span data-i18n="welcome">ยินดีต้อนรับ</span></h2>
+      <p class="text-muted" data-i18n="enter_name_prompt">ใส่ชื่อของคุณที่นี่</p>
+      
+      <div class="form-group" style="margin-top: 20px;">
+        <input type="text" id="welcome-username" class="form-control text-center" placeholder="Username" style="font-size: 1.2rem; font-weight: 500;" onkeypress="if(event.key === 'Enter') checkSlideAndLogin()">
+      </div>
+      
+      <!-- Slide to Login Component -->
+      <div class="slider-wrapper">
+        <div class="slider-text" id="slider-text" data-i18n="slide_login">เลื่อนเพื่อเข้าสู่ระบบ</div>
+        <div class="slider-thumb" id="slider-thumb"><i class="fa-solid fa-arrow-right"></i></div>
+        <input type="range" min="0" max="100" value="0" class="slider-input" id="login-slider" oninput="handleSlide(this)" onchange="resetSlide(this)">
       </div>
     </div>
   </div>
 
-  <!-- Input Modal -->
+  <!-- Modal: Logout & Admin Access (ซ่อนเมนูแอดมินไว้ที่นี่) -->
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal-content text-center">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('logoutModal')"></i>
+      <div style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"><i class="fa-solid fa-circle-user"></i></div>
+      <h3 style="margin-top:0;" id="profile-name-display">User Profile</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <!-- ปุ่มเข้าโหมดแอดมิน ซ่อนเนียนๆ อยู่ที่นี่ -->
+        <button class="btn btn-outline btn-full" onclick="openAdminLoginModal()" style="border-style: dashed;" data-i18n="admin_access">🔑 เข้าสู่โหมด Admin</button>
+        <button class="btn btn-danger btn-full" onclick="executeLogout()" data-i18n="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Login -->
+  <div class="modal-overlay" id="adminLoginModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('adminLoginModal')"></i>
+      <h2 class="text-center" style="margin-top: 0; color: var(--dark);"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="admin_login">Admin Login</span></h2>
+      <p class="text-center text-muted" data-i18n="admin_sub">กรุณากรอกชื่อและรหัสผ่านแอดมิน</p>
+      <div class="form-group"><label>Username</label><input type="text" id="admin-user" class="form-control"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="admin-pass" class="form-control" onkeypress="if(event.key === 'Enter') executeAdminAuth()"></div>
+      <button class="btn btn-primary btn-full" id="btn-admin-submit" onclick="executeAdminAuth()" data-i18n="login">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <!-- Modal: Input (เปลี่ยนชื่อหมวดหมู่) -->
   <div class="modal-overlay" id="inputModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('inputModal')"></i>
@@ -146,38 +177,11 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="authModal">
-    <div class="modal-content">
-      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('authModal')"></i>
-      <h2 class="text-center" style="margin-top: 0;"><i class="fa-solid fa-fingerprint" style="color: var(--primary);"></i> ระบุตัวตน</h2>
-      <p class="text-center text-muted" style="font-size: 0.9rem;">หากเป็นผู้ใช้ทั่วไป กรอกแค่ชื่อใช้งาน<br>หากเป็นแอดมิน ให้กรอกรหัสผ่านด้วย</p>
-      <div class="form-group"><label>ชื่อผู้ใช้งาน (Username) <span style="color:var(--primary)">*</span></label><input type="text" id="auth-username" class="form-control" onkeypress="if(event.key === 'Enter') executeUnifiedAuth()"></div>
-      <div class="form-group"><label>รหัสผ่าน (เฉพาะแอดมิน)</label><input type="password" id="auth-password" class="form-control" onkeypress="if(event.key === 'Enter') executeUnifiedAuth()"></div>
-      <button class="btn btn-primary btn-full" id="btn-auth-submit" onclick="executeUnifiedAuth()">เข้าสู่ระบบ</button>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="eventIntroModal">
-    <div class="modal-content event-intro-card">
-      <div class="intro-header"><i class="fa-solid fa-ticket"></i></div>
-      <h2 id="intro-title" style="margin-bottom: 5px;">Event Name</h2>
-      <p id="intro-date" style="color: var(--primary); font-weight: 500; margin-top: 0;"></p>
-      <div class="intro-details">
-        <div class="intro-row"><i class="fa-solid fa-location-dot"></i> <span id="intro-loc"></span></div>
-        <div class="intro-row"><i class="fa-regular fa-clock"></i> <span id="intro-time"></span></div>
-        <div class="intro-row"><i class="fa-solid fa-circle-info"></i> <span id="intro-det"></span></div>
-      </div>
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('eventIntroModal')">ยกเลิก</button>
-        <button class="btn btn-primary" style="flex: 2;" onclick="enterSongList()">ดูรายการเพลง <i class="fa-solid fa-arrow-right"></i></button>
-      </div>
-    </div>
-  </div>
-
+  <!-- Modal: Add Song -->
   <div class="modal-overlay" id="addSongModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
-      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> เสนอเพลง</h2>
+      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> <span data-i18n="btn_add_song">เสนอเพลง</span></h2>
       <div class="form-group"><label>ลิงก์ Youtube</label><input type="url" id="song-link" class="form-control" onblur="autoFillYoutube()"></div>
       <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
       <div class="form-group"><label>ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
@@ -187,33 +191,14 @@
       </div>
       <label class="checkbox-container"><input type="checkbox" id="song-breakdance"> เพลงนี้มี Breakdance ใช่มั้ย?</label>
       <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <div class="form-group" style="flex:1;"><label>เริ่ม (น:ว)</label><input type="text" id="song-start" class="form-control"></div>
-        <div class="form-group" style="flex:1;"><label>จบ (น:ว)</label><input type="text" id="song-end" class="form-control"></div>
+        <div class="form-group" style="flex:1;"><label data-i18n="start_time">เริ่ม (นาที:วินาที)</label><input type="text" id="song-start" class="form-control" placeholder="เช่น 1:30"></div>
+        <div class="form-group" style="flex:1;"><label data-i18n="end_time">จบ (นาที:วินาที)</label><input type="text" id="song-end" class="form-control" placeholder="เช่น 2:05"></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit">ส่งข้อมูล</button>
+      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit" data-i18n="btn_submit">ส่งข้อมูล</button>
     </div>
   </div>
 
-  <div class="modal-overlay" id="editSongModal">
-    <div class="modal-content">
-      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editSongModal')"></i>
-      <h2 class="text-center" style="color:var(--primary); margin-top:0;"><i class="fa-solid fa-pen"></i> แก้ไขข้อมูลเพลง</h2>
-      <div class="form-group"><label>ลิงก์ Youtube</label><input type="url" id="edit-song-link" class="form-control" onblur="autoFillYoutubeEdit()"></div>
-      <div class="form-group"><label>ชื่อเพลง <span style="color:var(--primary)">*</span></label><input type="text" id="edit-song-name" class="form-control"></div>
-      <div class="form-group"><label>ศิลปิน</label><input type="text" id="edit-song-artist" class="form-control"></div>
-      <div class="form-group">
-        <label>เพศของศิลปิน</label>
-        <select id="edit-song-gender" class="form-control"><option value="Mix">รวม/ผสม (Mix)</option><option value="M">ศิลปินชาย (Boy Group)</option><option value="F">ศิลปินหญิง (Girl Group)</option></select>
-      </div>
-      <label class="checkbox-container"><input type="checkbox" id="edit-song-breakdance"> เพลงนี้มี Breakdance ใช่มั้ย?</label>
-      <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <div class="form-group" style="flex:1;"><label>เริ่ม (น:ว)</label><input type="text" id="edit-song-start" class="form-control"></div>
-        <div class="form-group" style="flex:1;"><label>จบ (น:ว)</label><input type="text" id="edit-song-end" class="form-control"></div>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="executeEditSong()" id="btn-song-edit-submit">บันทึกการแก้ไข</button>
-    </div>
-  </div>
-
+  <!-- Modal: Song Detail -->
   <div class="modal-overlay" id="songDetailModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('songDetailModal')"></i>
@@ -249,35 +234,6 @@
         <button class="btn btn-outline btn-full" onclick="closeModal('customConfirmModal')">ยกเลิก</button>
         <button class="btn btn-primary btn-full" id="btn-custom-confirm-ok">ตกลง</button>
       </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="addEventModal">
-    <div class="modal-content">
-      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addEventModal')"></i>
-      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-calendar-plus"></i> สร้างงานใหม่</h2>
-      <div class="form-group"><label>วันที่จัดงาน</label><input type="date" id="event-date" class="form-control"></div>
-      <div class="form-group"><label>ชื่องาน <span style="color:var(--primary)">*</span></label><input type="text" id="event-name" class="form-control"></div>
-      <div class="form-group"><label>สถานที่</label><input type="text" id="event-loc" class="form-control"></div>
-      <div class="form-group"><label>เวลาเปิดรับ</label><input type="datetime-local" id="event-open" class="form-control"></div>
-      <div class="form-group"><label>เวลาปิดรับ</label><input type="datetime-local" id="event-close" class="form-control"></div>
-      <div class="form-group"><label>รายละเอียด</label><input type="text" id="event-det" class="form-control"></div>
-      <button class="btn btn-primary btn-full" onclick="handleAddEvent()" id="btn-event-submit">สร้างกำหนดการ</button>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="editEventModal">
-    <div class="modal-content">
-      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editEventModal')"></i>
-      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-pen"></i> แก้ไขงาน</h2>
-      <input type="hidden" id="edit-event-id">
-      <div class="form-group"><label>วันที่จัดงาน</label><input type="date" id="edit-event-date" class="form-control"></div>
-      <div class="form-group"><label>ชื่องาน</label><input type="text" id="edit-event-name" class="form-control"></div>
-      <div class="form-group"><label>สถานที่</label><input type="text" id="edit-event-loc" class="form-control"></div>
-      <div class="form-group"><label>เวลาเปิดรับ</label><input type="datetime-local" id="edit-event-open" class="form-control"></div>
-      <div class="form-group"><label>เวลาปิดรับ</label><input type="datetime-local" id="edit-event-close" class="form-control"></div>
-      <div class="form-group"><label>รายละเอียด</label><input type="text" id="edit-event-det" class="form-control"></div>
-      <button class="btn btn-primary btn-full" onclick="handleEditEvent()" id="btn-event-edit-submit">บันทึกการแก้ไข</button>
     </div>
   </div>
 
