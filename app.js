@@ -1,10 +1,17 @@
+// ==========================================
+// 1. ตั้งค่าพื้นฐาน (Configuration)
+// ==========================================
 const apiURL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec"; 
 
 let currentEvents = [];
 let currentSongs = [];
 let activeEvent = null;
 let selectedSongId = null;
+let currentViewId = 'calendar'; // เก็บสถานะหน้าจอที่เปิดอยู่
 
+// ==========================================
+// 2. ระบบระบุตัวตน & Cache 12 ชั่วโมง
+// ==========================================
 const CACHE_TIME = 12 * 60 * 60 * 1000;
 let loginTime = localStorage.getItem('delia_login_time') || 0;
 
@@ -22,13 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
   loadEvents();
 });
 
-// ไปหน้าแรกเมื่อคลิกชื่อ/โลโก้
 function goHome() {
   window.history.replaceState({}, document.title, window.location.pathname);
   showView('calendar');
   loadEvents();
 }
 
+// 👑 อัปเกรดระบบอัปเดต UI 
 function updateUserUI() {
   const profileBtn = document.getElementById('btn-user-profile');
   const btnLogin = document.getElementById('btn-login-main');
@@ -36,7 +43,8 @@ function updateUserUI() {
   if (isAdminLoggedIn) {
     profileBtn.innerHTML = `<i class='fa-solid fa-crown'></i> <span class="hide-mobile">${userName}</span>`;
     profileBtn.classList.remove('hidden'); btnLogin.classList.add('hidden');
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+    // โชว์เมนูแอดมินทั้งหมด (ยกเว้นปุ่มลอย FAB ซึ่งจะถูกควบคุมแยก)
+    document.querySelectorAll('.admin-only:not(.fab-btn)').forEach(el => el.classList.remove('hidden'));
   } else if (userUUID && userName) {
     profileBtn.innerHTML = `<i class='fa-solid fa-user'></i> <span class="hide-mobile">${userName}</span>`;
     profileBtn.classList.remove('hidden'); btnLogin.classList.add('hidden');
@@ -45,6 +53,8 @@ function updateUserUI() {
     profileBtn.classList.add('hidden'); btnLogin.classList.remove('hidden');
     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
   }
+  
+  updateFABs(); // อัปเดตปุ่มลอยให้ถูกหน้า
 }
 
 function executeUnifiedAuth() {
@@ -65,7 +75,6 @@ function executeUnifiedAuth() {
     else showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับ ${userName}`, "success");
     btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false;
     
-    // โหลดปฏิทินใหม่เพื่ออัปเดตช่องที่แอดมินคลิกได้
     renderCalendar();
   }, () => { btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; });
 }
@@ -87,14 +96,28 @@ function fetchAPI(action, payload, onSuccess, onError) {
   .catch(err => { console.error(err); showToast("การเชื่อมต่อล้มเหลว", "โปรดตรวจสอบอินเทอร์เน็ต", "error"); if (onError) onError(); });
 }
 
+// 👑 อัปเกรดระบบเปลี่ยนหน้า (คุมปุ่มลอยเป๊ะๆ)
 function showView(viewId) {
-  document.getElementById('view-calendar').classList.add('hidden'); document.getElementById('view-songs').classList.add('hidden');
-  document.getElementById('view-playlist').classList.add('hidden'); document.getElementById('view-' + viewId).classList.remove('hidden');
+  currentViewId = viewId;
+  document.getElementById('view-calendar').classList.add('hidden'); 
+  document.getElementById('view-songs').classList.add('hidden');
+  document.getElementById('view-playlist').classList.add('hidden'); 
+  document.getElementById('view-' + viewId).classList.remove('hidden');
+  updateFABs();
+}
+
+function updateFABs() {
+  const fabAddEvent = document.getElementById('fab-admin-add');
+  const fabAddCat = document.getElementById('fab-add-category');
   
-  if (viewId === 'playlist' && isAdminLoggedIn) {
-    document.getElementById('fab-add-category').classList.remove('hidden');
-  } else {
-    document.getElementById('fab-add-category').classList.add('hidden');
+  // ซ่อนไว้ก่อนทั้งคู่
+  if(fabAddEvent) fabAddEvent.classList.add('hidden');
+  if(fabAddCat) fabAddCat.classList.add('hidden');
+  
+  // ถ้าเป็น Admin ค่อยดึงมาโชว์ตามหน้าที่เปิดอยู่
+  if (isAdminLoggedIn) {
+    if (currentViewId === 'calendar' && fabAddEvent) fabAddEvent.classList.remove('hidden');
+    if (currentViewId === 'playlist' && fabAddCat) fabAddCat.classList.remove('hidden');
   }
 }
 
@@ -153,7 +176,6 @@ function renderCalendar() {
   for (let i = 1; i <= daysInMonth; i++) {
     const cell = document.createElement('div'); cell.className = 'calendar-day';
     
-    // ตั้งค่าให้กล่องจิ้มได้ถ้าเป็น Admin
     if (isAdminLoggedIn) {
       cell.classList.add('admin-clickable');
       cell.onclick = () => {
