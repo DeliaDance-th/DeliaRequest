@@ -2,7 +2,7 @@
 // 1. ตั้งค่าพื้นฐาน (Configuration)
 // ==========================================
 // *** นำลิงก์ Web App URL ของคุณมาใส่ตรงนี้ ***
-const apiURL = "ใส่_WEB_APP_URL_ของคุณตรงนี้"; 
+const apiURL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec"; 
 
 let currentEvents = [];
 let currentSongs = [];
