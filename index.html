@@ -74,16 +74,14 @@
     </div>
   </div>
 
-  <!-- View 3: Playlist Manager (20/80 Layout) -->
+  <!-- View 3: Playlist Manager -->
   <div class="container hidden playlist-container" id="view-playlist" style="max-width: 100%; padding: 0 15px;">
     <div class="header-section" style="margin-bottom: 10px;">
-      <button class="btn btn-outline btn-back" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> ออกจากระบบจัดการ</button>
+      <button class="btn btn-outline btn-back" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารายการ</button>
       <h1 id="playlist-event-title" style="margin-top: 10px;">Setlist Manager</h1>
     </div>
     
-    <!-- Workspace แบบ 2 คอลัมน์ -->
     <div class="playlist-workspace">
-      
       <!-- ฝั่งซ้าย: กองกลาง (20%) -->
       <div class="pool-sidebar" id="pool-sidebar">
         <div class="list-col-header" style="background: white; border-bottom: 2px solid var(--primary-light);">
@@ -103,33 +101,39 @@
           <div style="flex:1"></div>
           <button class="btn btn-outline btn-sm" onclick="confirmImportFromVotes()"><i class="fa-solid fa-rotate-left"></i> รีเซ็ตจากผลโหวต</button>
           <button class="btn btn-outline btn-sm" style="border-color:#F39C12; color:#F39C12;" onclick="addNewCategory()"><i class="fa-solid fa-folder-plus"></i> เพิ่มหมวดหมู่</button>
-          <button class="btn btn-primary btn-sm" id="btn-save-playlist" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-playlist-top" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> เซฟลง Sheet</button>
         </div>
+        
         <div class="dynamic-board" id="dynamic-board">
           <!-- กล่องหมวดหมู่จะถูกสร้างไว้ที่นี่ -->
         </div>
+
+        <!-- ปุ่มเซฟด้านล่างสุดของกระดาน เพื่อง่ายต่อการคลิกเมื่อจัดเสร็จ -->
+        <div style="padding: 15px; background: #FDFDFD; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+          <button class="btn btn-primary" id="btn-save-playlist-bottom" onclick="savePlaylistData()"><i class="fa-solid fa-floppy-disk"></i> บันทึกลง Sheet</button>
+        </div>
       </div>
-      
     </div>
   </div>
 
+  <!-- ปุ่มลอย (FAB) ควบคุมตามหน้า -->
+  <!-- FAB สำหรับหน้าปฏิทิน: สร้างงานใหม่ -->
   <button id="fab-admin-add" class="fab-btn hidden admin-only" onclick="openModal('addEventModal')" title="สร้างงานใหม่"><i class="fa-solid fa-plus"></i></button>
+  
+  <!-- FAB สำหรับหน้า Playlist: เพิ่มหมวดหมู่ -->
+  <button id="fab-add-category" class="fab-btn hidden admin-only" onclick="addNewCategory()" title="เพิ่มหมวดหมู่ใหม่" style="background-color: #F39C12;"><i class="fa-solid fa-folder-plus"></i></button>
 
   <!-- ================= MODALS ================= -->
-
-  <!-- Modal: Input (สำหรับกรอกข้อความแทน prompt()) -->
+  <!-- Input Modal -->
   <div class="modal-overlay" id="inputModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('inputModal')"></i>
       <h2 id="input-modal-title" style="margin-top: 0;"><i class="fa-solid fa-pen-to-square"></i> ตั้งชื่อ</h2>
-      <div class="form-group">
-        <input type="text" id="input-modal-value" class="form-control" onkeypress="if(event.key === 'Enter') submitInputModal()">
-      </div>
+      <div class="form-group"><input type="text" id="input-modal-value" class="form-control" onkeypress="if(event.key === 'Enter') submitInputModal()"></div>
       <button class="btn btn-primary btn-full" onclick="submitInputModal()">ตกลง</button>
     </div>
   </div>
 
-  <!-- Modals อื่นๆ (Auth, Add Event, Add Song, Edit Song ฯลฯ ดึงของเดิมมาใช้) -->
   <div class="modal-overlay" id="authModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('authModal')"></i>
