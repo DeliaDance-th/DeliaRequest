@@ -1,13 +1,10 @@
 /* =========================================
-   1. ตัวแปรสีหลัก (Variables)
+   1. ตัวแปรสีหลัก (Variables)[cite: 4]
 ========================================= */
 :root {
-  /* โทนสีหลัก (สีชมพูอมแดง สไตล์ K-Pop/T-Pop) */
   --primary: #D81B60;
   --primary-hover: #C2185B;
   --primary-light: #FCE4EC;
-  
-  /* โทนสีอื่นๆ */
   --success: #2E7D32;
   --danger: #C62828;
   --dark: #212121;
@@ -17,7 +14,6 @@
   --card-bg: #FFFFFF;
   --border-color: #E0E0E0;
   
-  /* ขนาดและเงา */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
@@ -27,335 +23,206 @@
 }
 
 /* =========================================
-   2. ตั้งค่าพื้นฐาน & พื้นหลังเว็บ (Background)
+   2. ตั้งค่าพื้นฐาน & พื้นหลัง (Background)[cite: 4]
 ========================================= */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Prompt', sans-serif;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; padding-top: 60px; }
 
-body {
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  line-height: 1.5;
-  padding-top: 60px; /* เว้นที่ให้ Navbar */
-}
-
-/* ลวดลายพื้นหลัง (มินิมอล ไม่ลายตา) */
 .bg-pattern {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: -1;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
   background-image: radial-gradient(var(--primary-light) 2px, transparent 2px);
-  background-size: 30px 30px;
-  opacity: 0.6;
+  background-size: 30px 30px; opacity: 0.6;
 }
 
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 15px;
-}
-
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
 .hidden { display: none !important; }
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
 
 /* =========================================
-   3. แถบเมนูด้านบน (Navbar)
+   3. แถบเมนูด้านบน (Navbar)[cite: 4]
 ========================================= */
 .navbar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px); /* เอฟเฟกต์กระจกเบลอ */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 15px;
-  box-shadow: var(--shadow-sm);
-  z-index: 100;
+  position: fixed; top: 0; left: 0; right: 0; height: 60px;
+  background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 15px; box-shadow: var(--shadow-sm); z-index: 100;
 }
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 1.2rem;
-  color: var(--primary);
-}
-
-.greeting-text {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--primary);
-  background: var(--primary-light);
-  padding: 4px 10px;
-  border-radius: 20px;
-}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.2rem; color: var(--primary); }
+.greeting-text { font-size: 0.85rem; font-weight: 500; color: var(--primary); background: var(--primary-light); padding: 4px 10px; border-radius: 20px; }
 
 /* =========================================
-   4. ปุ่มต่างๆ (Buttons)
+   4. ปุ่มต่างๆ (Buttons)[cite: 4]
 ========================================= */
 .btn {
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.95rem;
+  padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer;
+  border: none; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem;
 }
-
 .btn-sm { padding: 5px 12px; font-size: 0.85rem; }
 .btn-full { width: 100%; margin-top: 10px; padding: 12px; }
 
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-  box-shadow: 0 2px 6px rgba(216, 27, 96, 0.3);
-}
+.btn-primary { background-color: var(--primary); color: white; box-shadow: 0 2px 6px rgba(216, 27, 96, 0.3); }
 .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
 .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
 
-.btn-outline {
-  background-color: transparent;
-  color: var(--primary);
-  border: 1px solid var(--primary);
-}
+.btn-outline { background-color: transparent; color: var(--primary); border: 1px solid var(--primary); }
 .btn-outline:hover { background-color: var(--primary-light); }
 
-.btn-danger {
-  background-color: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
+.btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
 .btn-danger:hover { background-color: #FFEBEE; }
 
-.btn-magic {
-  background: linear-gradient(45deg, #8E24AA, #D81B60);
-  color: white;
-  border: none;
-}
-.btn-magic:hover { opacity: 0.9; }
-
+.btn-magic { background: linear-gradient(45deg, #8E24AA, #D81B60); color: white; }
 .btn-icon { padding: 8px; border-radius: 50%; width: 40px; height: 40px; }
 
-/* ปุ่มสร้างงานใหม่ลอยอยู่ขวาล่าง */
 .fab-btn {
-  position: fixed; bottom: 20px; right: 20px;
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background-color: var(--primary); color: white;
-  border: none;
-  box-shadow: var(--shadow-md);
-  font-size: 1.5rem;
-  cursor: pointer;
-  z-index: 90;
-  transition: transform 0.2s;
+  position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
+  border-radius: 50%; background-color: var(--primary); color: white; border: none;
+  box-shadow: var(--shadow-md); font-size: 1.5rem; cursor: pointer; z-index: 90; transition: transform 0.2s;
 }
 .fab-btn:hover { transform: scale(1.05); }
 
 /* =========================================
-   5. แบบฟอร์ม (Forms)
+   5. แบบฟอร์ม (Forms)[cite: 4]
 ========================================= */
 .form-group { margin-bottom: 15px; text-align: left; }
-.form-group label {
-  display: block; margin-bottom: 5px;
-  font-size: 0.9rem; font-weight: 500; color: var(--dark);
-}
+.form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; color: var(--dark); }
 .form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  background-color: #F9F9F9;
-  transition: border-color 0.2s;
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm); font-size: 1rem; background-color: #F9F9F9; transition: border-color 0.2s;
 }
-.form-control:focus {
-  outline: none;
-  border-color: var(--primary);
-  background-color: #FFF;
-}
-
-.checkbox-container {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.9rem; font-weight: 500; margin-top: 10px;
-  cursor: pointer;
-}
+.form-control:focus { outline: none; border-color: var(--primary); background-color: #FFF; }
+.checkbox-container { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; margin-top: 10px; cursor: pointer; }
 .checkbox-container input { width: 18px; height: 18px; accent-color: var(--primary); }
 
-/* กล่องค้นหา */
 .search-wrapper { position: relative; margin-bottom: 20px; }
-.search-icon {
-  position: absolute; left: 15px; top: 50%;
-  transform: translateY(-50%); color: var(--text-muted);
-}
-.search-box {
-  width: 100%; padding: 12px 15px 12px 40px;
-  border: 1px solid var(--border-color);
-  border-radius: 25px; font-size: 1rem;
-  box-shadow: var(--shadow-sm);
-}
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.search-box { width: 100%; padding: 12px 15px 12px 40px; border: 1px solid var(--border-color); border-radius: 25px; font-size: 1rem; box-shadow: var(--shadow-sm); }
 
 /* =========================================
-   6. ปฏิทินและการ์ด (Cards)
+   6. ปฏิทินอีเวนต์ (Calendar UI จำลอง)
 ========================================= */
 .header-section { text-align: center; margin-bottom: 25px; }
 .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
-/* Grid การ์ดปฏิทิน: มือถือ 1 แถว, คอมพิวเตอร์หลายแถว */
-.calendar-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-}
-@media (min-width: 768px) {
-  .calendar-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-}
+.calendar-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+@media (min-width: 768px) { .calendar-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }
 
+/* สร้างดีไซน์ให้เหมือนปฏิทินแบบฉีก */
 .event-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-md);
-  padding: 15px;
-  box-shadow: var(--shadow-sm);
-  border-left: 4px solid var(--primary);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: var(--card-bg); border-radius: var(--radius-md); padding: 15px;
+  box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);
 }
-.event-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.event-date { font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 5px; }
-.event-title { font-size: 1.1rem; font-weight: 600; color: var(--dark); margin-bottom: 5px; }
-.event-loc { font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+.event-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
+.event-card.closed { opacity: 0.8; filter: grayscale(50%); }
 
-/* การ์ดรายชื่อเพลง */
+.event-date-box {
+  background: var(--primary-light); color: var(--primary); border-radius: var(--radius-sm);
+  padding: 10px; min-width: 75px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+}
+.event-date-box .day { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.event-date-box .month { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-top: 3px; }
+
+.event-info-box { flex: 1; }
+.event-title { font-size: 1.1rem; font-weight: 600; color: var(--dark); margin-bottom: 5px; }
+.event-loc { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+
+/* =========================================
+   7. การ์ดรายชื่อเพลง (เพิ่ม Thumbnail)
+========================================= */
 .song-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-md);
-  padding: 12px 15px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-left: 4px solid #B0BEC5;
-  cursor: pointer;
+  background: var(--card-bg); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;
+  box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  border-left: 4px solid #B0BEC5; cursor: pointer;
 }
 .song-card.status-approved { border-left-color: var(--success); }
 .song-card.status-played { border-left-color: #9E9E9E; opacity: 0.7; }
 
+/* รูป Thumbnail ของ YouTube */
+.song-thumbnail {
+  width: 100px; height: 56px; border-radius: var(--radius-sm);
+  object-fit: cover; flex-shrink: 0; background-color: #eee;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+
 .song-info-main { flex: 1; overflow: hidden; }
-.song-title { font-weight: 600; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-title { font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .song-artist { font-size: 0.85rem; color: var(--text-muted); }
-.song-tags { display: flex; gap: 5px; margin-top: 5px; }
+.song-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
 .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #eee; font-weight: 500; }
 .tag-m { background: #E3F2FD; color: #1565C0; }
 .tag-f { background: #FCE4EC; color: #C2185B; }
 .tag-bd { background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; }
 
 .song-vote-box {
-  display: flex; flex-direction: column; align-items: center;
-  background: var(--primary-light); color: var(--primary);
-  border-radius: var(--radius-sm); padding: 5px 10px; min-width: 50px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--primary-light); color: var(--primary); border-radius: var(--radius-sm);
+  padding: 5px; min-width: 55px; height: 56px; flex-shrink: 0;
 }
 .vote-count { font-size: 1.2rem; font-weight: 600; line-height: 1; }
-.vote-label { font-size: 0.7rem; }
+.vote-label { font-size: 0.65rem; font-weight: 500; }
 
 /* =========================================
-   7. ระบบจัด Setlist (Playlist Manager)
+   8. ระบบจัด Setlist (Dynamic Block Code)
 ========================================= */
-.playlist-controls {
-  display: flex; gap: 10px; justify-content: center;
-  flex-wrap: wrap; margin-bottom: 20px;
-}
+.playlist-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
 
-/* มือถือเรียงลงมา คอมพิวเตอร์เรียง 4 คอลัมน์ */
-.playlist-board {
-  display: flex;
-  flex-direction: column; /* Mobile First: แนวตั้ง */
-  gap: 15px;
-  overflow-x: hidden;
-}
+/* ห่อหุ้มกระดานทั้งหมด */
+.playlist-board-wrapper { display: flex; flex-direction: column; gap: 20px; }
+.fixed-col { border: 2px dashed var(--primary); }
+
+/* พื้นที่สำหรับกล่องหมวดหมู่ที่สร้างเพิ่ม (บนมือถือเรียงลง บนคอมเรียงแนวนอน) */
+.dynamic-board { display: flex; flex-direction: column; gap: 15px; min-height: 150px; padding-bottom: 20px; }
 
 @media (min-width: 992px) {
-  .playlist-board {
-    flex-direction: row; /* Desktop: แนวนอน */
-    align-items: flex-start;
-  }
+  .playlist-board-wrapper { flex-direction: row; align-items: flex-start; }
+  .fixed-col { min-width: 300px; max-width: 350px; position: sticky; top: 70px; }
+  .dynamic-board { flex-direction: row; flex-wrap: wrap; flex: 1; align-items: flex-start; }
+  .list-col { min-width: 300px; flex: 1; }
 }
 
 .list-col {
-  flex: 1;
-  background: #F5F5F5;
-  border-radius: var(--radius-md);
-  padding: 10px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
+  background: #F5F5F5; border-radius: var(--radius-md); padding: 12px;
+  display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
 }
-.list-col-header { text-align: center; margin-bottom: 10px; }
-.list-col-header h3 { font-size: 1.1rem; margin-bottom: 10px; }
-.drop-zone { flex: 1; min-height: 200px; }
 
-/* การ์ดใน Playlist */
-.playlist-item {
-  background: white; border: 1px solid var(--border-color);
-  padding: 8px 10px; margin-bottom: 8px; border-radius: var(--radius-sm);
-  font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: grab;
+/* หัวกล่อง (สามารถลากกล่องได้ที่นี่) */
+.list-col-header { 
+  text-align: center; margin-bottom: 10px; cursor: grab; 
+  padding-bottom: 10px; border-bottom: 1px solid #E0E0E0;
 }
-.playlist-item:active { cursor: grabbing; }
-.drag-handle { color: #ccc; cursor: grab; margin-right: 8px; }
+.list-col-header:active { cursor: grabbing; }
+.list-col-header h3 { font-size: 1.1rem; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+.drop-zone { flex: 1; min-height: 200px; padding: 5px 0; }
+
+/* การ์ดเพลงใน Playlist */
+.playlist-item {
+  background: white; border: 1px solid var(--border-color); padding: 8px 10px; margin-bottom: 8px;
+  border-radius: var(--radius-sm); font-size: 0.85rem; display: flex; justify-content: space-between;
+  align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: grab;
+}
+.playlist-item:active { cursor: grabbing; box-shadow: var(--shadow-md); }
+.drag-handle { color: #ccc; cursor: grab; margin-right: 8px; font-size: 1.2rem; }
 
 /* =========================================
-   8. หน้าต่างป๊อปอัป (Modals)
+   9. หน้าต่างป๊อปอัป & แจ้งเตือน (Modals & Toasts)[cite: 4]
 ========================================= */
 .modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px);
-  display: none; align-items: center; justify-content: center;
-  z-index: 1000; padding: 15px;
-  opacity: 0; transition: opacity 0.3s;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; opacity: 0; transition: opacity 0.3s;
 }
 .modal-overlay.active { display: flex; opacity: 1; }
-
 .modal-content {
-  background: white;
-  width: 100%; max-width: 400px;
-  border-radius: var(--radius-lg);
-  padding: 25px 20px;
-  position: relative;
-  box-shadow: var(--shadow-lg);
-  transform: translateY(20px);
-  transition: transform 0.3s;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: white; width: 100%; max-width: 400px; border-radius: var(--radius-lg); padding: 25px 20px;
+  position: relative; box-shadow: var(--shadow-lg); transform: translateY(20px); transition: transform 0.3s;
+  max-height: 90vh; overflow-y: auto;
 }
 .modal-overlay.active .modal-content { transform: translateY(0); }
+.modal-close { position: absolute; top: 15px; right: 15px; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; padding: 5px; }
 
-.modal-close {
-  position: absolute; top: 15px; right: 15px;
-  font-size: 1.2rem; color: var(--text-muted);
-  cursor: pointer; padding: 5px;
-}
-
-/* Modal รายละเอียดงานและเพลง */
 .event-intro-card { text-align: center; }
-.intro-header {
-  width: 60px; height: 60px; background: var(--primary-light); color: var(--primary);
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; margin: 0 auto 15px auto;
-}
+.intro-header { width: 60px; height: 60px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 15px auto; }
 .intro-details { background: #F9F9F9; border-radius: var(--radius-sm); padding: 15px; text-align: left; margin-top: 15px; }
 .intro-row { margin-bottom: 8px; font-size: 0.9rem; display: flex; gap: 10px; }
 .intro-row i { color: var(--primary); width: 15px; }
@@ -366,18 +233,10 @@ body {
 .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
 .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
-/* =========================================
-   9. แจ้งเตือนมุมขวาบน (Toast Notification)
-========================================= */
-#toast-container {
-  position: fixed; top: 70px; right: 15px;
-  z-index: 1100; display: flex; flex-direction: column; gap: 10px;
-}
+#toast-container { position: fixed; top: 70px; right: 15px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; }
 .toast {
-  background: white; border-radius: var(--radius-sm);
-  padding: 12px 15px; min-width: 250px;
-  box-shadow: var(--shadow-md); display: flex; align-items: flex-start; gap: 12px;
-  border-left: 5px solid var(--primary);
+  background: white; border-radius: var(--radius-sm); padding: 12px 15px; min-width: 250px;
+  box-shadow: var(--shadow-md); display: flex; align-items: flex-start; gap: 12px; border-left: 5px solid var(--primary);
   animation: slideInRight 0.3s forwards;
 }
 .toast.success { border-left-color: var(--success); }
@@ -387,14 +246,10 @@ body {
 .toast.error .toast-icon { color: var(--danger); }
 .toast-body h4 { margin: 0 0 3px 0; font-size: 0.95rem; }
 .toast-body p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-/* Utils */
 .loader { display: flex; justify-content: center; padding: 30px; color: var(--primary); }
-@media (max-width: 600px) {
-  .hide-mobile { display: none !important; } /* ซ่อนข้อความปุ่มบนมือถือให้เหลือแต่ไอคอน */
+@media (max-width: 600px) { 
+  .hide-mobile { display: none !important; }
+  .song-thumbnail { width: 80px; height: 45px; }
 }
