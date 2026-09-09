@@ -168,6 +168,7 @@ if (Date.now() - loginTime > CACHE_TIME) {
 let userUUID = localStorage.getItem('delia_uuid') || "";
 let userName = localStorage.getItem('delia_username') || "";
 let isAdminLoggedIn = localStorage.getItem('delia_role') === 'Admin';
+let isDevLoggedIn = localStorage.getItem('delia_role') === 'Developer';
 
 document.addEventListener("DOMContentLoaded", () => {
   setLanguage(currentLang);
@@ -189,20 +190,33 @@ function updateUserUI() {
   const profileBtn = document.getElementById('btn-user-profile');
   const btnLogin = document.getElementById('btn-login-main');
   
-  if (isAdminLoggedIn) {
-    profileBtn.innerHTML = `<i class='fa-solid fa-crown'></i> <span class="hide-mobile">${userName}</span>`;
+  if (isAdminLoggedIn || isDevLoggedIn) {
+    // ให้ Dev มีไอคอน < / > ส่วน Admin เป็นมงกุฎ
+    let icon = isDevLoggedIn ? "<i class='fa-solid fa-code'></i>" : "<i class='fa-solid fa-crown'></i>";
+    profileBtn.innerHTML = `${icon} <span class="hide-mobile">${userName}</span>`;
     profileBtn.classList.remove('hidden');
     if (btnLogin) btnLogin.classList.add('hidden');
+    
+    // ให้ Dev มีสิทธิ์เทียบเท่า Admin ในการจัดการงาน
     document.querySelectorAll('.admin-only:not(.fab-btn)').forEach(el => el.classList.remove('hidden'));
+    
+    // เปิดการแสดงผลเครื่องมือ Dev
+    if (isDevLoggedIn) {
+      document.querySelectorAll('.dev-only').forEach(el => el.classList.remove('hidden'));
+    } else {
+      document.querySelectorAll('.dev-only').forEach(el => el.classList.add('hidden'));
+    }
   } else if (userUUID && userName) {
     profileBtn.innerHTML = `<i class='fa-solid fa-user'></i> <span class="hide-mobile">${userName}</span>`;
     profileBtn.classList.remove('hidden');
     if (btnLogin) btnLogin.classList.add('hidden');
     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.dev-only').forEach(el => el.classList.add('hidden'));
   } else {
     profileBtn.classList.add('hidden');
     if (btnLogin) btnLogin.classList.remove('hidden');
     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.dev-only').forEach(el => el.classList.add('hidden'));
   }
   updateFABs();
 }
@@ -246,6 +260,7 @@ function checkSlideAndLogin() {
     userUUID = res.uuid;
     userName = res.username;
     isAdminLoggedIn = (res.role === 'Admin');
+    isDevLoggedIn = (res.role === 'Developer');
     
     localStorage.setItem('delia_uuid', userUUID);
     localStorage.setItem('delia_username', userName);
@@ -289,6 +304,7 @@ function executeAdminAuth() {
     userUUID = res.uuid;
     userName = res.username;
     isAdminLoggedIn = (res.role === 'Admin');
+    isDevLoggedIn = (res.role === 'Developer');
     
     localStorage.setItem('delia_uuid', userUUID);
     localStorage.setItem('delia_username', userName);
@@ -1277,3 +1293,42 @@ function confirmDeleteEvent() {
     });
   });
 }
+
+// ==========================================
+// 🚀 Developer AI Diagnostics
+// ==========================================
+function setAIStatus(status, state = 'normal') {
+  const textEl = document.getElementById('ai-status-text');
+  const iconEl = document.getElementById('ai-status-icon');
+  if (!textEl || !iconEl) return;
+  
+  textEl.innerText = status;
+  if (state === 'processing') {
+    iconEl.className = 'fa-solid fa-robot fa-fade';
+    iconEl.style.color = '#FFA500'; // ไฟกระพริบสีส้ม
+    textEl.style.color = '#FFA500';
+  } else if (state === 'error') {
+    iconEl.className = 'fa-solid fa-triangle-exclamation fa-shake';
+    iconEl.style.color = '#FF4D85'; // สั่นสีแดง
+    textEl.style.color = '#FF4D85';
+  } else {
+    iconEl.className = 'fa-solid fa-robot';
+    iconEl.style.color = '#00FF00'; // สีเขียวปกติ
+    textEl.style.color = '#00FF00';
+  }
+}
+
+function executeTestAI() {
+  setAIStatus('AI: Testing...', 'processing');
+  fetchAPI("testAI", {}, res => {
+    setAIStatus('AI: Online', 'normal');
+    showToast("AI System OK", res.message, "success");
+  }, () => {
+    setAIStatus('AI: Error', 'error');
+  });
+}
+
+// 💡 วิธีเรียกใช้:
+// คุณสามารถนำคำสั่ง setAIStatus('AI: Analyzing...', 'processing'); 
+// ไปวางไว้หน้าฟังก์ชัน fetchAPI("aiProcess"...) ได้เลย
+// และนำ setAIStatus('AI: Standby', 'normal'); ไปวางไว้ใน onSuccess() ครับ
