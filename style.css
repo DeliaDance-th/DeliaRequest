@@ -2,24 +2,12 @@
    1. ตัวแปรสีหลัก (Ultra Pink Theme 💖)
 ========================================= */
 :root {
-  --primary: #FF4D85;         /* สีชมพูหลัก */
-  --primary-hover: #FF1A66;   /* สีชมพูเข้มเมื่อเอาเมาส์ชี้ */
-  --primary-light: #FFD1DF;   /* สีชมพูพาสเทลสำหรับพื้นหลังปุ่ม/ป้าย */
-  --success: #2E7D32;
-  --danger: #E53935;
-  --dark: #6A1B41;            /* สีข้อความหัวข้อ (ชมพูอมม่วงเข้ม) */
-  --text-main: #4A148C;       /* สีข้อความหลัก (ม่วงเข้มละมุนๆ) */
-  --text-muted: #A0527B;      /* สีข้อความรอง (ชมพูหม่น) */
-  --bg-color: #FFF0F5;        /* สีพื้นหลังเว็บ LavenderBlush (ชมพูอ่อนมาก) */
-  --card-bg: #FFFFFF;
-  --border-color: #F8BBD0;    /* สีเส้นขอบ (ชมพูอ่อน) */
-  
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 2px 4px rgba(255, 77, 133, 0.05);
-  --shadow-md: 0 4px 12px rgba(255, 77, 133, 0.1);
-  --shadow-lg: 0 10px 25px rgba(255, 77, 133, 0.15);
+  --primary: #FF4D85; --primary-hover: #FF1A66; --primary-light: #FFD1DF; 
+  --success: #2E7D32; --danger: #E53935; --dark: #6A1B41; 
+  --text-main: #4A148C; --text-muted: #A0527B; --bg-color: #FFF0F5; 
+  --card-bg: #FFFFFF; --border-color: #F8BBD0; 
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
+  --shadow-sm: 0 2px 4px rgba(255, 77, 133, 0.05); --shadow-md: 0 4px 12px rgba(255, 77, 133, 0.1); --shadow-lg: 0 10px 25px rgba(255, 77, 133, 0.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
@@ -30,7 +18,6 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
 
-/* ปรับ Navbar ให้อมชมพู */
 .navbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(255, 240, 245, 0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-shadow: var(--shadow-sm); z-index: 100; border-bottom: 2px solid var(--primary-light); }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.2rem; color: var(--primary); transition: transform 0.2s; }
 .brand:hover { transform: scale(1.02); }
@@ -96,9 +83,13 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .tag-m { background: #E3F2FD; color: #1565C0; }
 .tag-f { background: var(--primary-light); color: var(--primary-hover); }
 .tag-bd { background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; }
-.song-vote-box { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-sm); padding: 5px; min-width: 55px; height: 56px; flex-shrink: 0; border: 1px solid var(--border-color); }
-.vote-count { font-size: 1.2rem; font-weight: 600; line-height: 1; }
-.vote-label { font-size: 0.65rem; font-weight: 500; }
+
+/* 💖 Quick Vote Button Design 💖 */
+.song-vote-quick { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 55px; cursor: pointer; padding: 5px; transition: transform 0.2s; border-radius: 50%; }
+.song-vote-quick:active { transform: scale(0.8); }
+.vote-anim-icon { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.heart-pop { transform: scale(1.5); }
+.vote-count { font-size: 1rem; font-weight: 600; line-height: 1; margin-top: 3px; }
 
 .playlist-workspace { display: flex; height: calc(100vh - 150px); min-height: 500px; gap: 15px; margin-top: 10px; overflow: hidden; }
 .pool-sidebar { width: 25%; min-width: 250px; background: #FFF; border-radius: var(--radius-md); display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 0 10px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid var(--border-color); }
@@ -111,9 +102,11 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .list-col-header:active { cursor: grabbing; }
 .list-col-header h3 { font-size: 1.05rem; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px; color: var(--dark); }
 .drop-zone { flex: 1; min-height: 200px; padding: 10px; overflow-y: auto; }
-.playlist-item { background: white; border: 1px solid var(--border-color); padding: 8px 10px; margin-bottom: 8px; border-radius: var(--radius-sm); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(255,77,133,0.1); cursor: grab; }
+
+/* 🌟 ทำให้การ์ดเพลงลากง่ายขึ้น โดยไม่ต้องลากตรงไอคอน */
+.playlist-item { background: white; border: 1px solid var(--border-color); padding: 8px 10px; margin-bottom: 8px; border-radius: var(--radius-sm); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(255,77,133,0.1); cursor: grab; user-select: none; }
 .playlist-item:active { cursor: grabbing; box-shadow: var(--shadow-md); border-color: var(--primary); }
-.drag-handle { color: var(--primary-light); cursor: grab; margin-right: 8px; font-size: 1.2rem; }
+.drag-handle { display: none; } /* ซ่อนแถบลากทิ้งไปเลย */
 
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(106, 27, 65, 0.4); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; opacity: 0; transition: opacity 0.3s; }
 .modal-overlay.active { display: flex; opacity: 1; }
@@ -144,6 +137,14 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .loader { display: flex; justify-content: center; padding: 30px; color: var(--primary); }
 
+.lang-btn { border-color: var(--border-color); color: var(--text-muted); transition: 0.2s; }
+.lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.slider-wrapper { position: relative; width: 100%; height: 50px; background: var(--primary-light); border-radius: 25px; overflow: hidden; margin-top: 20px; }
+.slider-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 600; z-index: 1; pointer-events: none; transition: 0.2s; }
+.slider-thumb { position: absolute; top: 0; left: 0; width: 50px; height: 50px; background: var(--primary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; z-index: 2; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.2s; }
+.slider-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 3; cursor: grab; margin: 0; }
+.slider-input:active { cursor: grabbing; }
+
 @media (max-width: 768px) { 
   .hide-mobile { display: none !important; }
   .song-thumbnail { width: 80px; height: 45px; }
@@ -157,33 +158,3 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
   .pool-sidebar.collapsed { height: 0; width: 100%; transform: translateY(-20px); }
   .dynamic-board { overflow-y: visible; }
 }
-
-/* =========================================
-   10. Slide to Login & Language UI
-========================================= */
-.lang-btn {
-  border-color: var(--border-color); color: var(--text-muted); transition: 0.2s;
-}
-.lang-btn.active {
-  background: var(--primary); color: white; border-color: var(--primary);
-}
-
-.slider-wrapper {
-  position: relative; width: 100%; height: 50px; background: var(--primary-light);
-  border-radius: 25px; overflow: hidden; margin-top: 20px;
-}
-.slider-text {
-  position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-  color: var(--primary); font-weight: 600; z-index: 1; pointer-events: none; transition: 0.2s;
-}
-.slider-thumb {
-  position: absolute; top: 0; left: 0; width: 50px; height: 50px;
-  background: var(--primary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;
-  z-index: 2; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.2s;
-}
-.slider-input {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0; z-index: 3; cursor: grab; margin: 0;
-}
-.slider-input:active { cursor: grabbing; }
-
