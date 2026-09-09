@@ -759,6 +759,35 @@ function shareSong() {
   });
 }
 
+function exportDJ() {
+  if (currentSongs.length === 0) {
+    return showToast("แจ้งเตือน", "ยังไม่มีเพลงในรายการเลยครับ", "error");
+  }
+  
+  // เรียงเพลงตามคะแนนโหวตจากมากไปน้อย
+  let sortedSongs = [...currentSongs].sort((a, b) => b.votes - a.votes);
+  
+  // สร้างข้อความสรุป
+  let text = `🎵 รายชื่อเพลง: ${activeEvent.name} 🎵\n`;
+  text += `อัปเดตเมื่อ: ${new Date().toLocaleTimeString('th-TH')}\n\n`;
+  
+  sortedSongs.forEach((s, idx) => {
+    let bdTag = (s.isBreakdance === 'Yes' || s.isBreakdance === true) ? " [BD]" : "";
+    text += `${idx + 1}. ${s.name} - ${s.artist} ${bdTag} (${s.votes} โหวต)\n`;
+    text += `   🕒 ท่อน: ${s.start} - ${s.end}\n`;
+    if (s.link) text += `   🔗 ลิงก์: ${s.link}\n`;
+    text += `\n`;
+  });
+  
+  // คัดลอกลง Clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    showToast("คัดลอกสำเร็จ", "นำไปวางส่งให้ DJ ได้เลย!", "success");
+  }).catch(() => {
+    // ถ้าเบราว์เซอร์ไม่รองรับ ให้เปิดหน้าต่างขึ้นมาให้ก๊อปปี้เอง
+    showCustomConfirm("คัดลอกรายชื่อเพลง", text, () => {});
+  });
+}
+
 // ------------------------------------------
 // การทำงานเกี่ยวกับฟอร์มขอเพลง
 // ------------------------------------------
@@ -1125,7 +1154,11 @@ function initSortables() {
     sortableLists.push(new Sortable(zone, {
       group: 'shared', 
       animation: 150, 
-      ghostClass: 'sortable-ghost' 
+      ghostClass: 'sortable-ghost',
+      
+      // ✨ เพิ่ม 2 บรรทัดนี้ เพื่อแก้ปัญหานิ้วล็อกบนมือถือ ✨
+      delay: 150,             // หน่วงเวลา 150ms ก่อนเริ่มจับลาก
+      delayOnTouchOnly: true  // ให้มีผลเฉพาะตอนทัชสกรีน (ใช้เมาส์คอมฯ จะลากได้ทันที)
     }));
   });
 }
