@@ -1,7 +1,7 @@
 // ==========================================
 // 1. ตั้งค่าพื้นฐาน (Configuration)
 // ==========================================
-// อย่าลืมใส่ลิงก์ของคุณที่นี่นะครับ
+// *** นำลิงก์ Web App URL ของคุณมาใส่ตรงนี้ ***
 const apiURL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec"; 
 
 let currentEvents = [];
@@ -10,33 +10,94 @@ let activeEvent = null;
 let selectedSongId = null;
 let currentViewId = 'calendar';
 
+// ตัวแปรใหม่สำหรับเก็บสัญชาติเพลงชั่วคราว
+let currentOrigin = "K-Pop";
+
 // ==========================================
 // 2. ระบบแปลภาษา (i18n)
 // ==========================================
 const translations = {
   th: {
-    welcome: "ยินดีต้อนรับ", enter_name_prompt: "ใส่ชื่อของคุณที่นี่", slide_login: "เลื่อนเพื่อเข้าสู่ระบบ", login: "เข้าสู่ระบบ",
-    calendar_title: "Event Calendar", calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน",
-    song_req_title: "Song Requests", btn_back: "กลับปฏิทิน", btn_add_song: "ขอเพลงใหม่", btn_manage_pl: "จัด Playlist", btn_copy_dj: "คัดลอกให้ DJ",
-    search_ph: "ค้นหาชื่อเพลง หรือ ศิลปิน...", setlist_title: "Setlist Manager", btn_back_list: "กลับหน้ารายการ", pool: "📦 กองกลาง",
-    hide_pool: "ซ่อนกองกลาง", show_pool: "แสดงกองกลาง", btn_fetch_votes: "ดึงข้อมูลการขอเพลง", btn_add_cat: "เพิ่มหมวดหมู่", btn_save: "บันทึกลง Sheet",
-    start_time: "เริ่ม (นาที:วินาที)", end_time: "จบ (นาที:วินาที)", btn_submit: "ส่งข้อมูล", admin_access: "🔑 เข้าสู่โหมด Admin", logout: "ออกจากระบบ",
-    admin_login: "Admin Login", admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน",
-    btn_cancel: "ยกเลิก", btn_view_songs: "ดูรายการเพลง", yt_link: "ลิงก์ Youtube", song_name: "ชื่อเพลง", artist: "ศิลปิน/ช่อง",
-    gender: "เพศของศิลปิน", gender_mix: "รวม/ผสม (Mix)", gender_m: "ศิลปินชาย (Boy Group)", gender_f: "ศิลปินหญิง (Girl Group)",
-    has_breakdance: "เพลงนี้มี Breakdance ใช่มั้ย?", ex_time: "เช่น 1:30", edit_song: "แก้ไขข้อมูลเพลง"
+    welcome: "ยินดีต้อนรับ", 
+    enter_name_prompt: "ใส่ชื่อของคุณที่นี่", 
+    slide_login: "เลื่อนเพื่อเข้าสู่ระบบ", 
+    login: "เข้าสู่ระบบ",
+    calendar_title: "Event Calendar", 
+    calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน",
+    song_req_title: "Song Requests", 
+    btn_back: "กลับปฏิทิน", 
+    btn_add_song: "ขอเพลงใหม่", 
+    btn_manage_pl: "จัด Playlist", 
+    btn_copy_dj: "คัดลอกให้ DJ",
+    search_ph: "ค้นหาชื่อเพลง หรือ ศิลปิน...", 
+    setlist_title: "Setlist Manager", 
+    btn_back_list: "กลับหน้ารายการ", 
+    pool: "📦 กองกลาง",
+    hide_pool: "ซ่อนกองกลาง", 
+    show_pool: "แสดงกองกลาง", 
+    btn_fetch_votes: "ดึงข้อมูลการขอเพลง", 
+    btn_add_cat: "เพิ่มหมวดหมู่", 
+    btn_save: "บันทึกลง Sheet",
+    start_time: "เริ่ม (นาที:วินาที)", 
+    end_time: "จบ (นาที:วินาที)", 
+    btn_submit: "ส่งข้อมูล", 
+    admin_access: "🔑 เข้าสู่โหมด Admin", 
+    logout: "ออกจากระบบ",
+    admin_login: "Admin Login", 
+    admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน",
+    btn_cancel: "ยกเลิก", 
+    btn_view_songs: "ดูรายการเพลง", 
+    yt_link: "ลิงก์ Youtube", 
+    song_name: "ชื่อเพลง", 
+    artist: "ศิลปิน/ชื่อช่อง",
+    gender: "เพศของศิลปิน", 
+    gender_mix: "รวม/ผสม (Mix)", 
+    gender_m: "ศิลปินชาย (Boy Group)", 
+    gender_f: "ศิลปินหญิง (Girl Group)",
+    has_breakdance: "เพลงนี้มี Breakdance ใช่มั้ย?", 
+    ex_time: "เช่น 1:30", 
+    edit_song: "แก้ไขข้อมูลเพลง"
   },
   en: {
-    welcome: "Welcome", enter_name_prompt: "Enter your name here", slide_login: "Slide to Login", login: "Login",
-    calendar_title: "Event Calendar", calendar_sub: "Select a date to view details, or admin click to create an event.",
-    song_req_title: "Song Requests", btn_back: "Back to Calendar", btn_add_song: "Request Song", btn_manage_pl: "Manage Playlist", btn_copy_dj: "Copy for DJ",
-    search_ph: "Search song or artist...", setlist_title: "Setlist Manager", btn_back_list: "Back to Requests", pool: "📦 Pool",
-    hide_pool: "Hide Pool", show_pool: "Show Pool", btn_fetch_votes: "Fetch Song Requests", btn_add_cat: "Add Category", btn_save: "Save to Sheet",
-    start_time: "Start (Min:Sec)", end_time: "End (Min:Sec)", btn_submit: "Submit", admin_access: "🔑 Admin Access", logout: "Logout",
-    admin_login: "Admin Login", admin_sub: "Enter admin username and password",
-    btn_cancel: "Cancel", btn_view_songs: "View Songs", yt_link: "YouTube Link", song_name: "Song Name", artist: "Artist/Channel",
-    gender: "Artist Gender", gender_mix: "Mixed Group", gender_m: "Boy Group", gender_f: "Girl Group",
-    has_breakdance: "Has Breakdance?", ex_time: "e.g., 1:30", edit_song: "Edit Song Info"
+    welcome: "Welcome", 
+    enter_name_prompt: "Enter your name here", 
+    slide_login: "Slide to Login", 
+    login: "Login",
+    calendar_title: "Event Calendar", 
+    calendar_sub: "Select a date to view details, or admin click to create an event.",
+    song_req_title: "Song Requests", 
+    btn_back: "Back to Calendar", 
+    btn_add_song: "Request Song", 
+    btn_manage_pl: "Manage Playlist", 
+    btn_copy_dj: "Copy for DJ",
+    search_ph: "Search song or artist...", 
+    setlist_title: "Setlist Manager", 
+    btn_back_list: "Back to Requests", 
+    pool: "📦 Pool",
+    hide_pool: "Hide Pool", 
+    show_pool: "Show Pool", 
+    btn_fetch_votes: "Fetch Song Requests", 
+    btn_add_cat: "Add Category", 
+    btn_save: "Save to Sheet",
+    start_time: "Start (Min:Sec)", 
+    end_time: "End (Min:Sec)", 
+    btn_submit: "Submit", 
+    admin_access: "🔑 Admin Access", 
+    logout: "Logout",
+    admin_login: "Admin Login", 
+    admin_sub: "Enter admin username and password",
+    btn_cancel: "Cancel", 
+    btn_view_songs: "View Songs", 
+    yt_link: "YouTube Link", 
+    song_name: "Song Name", 
+    artist: "Artist/Channel",
+    gender: "Artist Gender", 
+    gender_mix: "Mixed Group", 
+    gender_m: "Boy Group", 
+    gender_f: "Girl Group",
+    has_breakdance: "Has Breakdance?", 
+    ex_time: "e.g., 1:30", 
+    edit_song: "Edit Song Info"
   }
 };
 
@@ -49,6 +110,7 @@ function setLanguage(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     el.innerText = translations[lang][el.getAttribute('data-i18n')];
   });
+  
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     el.placeholder = translations[lang][el.getAttribute('data-i18n-ph')];
   });
@@ -111,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setLanguage(currentLang);
   updateUserUI();
   loadEvents();
+  
   if (!userUUID && !isAdminLoggedIn) {
     openModal('welcomeModal');
   }
@@ -178,7 +241,8 @@ function checkSlideAndLogin() {
   
   if (sliderText) sliderText.innerText = "กำลังเข้าสู่ระบบ...";
   
-  fetchAPI("auth", { username: u, password: "" }, res => {
+  // แนบ UUID เก่าไปให้ Server เช็กด้วยเพื่อป้องกันการสวมรอย
+  fetchAPI("auth", { username: u, password: "", uuid: userUUID }, res => {
     userUUID = res.uuid;
     userName = res.username;
     isAdminLoggedIn = (res.role === 'Admin');
@@ -212,13 +276,16 @@ function openAdminLoginModal() {
 function executeAdminAuth() {
   const u = document.getElementById('admin-user').value.trim();
   const p = document.getElementById('admin-pass').value.trim();
-  if (!u || !p) return showToast("ข้อผิดพลาด", "ใส่ข้อมูลให้ครบ", "error");
+  
+  if (!u || !p) {
+    return showToast("ข้อผิดพลาด", "ใส่ข้อมูลให้ครบ", "error");
+  }
   
   const btn = document.getElementById('btn-admin-submit');
   btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
   btn.disabled = true;
 
-  fetchAPI("auth", { username: u, password: p }, res => {
+  fetchAPI("auth", { username: u, password: p, uuid: userUUID }, res => {
     userUUID = res.uuid;
     userName = res.username;
     isAdminLoggedIn = (res.role === 'Admin');
@@ -246,6 +313,7 @@ function executeLogout() {
   localStorage.removeItem('delia_username');
   localStorage.removeItem('delia_role');
   localStorage.removeItem('delia_login_time');
+  
   userUUID = "";
   userName = "";
   isAdminLoggedIn = false;
@@ -254,6 +322,7 @@ function executeLogout() {
   closeModal('logoutModal');
   showToast("Logout", "ออกจากระบบเรียบร้อย", "success");
   goHome();
+  
   setTimeout(() => openModal('welcomeModal'), 500);
 }
 
@@ -278,7 +347,7 @@ function fetchAPI(action, payload, onSuccess, onError) {
 }
 
 // ==========================================
-// 4. UI View Control
+// 4. UI View Control & Modals
 // ==========================================
 function showView(viewId) {
   currentViewId = viewId;
@@ -483,7 +552,6 @@ function openEventIntro(event) {
   document.getElementById('intro-time').innerText = `${formatTime(event.openTime)} - ${formatTime(event.closeTime)}`;
   document.getElementById('intro-det').innerText = event.details || "-";
   
-  // เตรียม ID ไว้สำหรับลบงาน
   document.getElementById('edit-event-id').value = event.id;
   
   openModal('eventIntroModal');
@@ -539,7 +607,7 @@ function filterSongs() {
   renderSongs(filtered);
 }
 
-// Quick Vote 💖
+// ฟังก์ชันหัวใจโหวตด่วนหน้าการ์ดเพลง
 window.quickVote = function(e, songId) {
   e.stopPropagation(); 
   if (!userUUID) return openModal('welcomeModal');
@@ -589,6 +657,12 @@ function renderSongs(songs) {
     card.className = `song-card ${statusClass} ${topClass}`;
     
     let tagsHTML = '';
+    
+    // ป้ายบอกสัญชาติ (Origin Tag) แสดงเป็นสีต่างๆ
+    let originColor = s.origin === 'T-Pop' ? '#FFF59D' : (s.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
+    let originTextColor = s.origin === 'T-Pop' ? '#F57F17' : (s.origin === 'J-Pop' ? '#E65100' : '#4A148C');
+    tagsHTML += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${s.origin || 'K-Pop'}</span> `;
+    
     if (s.gender === 'M') tagsHTML += `<span class="tag tag-m">M</span>`;
     else if (s.gender === 'F') tagsHTML += `<span class="tag tag-f">F</span>`;
     else tagsHTML += `<span class="tag">Mix</span>`;
@@ -663,6 +737,19 @@ function openSongDetail(id) {
   openModal('songDetailModal');
 }
 
+function handleVote() {
+  if (!userUUID) {
+    closeModal('songDetailModal');
+    return openModal('welcomeModal');
+  }
+  
+  fetchAPI("voteSong", { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, res => {
+    currentSongs = res;
+    filterSongs();
+    openSongDetail(selectedSongId);
+  });
+}
+
 function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
   navigator.clipboard.writeText(url).then(() => {
@@ -671,6 +758,10 @@ function shareSong() {
     showCustomConfirm("Share Link", url, () => {});
   });
 }
+
+// ------------------------------------------
+// การทำงานเกี่ยวกับฟอร์มขอเพลง
+// ------------------------------------------
 
 function setGenderDropdown(id, val) {
   const sel = document.getElementById(id);
@@ -702,12 +793,16 @@ async function processYoutubeLink(inputId, nameId, artistId, genderId) {
     const res = await fetch(`https://noembed.com/embed?dataType=json&url=${url}`);
     const data = await res.json();
     if (data && data.title) {
+      
+      // เอาชื่อวิดีโอและช่องไปใส่ฟอร์มเลยตามที่ขอ
       document.getElementById(nameId).value = data.title;
       document.getElementById(artistId).value = data.author_name;
       
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, dbRes => {
         setGenderDropdown(genderId, dbRes.gender);
-        showToast("Auto-Filled!", translations[currentLang].gender + ": " + dbRes.gender, "success");
+        // ดึง origin (สัญชาติ) มาเก็บไว้ใช้ตอนบันทึกลง Database
+        currentOrigin = dbRes.origin || "K-Pop";
+        showToast("Auto-Filled!", `${translations[currentLang].gender}: ${dbRes.gender} | ${currentOrigin}`, "success");
         if (btn) btn.disabled = false;
       }, () => {
         if (btn) btn.disabled = false;
@@ -735,6 +830,7 @@ function checkQuotaAndOpenModal() {
   
   document.getElementById('song-breakdance').checked = false;
   setGenderDropdown('song-gender', 'M');
+  currentOrigin = "K-Pop"; // รีเซ็ตสัญชาติ
   openModal('addSongModal');
 }
 
@@ -780,7 +876,8 @@ function preCheckAddSong() {
     start: document.getElementById('song-start').value,
     end: document.getElementById('song-end').value,
     isBreakdance: document.getElementById('song-breakdance').checked,
-    gender: document.getElementById('song-gender').value
+    gender: document.getElementById('song-gender').value,
+    origin: currentOrigin // แนบสัญชาติไปให้ Server ด้วย
   };
   
   executeAddSong();
@@ -812,7 +909,9 @@ function openUserEditSong() {
   document.getElementById('edit-song-end').value = s.end;
   document.getElementById('edit-song-breakdance').checked = (s.isBreakdance === 'Yes' || s.isBreakdance === true);
   
+  currentOrigin = s.origin; // จำสัญชาติเดิมไว้
   setGenderDropdown('edit-song-gender', s.gender);
+  
   closeModal('songDetailModal');
   openModal('editSongModal');
 }
@@ -829,7 +928,8 @@ function executeEditSong() {
     start: document.getElementById('edit-song-start').value,
     end: document.getElementById('edit-song-end').value,
     isBreakdance: document.getElementById('edit-song-breakdance').checked,
-    gender: document.getElementById('edit-song-gender').value
+    gender: document.getElementById('edit-song-gender').value,
+    origin: currentOrigin
   };
   
   const btn = document.getElementById('btn-song-edit-submit');
@@ -988,6 +1088,12 @@ function createPlaylistItem(song) {
   div.dataset.bd = (song.isBreakdance === 'Yes' || song.isBreakdance === true) ? "true" : "false";
   
   let tags = '';
+  
+  // ป้ายบอกสัญชาติในหน้าจัด Playlist
+  let originColor = song.origin === 'T-Pop' ? '#FFF59D' : (song.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
+  let originTextColor = song.origin === 'T-Pop' ? '#F57F17' : (song.origin === 'J-Pop' ? '#E65100' : '#4A148C');
+  tags += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${song.origin || 'K-Pop'}</span> `;
+    
   if (div.dataset.gender === 'M') tags += `<span class="tag tag-m">M</span>`;
   else if (div.dataset.gender === 'F') tags += `<span class="tag tag-f">F</span>`;
   else tags += `<span class="tag">Mix</span>`;
@@ -1020,7 +1126,6 @@ function initSortables() {
       group: 'shared', 
       animation: 150, 
       ghostClass: 'sortable-ghost' 
-      // เอา handle ลากออกแล้ว จับการ์ดตรงไหนก็ลากได้เลย
     }));
   });
 }
@@ -1100,7 +1205,6 @@ function savePlaylistData() {
   });
 }
 
-// Handle event creation for admin
 function handleAddEvent() {
   const p = {
     date: document.getElementById('event-date').value,
