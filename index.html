@@ -15,6 +15,7 @@
   <div class="bg-pattern"></div>
   <div id="toast-container"></div>
 
+  <!-- Navbar -->
   <nav class="navbar">
     <div class="brand" onclick="goHome()" style="cursor: pointer;" title="กลับหน้าแรก">
       <img src="DeliaLogo.png" alt="Delia Logo" style="height: 30px; width: 30px; object-fit: cover; border-radius: 50%;"> 
@@ -22,7 +23,9 @@
     </div>
     
     <div style="display: flex; gap: 8px; align-items: center;">
+      <!-- ปุ่มโปรไฟล์/ล็อกเอาต์ -->
       <button class="btn btn-primary btn-sm hidden" id="btn-user-profile" onclick="openModal('logoutModal')"></button>
+      <!-- ปุ่มเข้าสู่ระบบ -->
       <button class="btn btn-outline btn-sm hidden" id="btn-login-main" onclick="openModal('welcomeModal')">
         <i class="fa-solid fa-user"></i> <span class="hide-mobile" data-i18n="login">เข้าสู่ระบบ</span>
       </button>
@@ -42,7 +45,9 @@
         <button class="btn btn-outline btn-icon" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
       <div class="calendar-table">
-        <div class="calendar-weekdays" id="calendar-weekdays"></div>
+        <div class="calendar-weekdays" id="calendar-weekdays">
+          <div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div>
+        </div>
         <div class="calendar-days" id="calendar-grid"></div>
       </div>
     </div>
@@ -58,7 +63,8 @@
       <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
         <button class="btn btn-primary" id="btn-add-song-main" onclick="checkQuotaAndOpenModal()"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_song">ขอเพลงใหม่</span></button>
         <button class="btn btn-outline hidden admin-only" onclick="openPlaylistManager()"><i class="fa-solid fa-list-ol"></i> <span data-i18n="btn_manage_pl">จัด Playlist</span></button>
-        <button class="btn btn-outline hidden admin-only" id="btn-admin-export" onclick="exportDJ()"><i class="fa-solid fa-file-export"></i> <span data-i18n="btn_copy_dj">คัดลอกให้ DJ</span></button>
+        <!-- ปุ่มแก้ไขงานสำหรับ Admin -->
+        <button class="btn btn-outline hidden admin-only" id="btn-edit-event" onclick="openModal('editEventModal')"><i class="fa-solid fa-pen"></i> แก้ไขงาน/ลบงาน</button>
       </div>
     </div>
     
@@ -79,17 +85,19 @@
     </div>
     
     <div class="playlist-workspace">
+      <!-- ฝั่งซ้าย: กองกลาง -->
       <div class="pool-sidebar" id="pool-sidebar">
         <div class="list-col-header" style="background: white; border-bottom: 2px solid var(--primary-light);">
           <h3 data-i18n="pool">📦 กองกลาง</h3>
           <div style="display: flex; gap: 5px; padding: 0 10px;">
-            <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('list-pool')"><i class="fa-solid fa-shuffle"></i> M/F</button>
+            <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('list-pool')"><i class="fa-solid fa-shuffle"></i> สุ่ม (M/F)</button>
             <button class="btn btn-outline btn-full btn-sm btn-magic" id="btn-ai-setlist" onclick="aiMagicSetlist()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</button>
           </div>
         </div>
         <div id="list-pool" class="drop-zone" data-category="list-pool"></div>
       </div>
 
+      <!-- ฝั่งขวา: กระดานจัด Playlist -->
       <div class="playlist-main">
         <div class="playlist-toolbar">
           <button class="btn btn-outline btn-sm" onclick="togglePoolSidebar()"><i class="fa-solid fa-bars-staggered"></i> <span id="toggle-sidebar-text" data-i18n="hide_pool">ซ่อนกองกลาง</span></button>
@@ -106,6 +114,7 @@
     </div>
   </div>
 
+  <!-- ปุ่ม FAB (ปุ่มลอยมุมขวาล่าง) -->
   <button id="fab-add-category" class="fab-btn hidden admin-only" onclick="addNewCategory()" title="เพิ่มหมวดหมู่ใหม่" style="background-color: #F39C12;"><i class="fa-solid fa-folder-plus"></i></button>
 
   <!-- ================= MODALS ================= -->
@@ -136,6 +145,7 @@
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('logoutModal')"></i>
       <div style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"><i class="fa-solid fa-circle-user"></i></div>
       <h3 style="margin-top:0;" id="profile-name-display">User Profile</h3>
+      
       <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
         <button class="btn btn-outline btn-full" onclick="openAdminLoginModal()" style="border-style: dashed;"><span data-i18n="admin_access">🔑 เข้าสู่โหมด Admin</span></button>
         <button class="btn btn-danger btn-full" onclick="executeLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span data-i18n="logout">ออกจากระบบ</span></button>
@@ -180,17 +190,18 @@
     </div>
   </div>
 
+  <!-- Modal: Add Song (เอา Mix ออกจากตัวเลือก) -->
   <div class="modal-overlay" id="addSongModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
       <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> <span data-i18n="btn_add_song">เสนอเพลง</span></h2>
       <div class="form-group"><label data-i18n="yt_link">ลิงก์ Youtube</label><input type="url" id="song-link" class="form-control" onblur="autoFillYoutube()"></div>
       <div class="form-group"><label><span data-i18n="song_name">ชื่อเพลง</span> <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
-      <div class="form-group"><label data-i18n="artist">ศิลปิน</label><input type="text" id="song-artist" class="form-control"></div>
+      <div class="form-group"><label data-i18n="artist">ศิลปิน/ชื่อช่อง</label><input type="text" id="song-artist" class="form-control"></div>
       <div class="form-group">
         <label data-i18n="gender">เพศของศิลปิน</label>
         <select id="song-gender" class="form-control">
-          <!-- ผู้ใช้จะเลือกได้แค่ ชาย/หญิง (Mix จะโผล่มาถ้าระบบดึงให้) -->
+          <!-- ผู้ใช้งานเลือกได้แค่ M กับ F ส่วน Mix จะโผล่มาก็ต่อเมื่อระบบ AI หาเจอเท่านั้น -->
           <option value="M" data-i18n="gender_m">ศิลปินชาย (Boy Group)</option>
           <option value="F" data-i18n="gender_f">ศิลปินหญิง (Girl Group)</option>
         </select>
@@ -204,16 +215,18 @@
     </div>
   </div>
 
+  <!-- Modal: Edit Song (เอา Mix ออกจากตัวเลือก) -->
   <div class="modal-overlay" id="editSongModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editSongModal')"></i>
       <h2 class="text-center" style="color:var(--primary); margin-top:0;"><i class="fa-solid fa-pen"></i> <span data-i18n="edit_song">แก้ไขข้อมูลเพลง</span></h2>
       <div class="form-group"><label data-i18n="yt_link">ลิงก์ Youtube</label><input type="url" id="edit-song-link" class="form-control" onblur="autoFillYoutubeEdit()"></div>
       <div class="form-group"><label><span data-i18n="song_name">ชื่อเพลง</span> <span style="color:var(--primary)">*</span></label><input type="text" id="edit-song-name" class="form-control"></div>
-      <div class="form-group"><label data-i18n="artist">ศิลปิน</label><input type="text" id="edit-song-artist" class="form-control"></div>
+      <div class="form-group"><label data-i18n="artist">ศิลปิน/ชื่อช่อง</label><input type="text" id="edit-song-artist" class="form-control"></div>
       <div class="form-group">
         <label data-i18n="gender">เพศของศิลปิน</label>
         <select id="edit-song-gender" class="form-control">
+          <!-- ผู้ใช้งานเลือกได้แค่ M กับ F ส่วน Mix จะโผล่มาก็ต่อเมื่อระบบ AI หาเจอเท่านั้น -->
           <option value="M" data-i18n="gender_m">ศิลปินชาย (Boy Group)</option>
           <option value="F" data-i18n="gender_f">ศิลปินหญิง (Girl Group)</option>
         </select>
@@ -227,7 +240,6 @@
     </div>
   </div>
 
-  <!-- Modal: Song Detail สำหรับโชว์เท่านั้น ปุ่มโหวตย้ายไปหน้าลิสต์แล้ว -->
   <div class="modal-overlay" id="songDetailModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('songDetailModal')"></i>
@@ -241,9 +253,7 @@
         <a id="det-link" href="#" target="_blank" class="btn btn-outline hidden" style="flex: 1;"><i class="fa-brands fa-youtube"></i> ฟังเพลง</a>
         <button class="btn btn-outline" style="flex: 1;" onclick="shareSong()"><i class="fa-solid fa-share-nodes"></i> คัดลอกลิงก์แชร์</button>
       </div>
-      
-      <!-- เอาปุ่มโหวตใหญ่ออก เพราะทำ Quick Vote แล้ว -->
-      <button class="btn btn-outline btn-full hidden" id="btn-edit-mysong" onclick="openUserEditSong()" style="margin-top: 10px;"><i class="fa-solid fa-pen"></i> <span data-i18n="edit_song">แก้ไขข้อมูลเพลง</span></button>
+      <button class="btn btn-outline btn-full hidden" id="btn-edit-mysong" onclick="openUserEditSong()" style="margin-top: 10px;"><i class="fa-solid fa-pen"></i> <span data-i18n="edit_song">แก้ไขข้อมูลเพลงของคุณ</span></button>
       <div class="admin-panel hidden admin-only" id="admin-song-controls">
         <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">Admin Controls</p>
         <div style="display: flex; gap: 5px;">
@@ -282,7 +292,7 @@
     </div>
   </div>
 
-  <!-- Modal: Edit Event (เพิ่มปุ่มลบงานแล้ว) -->
+  <!-- Modal: Edit Event (มาพร้อมปุ่มลบงานแดงเดือด 🗑️) -->
   <div class="modal-overlay" id="editEventModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editEventModal')"></i>
@@ -295,6 +305,7 @@
       <div class="form-group"><label>เวลาปิดรับ</label><input type="datetime-local" id="edit-event-close" class="form-control"></div>
       <div class="form-group"><label>รายละเอียด</label><input type="text" id="edit-event-det" class="form-control"></div>
       <button class="btn btn-primary btn-full" onclick="handleEditEvent()" id="btn-event-edit-submit">บันทึกการแก้ไข</button>
+      
       <!-- ปุ่มลบกำหนดการสำหรับแอดมิน -->
       <button class="btn btn-danger btn-full" onclick="confirmDeleteEvent()" style="margin-top: 10px;"><i class="fa-solid fa-trash"></i> ลบกำหนดการ</button>
     </div>
