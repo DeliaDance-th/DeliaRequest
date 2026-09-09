@@ -432,9 +432,12 @@ if (confirmOkBtn) {
 function getYTThumb(link) {
   if (!link) return 'DeliaLogo.png';
   let videoId = '';
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  // ✨ อัปเดต Regex เพิ่ม "shorts\/" ให้รองรับคลิปสั้น ✨
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = link.match(regExp);
-  if (match && match[2].length === 11) videoId = match[2];
+  if (match && match[2].length === 11) {
+    videoId = match[2];
+  }
   return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : 'DeliaLogo.png';
 }
 
