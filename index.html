@@ -322,5 +322,12 @@
       if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
     }
   </script>
+  
+  <div id="dev-ai-badge" class="dev-only hidden" style="position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.8); color: #00FF00; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; z-index: 1000; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); border: 1px solid #333;">
+    <i class="fa-solid fa-robot" id="ai-status-icon"></i> 
+    <span id="ai-status-text" style="font-family: monospace;">AI: Standby</span>
+    <button onclick="executeTestAI()" style="background: var(--primary); color: white; border: none; border-radius: 12px; padding: 3px 8px; margin-left: 5px; cursor: pointer; font-size: 0.7rem; font-weight: bold;">Test AI</button>
+  </div>
+  
 </body>
 </html>
