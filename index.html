@@ -79,14 +79,19 @@
     </div>
   </div>
 
-  <!-- View 3: Playlist Manager -->
+<!-- View 3: Playlist Manager -->
   <div class="container hidden playlist-container" id="view-playlist" style="max-width: 100%; padding: 0 15px;">
     <div class="header-section" style="margin-bottom: 10px;">
       <button class="btn btn-outline btn-back" onclick="showView('songs')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back_list">กลับหน้ารายการ</span></button>
       <h1 id="playlist-event-title" style="margin-top: 10px;" data-i18n="setlist_title">Setlist Manager</h1>
     </div>
     
-    <div class="playlist-workspace">
+    <div class="playlist-workspace" style="position: relative;">
+      <!-- 🌟 ติ่งสำหรับกดเปิดกองกลางบนมือถือ -->
+      <button class="pool-trigger-tab hidden-desktop" id="pool-trigger-btn" onclick="togglePoolSidebar()">
+        <i class="fa-solid fa-box-open"></i> <span>กองกลาง</span>
+      </button>
+
       <!-- ฝั่งซ้าย: กองกลาง -->
       <div class="pool-sidebar" id="pool-sidebar">
         <div class="list-col-header" style="background: white; border-bottom: 2px solid var(--primary-light);">
@@ -102,7 +107,7 @@
       <!-- ฝั่งขวา: กระดานจัด Playlist -->
       <div class="playlist-main">
         <div class="playlist-toolbar">
-          <button class="btn btn-outline btn-sm" onclick="togglePoolSidebar()"><i class="fa-solid fa-bars-staggered"></i> <span id="toggle-sidebar-text" data-i18n="hide_pool">ซ่อนกองกลาง</span></button>
+          <button class="btn btn-outline btn-sm hidden-mobile" onclick="togglePoolSidebar()"><i class="fa-solid fa-bars-staggered"></i> <span id="toggle-sidebar-text" data-i18n="hide_pool">ซ่อนกองกลาง</span></button>
           <div style="flex:1"></div>
           <button class="btn btn-outline btn-sm" onclick="confirmImportFromVotes()"><i class="fa-solid fa-rotate-left"></i> <span data-i18n="btn_fetch_votes">ดึงข้อมูลการขอเพลง</span></button>
           <button class="btn btn-outline btn-sm" style="border-color:#F39C12; color:#F39C12;" onclick="addNewCategory()"><i class="fa-solid fa-folder-plus"></i> <span data-i18n="btn_add_cat">เพิ่มหมวดหมู่</span></button>
@@ -119,32 +124,30 @@
   <!-- ปุ่ม FAB (ปุ่มลอยมุมขวาล่าง) -->
   <button id="fab-add-category" class="fab-btn hidden admin-only" onclick="addNewCategory()" title="เพิ่มหมวดหมู่ใหม่" style="background-color: #F39C12;"><i class="fa-solid fa-folder-plus"></i></button>
 
-<!-- 🌟 อัปเดตบรรทัดดึงสคริปต์ Google ให้ทำงานร่วมกับระบบของเรา -->
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogle()"></script>
   
   <!-- ================= MODALS ================= -->
-  <!-- 💖 Cute Welcome Modal 💖 -->
+  <!-- 💖 Cute Welcome Modal (สไตล์น้องสาวชวนเต้น) 💖 -->
   <div class="modal-overlay" id="welcomeModal">
     <div class="modal-content text-center cute-welcome-box">
       
       <div class="lang-toggle-container">
         <span class="lang-label th-label active" onclick="setLanguage('th')">🇹🇭 TH</span>
-        <span class="lang-label en-label" onclick="setLanguage('en')">🇬🇧 EN</span>
+        <span class="lang-label en-label" onclick="setLanguage('en')">GB EN</span>
       </div>
 
       <div class="welcome-graphics">
         <img src="DeliaLogo.png" alt="Delia Logo" class="welcome-logo heartbeat-anim">
-        <div class="sparkles">✨🎶✨</div>
+        <div class="sparkles">✨💃🕺✨</div>
       </div>
 
-      <h2 class="welcome-title" data-i18n="welcome">ยินดีต้อนรับ</h2>
-      <p class="welcome-subtitle text-muted" data-i18n="welcome_sub">มาร่วมสนุกกับ Delia Randomdance กันเถอะ! 💖</p>
+      <h2 class="welcome-title" data-i18n="welcome">มาเต้นด้วยกันน้า!</h2>
+      <p class="welcome-subtitle text-muted" data-i18n="welcome_sub">เดลia ชวนพี่ๆ มาขอเพลงโปรดหรือกดโหวตเพลงที่อยากเต้นในงาน Random Dance กันค่ะ! 💖</p>
       
-      <!-- ขั้นตอน 1: ล็อกอินด้วย Google (แบบใหม่ เปลี่ยนภาษาได้) -->
+      <!-- ขั้นตอน 1: ล็อกอินด้วย Google -->
       <div id="step-google-login" class="login-step">
-        <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;" data-i18n="google_sub">เข้าสู่ระบบอย่างปลอดภัยด้วยบัญชี Google ของคุณ</p>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;" data-i18n="google_sub">ล็อกอินด้วย Google เบาๆ เพื่อเริ่มลุยกันเลยค่า</p>
         
-        <!-- ⚠️ วาง Client ID ของคุณตรง value ข้างล่างนี้ -->
         <input type="hidden" id="my-client-id" value="581219017072-hpm10urfslubqrc1a5jd4118hcbqna8k.apps.googleusercontent.com">
         
         <div class="google-btn-wrapper">
@@ -159,31 +162,30 @@
       <!-- ขั้นตอน 2: ตั้งชื่อผู้ใช้งาน -->
       <div id="step-username-setup" class="hidden login-step">
         <div class="cute-alert">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="new_user_alert">เย้! สมาชิกใหม่<br>ตั้งชื่อเล่นของคุณได้เลย</span>
+          <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="new_user_alert">เย้! เจอพี่คนใหม่แล้ว<br>ขอชื่อเล่นเก๋ๆ ไว้ใช้เรียกในงานหน่อยนะคะ!</span>
         </div>
         <div class="form-group" style="text-align: left;">
-          <input type="text" id="setup-username" class="form-control cute-input" placeholder="เช่น YutoJR 🌟" onkeypress="if(event.key === 'Enter') registerNewUser()">
+          <input type="text" id="setup-username" class="form-control cute-input" placeholder="เช่น พี่จูเนียร์สุดหล่อ 🌟" onkeypress="if(event.key === 'Enter') registerNewUser()">
         </div>
         <button class="btn btn-primary btn-full cute-submit-btn" onclick="registerNewUser()" id="btn-register-user">
-          <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">เริ่มใช้งานเลย!</span>
+          <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">ลุยกันเลย! 🚀</span>
         </button>
       </div>
 
-      <!-- ขั้นตอน 3: ปลดล็อค (สำหรับคนที่มีเซสชันอยู่แล้ว) 🌟 -->
+      <!-- ขั้นตอน 3: ปลดล็อคเซสชันเดิม -->
       <div id="step-unlock" class="hidden login-step">
         <div class="cute-alert" style="background: transparent; border: none; margin-bottom: 0; padding-bottom: 5px;">
-          <span style="font-size: 1.1rem; color: var(--text-muted);" data-i18n="welcome_back">ยินดีต้อนรับกลับมาค่ะ!</span><br>
-          <strong id="display-welcome-name" style="font-size: 1.5rem; color: var(--primary);">User</strong>
+          <span style="font-size: 1.1rem; color: var(--text-muted);" data-i18n="welcome_back">ยินดีต้อนรับกลับมานะคะพี่! 💖</span><br>
+          <strong id="display-welcome-name" style="font-size: 1.4rem; color: var(--primary);">User</strong>
         </div>
         
-        <!-- สไลเดอร์สุดคิวท์ -->
         <div class="slider-wrapper">
-          <div class="slider-text" id="slider-text" data-i18n="slide_unlock">เลื่อนเพื่อปลดล็อค ✨</div>
+          <div class="slider-text" id="slider-text" data-i18n="slide_unlock">เลื่อนเพื่อเข้างานเลย ✨</div>
           <div class="slider-thumb" id="slider-thumb"><i class="fa-solid fa-chevron-right"></i></div>
           <input type="range" min="0" max="100" value="0" class="slider-input" id="unlock-slider" oninput="handleSlide(this)" onchange="resetSlide(this)">
         </div>
         
-        <button class="btn btn-outline btn-sm btn-full" style="margin-top: 15px; border: none; text-decoration: underline;" onclick="executeLogout()"><span data-i18n="not_me">ไม่ใช่ฉัน? (ออกจากระบบ)</span></button>
+        <button class="btn btn-outline btn-sm btn-full" style="margin-top: 15px; border: none; text-decoration: underline;" onclick="executeLogout()"><span data-i18n="not_me">ไม่ใช่พี่เหรอคะ? (ออกจากระบบ)</span></button>
       </div>
       
     </div>
