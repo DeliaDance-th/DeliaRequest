@@ -684,15 +684,17 @@ function renderSongs(songs) {
     let statusClass = s.status === 'Approved' ? 'status-approved' : (s.status === 'Played' ? 'status-played' : '');
     card.className = `song-card ${statusClass} ${topClass}`;
     
+    // 🌟 อัปเดตการแสดงผลแท็ก: ลบเพศและสัญชาติออก แสดงแค่เวลาและ Breakdance
     let tagsHTML = '';
-    let originColor = s.origin === 'T-Pop' ? '#FFF59D' : (s.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
-    let originTextColor = s.origin === 'T-Pop' ? '#F57F17' : (s.origin === 'J-Pop' ? '#E65100' : '#4A148C');
-    tagsHTML += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${s.origin || 'K-Pop'}</span> `;
-    if (s.gender === 'M') tagsHTML += `<span class="tag tag-m">M</span>`;
-    else if (s.gender === 'F') tagsHTML += `<span class="tag tag-f">F</span>`;
-    else tagsHTML += `<span class="tag">Mix</span>`;
     
-    if (s.isBreakdance === 'Yes' || s.isBreakdance === true) tagsHTML += `<span class="tag tag-bd">BD</span>`;
+    // 1. แท็กช่วงเวลาเต้น
+    let timeText = (s.start || s.end) ? `${s.start || '-'} - ${s.end || '-'}` : 'ยังไม่ระบุเวลา';
+    tagsHTML += `<span class="tag" style="background: #E8F5E9; color: #2E7D32; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${timeText}</span> `;
+    
+    // 2. แท็ก Breakdance (ถ้ามี)
+    if (s.isBreakdance === 'Yes' || s.isBreakdance === true) {
+      tagsHTML += `<span class="tag tag-bd" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80;"><i class="fa-solid fa-bolt"></i> Dance Break</span>`;
+    }
     
     let voteIcon = "fa-regular fa-heart"; 
     let voteColor = "var(--text-muted)";
@@ -724,11 +726,18 @@ function openSongDetail(id) {
   
   document.getElementById('det-title').innerText = s.name;
   document.getElementById('det-artist').innerText = s.artist;
-  document.getElementById('det-time').innerText = `${s.start} - ${s.end}`;
+  
+  // แสดงผลช่วงเวลาเต้น
+  document.getElementById('det-time').innerText = (s.start || s.end) ? `${s.start || '-'} - ${s.end || '-'}` : 'ยังไม่ระบุเวลา';
   document.getElementById('det-votes').innerText = `${s.votes}`;
   
-  let tagText = s.gender === 'M' ? 'M' : (s.gender === 'F' ? 'F' : 'Mix');
-  if (s.isBreakdance === 'Yes' || s.isBreakdance === true) tagText += ' + BD';
+  // 🌟 อัปเดตรายละเอียด: ซ่อนเพศ แสดงแค่ข้อมูล Breakdance
+  let tagText = '';
+  if (s.isBreakdance === 'Yes' || s.isBreakdance === true) {
+    tagText = 'มี Dance Break ⚡';
+  } else {
+    tagText = 'ไม่มี Dance Break';
+  }
   document.getElementById('det-tag').innerText = tagText;
   
   const linkBtn = document.getElementById('det-link');
@@ -745,7 +754,6 @@ function openSongDetail(id) {
   
   openModal('songDetailModal');
 }
-
 function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
   navigator.clipboard.writeText(url).then(() => {
