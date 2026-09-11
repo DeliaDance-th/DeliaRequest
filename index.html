@@ -243,31 +243,78 @@
     </div>
   </div>
 
-  <!-- Modal: Add Song (เอา Mix ออกจากตัวเลือก) -->
+<!-- Modal: Add Song -->
   <div class="modal-overlay" id="addSongModal">
     <div class="modal-content">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('addSongModal')"></i>
-      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> <span data-i18n="btn_add_song">เสนอเพลง</span></h2>
+      <h2 style="margin-top: 0; text-align: center;"><i class="fa-solid fa-music"></i> <span data-i18n="btn_add_song">ขอเพลงใหม่</span></h2>
       <div class="form-group"><label data-i18n="yt_link">ลิงก์ Youtube</label><input type="url" id="song-link" class="form-control" onblur="autoFillYoutube()"></div>
       <div class="form-group"><label><span data-i18n="song_name">ชื่อเพลง</span> <span style="color:var(--primary)">*</span></label><input type="text" id="song-name" class="form-control"></div>
       <div class="form-group"><label data-i18n="artist">ศิลปิน/ชื่อช่อง</label><input type="text" id="song-artist" class="form-control"></div>
+      
+      <!-- ซ่อน dropdown เพศศิลปินไว้ให้ AI เซ็ตค่าหลังบ้าน (ไม่โชว์ให้ผู้ใช้เห็น) -->
+      <div class="form-group hidden">
+        <select id="song-gender" class="form-control"><option value="M">M</option><option value="F">F</option><option value="Mix">Mix</option></select>
+      </div>
+
+      <!-- 🌟 เพิ่ม Dropdown เลือกท่อนเต้น -->
       <div class="form-group">
-        <label data-i18n="gender">เพศของศิลปิน</label>
-        <select id="song-gender" class="form-control">
-          <!-- ผู้ใช้งานเลือกได้แค่ M กับ F ส่วน Mix จะโผล่มาก็ต่อเมื่อระบบ AI หาเจอเท่านั้น -->
-          <option value="M" data-i18n="gender_m">ศิลปินชาย (Boy Group)</option>
-          <option value="F" data-i18n="gender_f">ศิลปินหญิง (Girl Group)</option>
+        <label>ท่อนที่ใช้เต้น</label>
+        <select id="song-dance-part" class="form-control" onchange="toggleTimeInputs('add')">
+          <option value="Hook 1">Hook 1</option>
+          <option value="Hook 2">Hook 2</option>
+          <option value="Dance Break">Dance Break</option>
+          <option value="Custom">อื่นๆ (กำหนดเวลาเอง)</option>
         </select>
       </div>
-      <label class="checkbox-container"><input type="checkbox" id="song-breakdance"> <span data-i18n="has_breakdance">เพลงนี้มี Breakdance ใช่มั้ย?</span></label>
-      <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <div class="form-group" style="flex:1;"><label data-i18n="start_time">เริ่ม (นาที:วินาที)</label><input type="text" id="song-start" class="form-control" data-i18n-ph="ex_time" placeholder="เช่น 1:30"></div>
-        <div class="form-group" style="flex:1;"><label data-i18n="end_time">จบ (นาที:วินาที)</label><input type="text" id="song-end" class="form-control" data-i18n-ph="ex_time" placeholder="เช่น 2:05"></div>
+
+      <!-- 🌟 กรอบเวลาเต้น (จะโชว์เมื่อเลือก "อื่นๆ") -->
+      <div id="song-time-inputs" style="display: none; gap: 10px; margin-bottom: 10px;">
+        <div class="form-group" style="flex:1;"><label data-i18n="start_time">เริ่ม (นาที:วินาที)</label><input type="text" id="song-start" class="form-control" placeholder="เช่น 1:30"></div>
+        <div class="form-group" style="flex:1;"><label data-i18n="end_time">จบ (นาที:วินาที)</label><input type="text" id="song-end" class="form-control" placeholder="เช่น 2:05"></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit"><span data-i18n="btn_submit">ส่งข้อมูล</span></button>
+      
+      <label class="checkbox-container"><input type="checkbox" id="song-breakdance"> <span data-i18n="has_breakdance">เพลงนี้มี Breakdance ใช่ไหม?</span></label>
+
+      <button class="btn btn-primary btn-full" onclick="preCheckAddSong()" id="btn-song-submit" style="margin-top: 20px;"><span data-i18n="btn_submit">ส่งข้อมูล</span></button>
     </div>
   </div>
 
+  <!-- Modal: Edit Song -->
+  <div class="modal-overlay" id="editSongModal">
+    <div class="modal-content">
+      <i class="modal-close fa-solid fa-xmark" onclick="closeModal('editSongModal')"></i>
+      <h2 class="text-center" style="color:var(--primary); margin-top:0;"><i class="fa-solid fa-pen"></i> <span data-i18n="edit_song">แก้ไขข้อมูลเพลง</span></h2>
+      <div class="form-group"><label data-i18n="yt_link">ลิงก์ Youtube</label><input type="url" id="edit-song-link" class="form-control" onblur="autoFillYoutubeEdit()"></div>
+      <div class="form-group"><label><span data-i18n="song_name">ชื่อเพลง</span> <span style="color:var(--primary)">*</span></label><input type="text" id="edit-song-name" class="form-control"></div>
+      <div class="form-group"><label data-i18n="artist">ศิลปิน/ชื่อช่อง</label><input type="text" id="edit-song-artist" class="form-control"></div>
+      
+      <div class="form-group hidden">
+        <select id="edit-song-gender" class="form-control"><option value="M">M</option><option value="F">F</option><option value="Mix">Mix</option></select>
+      </div>
+
+      <!-- 🌟 เพิ่ม Dropdown เลือกท่อนเต้น สำหรับหน้าแก้ไข -->
+      <div class="form-group">
+        <label>ท่อนที่ใช้เต้น</label>
+        <select id="edit-song-dance-part" class="form-control" onchange="toggleTimeInputs('edit')">
+          <option value="Hook 1">Hook 1</option>
+          <option value="Hook 2">Hook 2</option>
+          <option value="Dance Break">Dance Break</option>
+          <option value="Custom">อื่นๆ (กำหนดเวลาเอง)</option>
+        </select>
+      </div>
+
+      <!-- 🌟 กรอบเวลาเต้น (จะโชว์เมื่อเลือก "อื่นๆ") -->
+      <div id="edit-song-time-inputs" style="display: none; gap: 10px; margin-bottom: 10px;">
+        <div class="form-group" style="flex:1;"><label data-i18n="start_time">เริ่ม (นาที:วินาที)</label><input type="text" id="edit-song-start" class="form-control"></div>
+        <div class="form-group" style="flex:1;"><label data-i18n="end_time">จบ (นาที:วินาที)</label><input type="text" id="edit-song-end" class="form-control"></div>
+      </div>
+
+      <label class="checkbox-container"><input type="checkbox" id="edit-song-breakdance"> <span data-i18n="has_breakdance">เพลงนี้มี Breakdance ใช่ไหม?</span></label>
+      
+      <button class="btn btn-primary btn-full" onclick="executeEditSong()" id="btn-song-edit-submit" style="margin-top: 20px;"><span data-i18n="btn_submit">บันทึกการแก้ไข</span></button>
+    </div>
+  </div>
   <!-- Modal: Edit Song (เอา Mix ออกจากตัวเลือก) -->
   <div class="modal-overlay" id="editSongModal">
     <div class="modal-content">
