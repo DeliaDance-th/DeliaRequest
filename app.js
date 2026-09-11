@@ -11,24 +11,24 @@ let currentViewId = 'calendar';
 let currentOrigin = "K-Pop";
 
 // ==========================================
-// 2. ระบบแปลภาษา (i18n) - โทนเสียงน้องสาวชวนเต้น 💖
+// 2. ระบบแปลภาษา (i18n) - ภาษาทางการและสุภาพ
 // ==========================================
 const translations = {
   th: {
-    welcome: "มาเต้นด้วยกันน้า!", 
-    welcome_sub: "เดลia ชวนพี่ๆ มาขอเพลงโปรดหรือกดโหวตเพลงที่อยากเต้นในงานกันค่ะ! 💖",
-    google_sub: "ล็อกอินด้วย Google เบาๆ เพื่อเริ่มลุยกันเลยค่า",
-    welcome_back: "ยินดีต้อนรับกลับมานะคะพี่! 💖",
-    slide_unlock: "เลื่อนเพื่อเข้างานเลย ✨",
-    not_me: "ไม่ใช่พี่เหรอคะ? (ออกจากระบบ)",
+    welcome: "ยินดีต้อนรับสู่ Delia", 
+    welcome_sub: "ร่วมสนุกกับการขอเพลงและโหวตเพลงใน Random Dance ได้เลยค่ะ 💖",
+    google_sub: "เข้าสู่ระบบอย่างปลอดภัยด้วยบัญชี Google ของคุณ",
+    welcome_back: "ยินดีต้อนรับกลับค่ะ คุณ",
+    slide_login: "เลื่อนเพื่อเข้าสู่ระบบ",
+    not_me: "ไม่ใช่ฉัน? (ออกจากระบบ)",
     login: "เข้าสู่ระบบ",
     calendar_title: "Event Calendar", 
-    calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงานได้เลยค่ะ",
+    calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือคลิกเพื่อสร้างงาน",
     song_req_title: "Song Requests", 
     btn_back: "กลับปฏิทิน", 
     btn_add_song: "ขอเพลงใหม่", 
     btn_manage_pl: "จัด Playlist", 
-    search_ph: "ค้นหาชื่อเพลง หรือ ศิลปินที่อยากเต้น...", 
+    search_ph: "ค้นหาชื่อเพลง หรือ ศิลปิน...", 
     setlist_title: "Setlist Manager", 
     btn_back_list: "กลับหน้ารายการ", 
     pool: "📦 กองกลาง",
@@ -43,7 +43,7 @@ const translations = {
     admin_access: "เข้าสู่โหมดผู้ดูแลระบบ", 
     logout: "ออกจากระบบ",
     admin_login: "Admin Login", 
-    admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมินค่ะ",
+    admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน",
     btn_cancel: "ยกเลิก", 
     btn_view_songs: "ดูรายการเพลง", 
     yt_link: "ลิงก์ Youtube", 
@@ -53,18 +53,18 @@ const translations = {
     gender_mix: "รวม/ผสม (Mix)", 
     gender_m: "ศิลปินชาย (Boy Group)", 
     gender_f: "ศิลปินหญิง (Girl Group)",
-    has_breakdance: "เพลงนี้มี Breakdance ใช่มั้ยคะ?", 
+    has_breakdance: "เพลงนี้มี Breakdance ใช่ไหม?", 
     ex_time: "เช่น 1:30", 
     edit_song: "แก้ไขข้อมูลเพลง",
-    new_user_alert: "เย้! เจอพี่คนใหม่แล้ว\nขอชื่อเล่นเก๋ๆ ไว้ใช้เรียกในงานหน่อยนะคะ!",
-    btn_start: "ลุยกันเลย! 🚀"
+    new_user_alert: "ยินดีต้อนรับสมาชิกใหม่!\nกรุณากรอกชื่อผู้ใช้งานของคุณ",
+    btn_start: "เริ่มใช้งานเลย!"
   },
   en: {
-    welcome: "Let's Dance Together!", 
-    welcome_sub: "Delia invites you to request your favorite songs or vote for the Random Dance! 💖",
+    welcome: "Welcome to Delia", 
+    welcome_sub: "Join us in requesting and voting for songs in Random Dance! 💖",
     google_sub: "Sign in securely with your Google account",
-    welcome_back: "Welcome back! 💖",
-    slide_unlock: "Slide to enter ✨",
+    welcome_back: "Welcome back, ",
+    slide_login: "Slide to Login",
     not_me: "Not you? (Logout)",
     login: "Login",
     calendar_title: "Event Calendar", 
@@ -101,7 +101,7 @@ const translations = {
     has_breakdance: "Has Breakdance?", 
     ex_time: "e.g., 1:30", 
     edit_song: "Edit Song Info",
-    new_user_alert: "Yay! New Member\nEnter your cool nickname here",
+    new_user_alert: "Welcome New Member!\nPlease enter your username",
     btn_start: "Let's Go!"
   }
 };
@@ -236,7 +236,7 @@ function handleGoogleLogin(response) {
 
 function registerNewUser() {
   const username = document.getElementById('setup-username').value.trim();
-  if (!username) return showToast("แจ้งเตือน", "กรุณาใส่ชื่อเล่นก่อนนะคะพี่!", "error");
+  if (!username) return showToast("แจ้งเตือน", "กรุณากรอกชื่อผู้ใช้งานก่อนค่ะ", "error");
   
   const btn = document.getElementById('btn-register-user');
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...`; 
@@ -267,13 +267,14 @@ function saveLoginSession(res) {
   updateUserUI();
 }
 
+// 🌟 ระบบสไลเดอร์เดิม (Slide to Login/Unlock)
 function handleSlide(el) {
   const val = el.value;
   const thumb = document.getElementById('slider-thumb');
-  thumb.style.left = `calc(${val}% - ${val * 0.49}px)`; 
+  thumb.style.left = `calc(${val}% - ${val * 0.5}px)`;
   if (val >= 95) {
     el.value = 100;
-    thumb.style.left = `calc(100% - 52px)`;
+    thumb.style.left = `calc(100% - 50px)`;
     el.disabled = true;
     executeUnlock();
   }
@@ -282,19 +283,19 @@ function handleSlide(el) {
 function resetSlide(el) {
   if (el.value < 95) {
     el.value = 0;
-    document.getElementById('slider-thumb').style.left = '3px';
+    document.getElementById('slider-thumb').style.left = '0px';
   }
 }
 
 function executeUnlock() {
   const sliderText = document.getElementById('slider-text');
-  if (sliderText) sliderText.innerText = "กำลังพาเข้างานนะคะ... 🚀";
+  if (sliderText) sliderText.innerText = "กำลังเข้าสู่ระบบค่ะ...";
   
   fetchAPI("auth", { action: "auto_login", clientUuid: userUUID }, res => {
     saveLoginSession(res); 
     loadEvents();
   }, err => {
-    showToast("เซสชันหมดอายุ", "เข้าสู่ระบบใหม่อีกรอบนะคะพี่", "error");
+    showToast("เซสชันหมดอายุ", "กรุณาเข้าสู่ระบบใหม่อีกครั้งค่ะ", "error");
     executeLogout();
   });
 }
@@ -311,15 +312,15 @@ function executeLogout() {
   
   updateUserUI();
   closeModal('logoutModal');
-  showToast("Logout", "ออกจากระบบเรียบร้อยค่ะ ไว้มาเต้นกันใหม่น้า", "success");
+  showToast("Logout", "ออกจากระบบเรียบร้อยค่ะ", "success");
   goHome();
   
   const slider = document.getElementById('unlock-slider');
   if(slider) {
     slider.value = 0;
     slider.disabled = false;
-    document.getElementById('slider-thumb').style.left = '3px';
-    document.getElementById('slider-text').innerText = translations[currentLang].slide_unlock;
+    document.getElementById('slider-thumb').style.left = '0px';
+    document.getElementById('slider-text').innerText = translations[currentLang].slide_login;
   }
   
   setTimeout(() => {
@@ -338,7 +339,7 @@ function openAdminLoginModal() {
 function executeAdminAuth() {
   const u = document.getElementById('admin-user').value.trim();
   const p = document.getElementById('admin-pass').value.trim();
-  if (!u || !p) return showToast("ข้อผิดพลาด", "ใส่ข้อมูลให้ครบด้วยนะคะ", "error");
+  if (!u || !p) return showToast("ข้อผิดพลาด", "กรุณากรอกข้อมูลให้ครบค่ะ", "error");
   
   const btn = document.getElementById('btn-admin-submit');
   const originalText = btn.innerHTML;
@@ -635,7 +636,7 @@ window.quickVote = function(e, songId) {
   
   const s = currentSongs.find(x => x.id === songId);
   if (s.creator === userUUID) {
-    return showToast("แจ้งเตือน", "โหวตเพลงตัวเองไม่ได้นะคะพี่", "error");
+    return showToast("แจ้งเตือน", "ไม่สามารถโหวตเพลงของตนเองได้ค่ะ", "error");
   }
   
   const icon = e.currentTarget.querySelector('i');
@@ -669,7 +670,7 @@ function renderSongs(songs) {
   container.innerHTML = '';
   
   if (songs.length === 0) {
-    container.innerHTML = `<p class="text-center text-muted" style="padding: 40px 0;">ยังไม่มีเพลงในระบบเลยค่ะ มาเสนอเพลงกันเถอะ! 🎵</p>`;
+    container.innerHTML = `<p class="text-center text-muted" style="padding: 40px 0;">ยังไม่มีเพลงในระบบค่ะ มาเสนอเพลงกันเถอะ! 🎵</p>`;
     return;
   }
   let maxVotes = songs.length > 0 ? Math.max(...songs.map(s => s.votes)) : 0;
@@ -748,7 +749,7 @@ function openSongDetail(id) {
 function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
   navigator.clipboard.writeText(url).then(() => {
-    showToast("คัดลอกสำเร็จ", "ส่งต่อให้เพื่อนๆ มาช่วยกันโหวตได้เลยค่ะ! 💕", "success");
+    showToast("คัดลอกสำเร็จ", "คัดลอกลิงก์เรียบร้อยแล้วค่ะ", "success");
   }).catch(() => { showCustomConfirm("Share Link", url, () => {}); });
 }
 
@@ -783,7 +784,7 @@ async function processYoutubeLink(inputId, nameId, artistId, genderId) {
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, dbRes => {
         setGenderDropdown(genderId, dbRes.gender);
         currentOrigin = dbRes.origin || "K-Pop";
-        showToast("เดลia จัดให้!", `ระบบวิเคราะห์ให้เรียบร้อย: ${dbRes.gender} | ${currentOrigin}`, "success");
+        showToast("สำเร็จ", `ตรวจสอบข้อมูลเรียบร้อย: ${dbRes.gender} | ${currentOrigin}`, "success");
         if (btn) btn.disabled = false;
       }, () => { if (btn) btn.disabled = false; });
     }
@@ -796,7 +797,7 @@ function autoFillYoutubeEdit() { processYoutubeLink('edit-song-link', 'edit-song
 function checkQuotaAndOpenModal() {
   if (!userUUID) return openModal('welcomeModal');
   if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= 3) {
-    return showToast("โควตาเต็มแล้วค่ะ", "ขอเพลงได้สูงสุด 3 เพลงนะค้า", "error");
+    return showToast("โควตาเต็ม", "คุณขอเพลงครบ 3 เพลงแล้วค่ะ", "error");
   }
   ['song-link','song-name','song-artist','song-start','song-end'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -813,19 +814,19 @@ function preCheckAddSong() {
   const name = nameInput ? nameInput.value.trim() : "";
   const linkInput = document.getElementById('song-link');
   const link = linkInput ? linkInput.value.trim() : "";
-  if (!name) return showToast("แจ้งเตือน", "ใส่ชื่อเพลงด้วยนะคะพี่", "error");
+  if (!name) return showToast("แจ้งเตือน", "กรุณากรอกชื่อเพลงค่ะ", "error");
   
   const dup = currentSongs.find(s => 
     (link && s.link === link) || (s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''))
   );
   
   if (dup) {
-    if (dup.voters && dup.voters.includes(userUUID)) return showToast("แจ้งเตือน", "พี่เคยโหวตเพลงนี้ไปแล้วนะคะ", "error");
-    else if (dup.creator === userUUID) return showToast("แจ้งเตือน", "พี่เป็นคนขอเพลงนี้เองค่า", "error");
+    if (dup.voters && dup.voters.includes(userUUID)) return showToast("แจ้งเตือน", "คุณได้โหวตเพลงนี้ไปแล้วค่ะ", "error");
+    else if (dup.creator === userUUID) return showToast("แจ้งเตือน", "คุณเป็นผู้เสนอเพลงนี้ค่ะ", "error");
     else {
       fetchAPI("voteSong", { eventId: activeEvent.id, songId: dup.id, uuid: userUUID }, res => {
         currentSongs = res; filterSongs(); closeModal('addSongModal');
-        showToast("เพลงนี้มีคนขอแล้ว!", "เดลia ช่วยกดโหวตเพิ่มให้อัตโนมัติเลยค่ะ 💖", "success");
+        showToast("พบเพลงซ้ำ", "ระบบได้ทำการเพิ่มโหวตให้เพลงที่มีอยู่แล้วค่ะ", "success");
       });
       return;
     }
@@ -844,7 +845,7 @@ function executeAddSong() {
   const btn = document.getElementById('btn-song-submit');
   if (btn) btn.disabled = true;
   fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => {
-    currentSongs = res; filterSongs(); closeModal('addSongModal'); showToast("สำเร็จ!", "เพิ่มเพลงลงลิสต์ให้เรียบร้อยค่ะ ✨", "success");
+    currentSongs = res; filterSongs(); closeModal('addSongModal'); showToast("สำเร็จ", "เพิ่มเพลงเรียบร้อยค่ะ", "success");
     if (btn) btn.disabled = false;
   }, () => { if (btn) btn.disabled = false; });
 }
@@ -875,27 +876,27 @@ function executeEditSong() {
   const btn = document.getElementById('btn-song-edit-submit');
   if (btn) btn.disabled = true;
   fetchAPI("editSong", { eventId: activeEvent.id, songId: selectedSongId, songData: updatedData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => {
-    currentSongs = res; filterSongs(); closeModal('editSongModal'); showToast("Success", "อัปเดตข้อมูลเรียบร้อยค่ะ", "success");
+    currentSongs = res; filterSongs(); closeModal('editSongModal'); showToast("Success", "อัปเดตข้อมูลสำเร็จ", "success");
     if (btn) btn.disabled = false;
   }, () => { if (btn) btn.disabled = false; });
 }
 
 function adminUpdateStatus(status) {
   fetchAPI("updateSongStatus", { eventId: activeEvent.id, songId: selectedSongId, status: status }, res => {
-    currentSongs = res; filterSongs(); closeModal('songDetailModal'); showToast("Success", "อัปเดตสถานะให้แล้วค่ะ");
+    currentSongs = res; filterSongs(); closeModal('songDetailModal'); showToast("Success", "อัปเดตสถานะเรียบร้อย");
   });
 }
 
 function confirmDeleteSong() {
-  showCustomConfirm("ลบเพลง?", "แน่ใจนะว่าจะลบเพลงนี้ออกจริงๆ ?", () => {
+  showCustomConfirm("ลบเพลง", "ต้องการลบเพลงนี้ออกจากระบบใช่หรือไม่?", () => {
     fetchAPI("deleteSong", { eventId: activeEvent.id, songId: selectedSongId }, res => {
-      currentSongs = res; filterSongs(); closeModal('songDetailModal'); showToast("ลบแล้ว", "ลบเพลงออกจากระบบให้เรียบร้อยค่ะ", "success");
+      currentSongs = res; filterSongs(); closeModal('songDetailModal'); showToast("สำเร็จ", "ลบเพลงเรียบร้อยค่ะ", "success");
     });
   });
 }
 
 // ==========================================
-// 8. Playlist Manager (🌟 ควบคุมเปิด-ปิดลิ้นชักกองกลางมือถือ)
+// 8. Playlist Manager
 // ==========================================
 let sortableLists = []; let boardSortable = null; let isPoolOpen = false;
 
@@ -921,7 +922,6 @@ function openPlaylistManager() {
   showView('playlist');
   document.getElementById('list-pool').innerHTML = ''; document.getElementById('dynamic-board').innerHTML = '';
   
-  // ตั้งค่าเริ่มต้นบนมือถือให้ปิดกองกลางไว้ก่อน จะได้จัดเพลย์ลิสต์ถนัดๆ
   isPoolOpen = false;
   const pool = document.getElementById('pool-sidebar');
   const workspace = document.querySelector('.playlist-workspace');
@@ -931,7 +931,6 @@ function openPlaylistManager() {
     document.getElementById('toggle-sidebar-text').innerText = translations[currentLang].show_pool;
   }
   
-  // โชว์ติ่งปุ่มเปิดกองกลางบนมือถือ
   const triggerTab = document.getElementById('pool-trigger-btn');
   if (triggerTab) triggerTab.classList.remove('hidden-desktop');
 
@@ -965,7 +964,7 @@ function createCategoryBox(title) {
   const col = document.createElement('div');
   col.className = 'list-col dynamic-category';
   col.innerHTML = `
-    <div class="list-col-header" title="กดค้าง 2 วิเพื่อลากเปลี่ยนที่หมวดหมู่">
+    <div class="list-col-header" title="กดค้าง 2 วินาทีเพื่อย้ายตำแหน่งหมวดหมู่">
       <h3>${title} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${safeId}')"></i> 
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${safeId}')"></i>
@@ -995,7 +994,7 @@ function deleteCategory(zoneId) {
   const zone = document.getElementById(zoneId); if (!zone) return;
   const items = Array.from(zone.children);
   if (items.length > 0) {
-    showCustomConfirm("แน่ใจนะ?", "เพลงในหมวดนี้จะเด้งกลับไปกองกลางทั้งหมดเลยนะพี่", () => {
+    showCustomConfirm("ยืนยันการลบ", "เพลงในหมวดนี้จะถูกย้ายกลับไปกองกลางทั้งหมด ยืนยันหรือไม่?", () => {
       const pool = document.getElementById('list-pool');
       items.forEach(el => pool.appendChild(el));
       zone.parentElement.remove();
@@ -1004,14 +1003,14 @@ function deleteCategory(zoneId) {
 }
 
 function confirmImportFromVotes() {
-  showCustomConfirm("ดึงข้อมูลใหม่", "เพลงทั้งหมดจะถูกดึงกลับมากองกลางนะคะ ยืนยันไหมเอ่ย?", () => {
+  showCustomConfirm("ดึงข้อมูลใหม่", "เพลงทั้งหมดจะถูกย้ายกลับไปกองกลาง ยืนยันหรือไม่?", () => {
     const pool = document.getElementById('list-pool');
     document.querySelectorAll('.dynamic-board .drop-zone').forEach(zone => zone.innerHTML = '');
     pool.innerHTML = '';
     currentSongs.filter(s => s.status !== 'Played').sort((a,b) => b.votes - a.votes).forEach(s => {
       pool.appendChild(createPlaylistItem(s));
     });
-    showToast("สำเร็จ", "ดึงข้อมูลเพลงกลับมากองกลางเรียบร้อยค่ะ");
+    showToast("สำเร็จ", "ดึงข้อมูลเพลงกลับกองกลางเรียบร้อยค่ะ");
   });
 }
 
@@ -1047,7 +1046,7 @@ function initSortables() {
   sortableLists.forEach(s => s.destroy()); sortableLists = [];
   if (boardSortable) boardSortable.destroy();
   
-  // 🌟 กำหนดให้กดค้าง 2 วินาที (delay: 2000) ถึงจะเริ่มลากสลับกล่องหมวดหมู่ได้
+  // 🌟 กดค้าง 2 วินาที (delay: 2000) ถึงจะเริ่มลากสลับกล่องหมวดหมู่ได้
   boardSortable = new Sortable(document.getElementById('dynamic-board'), {
     animation: 150, 
     handle: '.list-col-header', 
@@ -1083,7 +1082,7 @@ function randomizeAlternate(containerId) {
 function aiMagicSetlist() {
   const pool = document.getElementById('list-pool');
   const items = Array.from(pool.children);
-  if (items.length < 3) return showToast("แจ้งเตือน", "ขอเพลงในกองกลางอย่างน้อย 3 เพลงนะค้า", "error");
+  if (items.length < 3) return showToast("แจ้งเตือน", "ต้องการเพลงในกองกลางอย่างน้อย 3 เพลงค่ะ", "error");
   const btn = document.getElementById('btn-ai-setlist');
   if (btn) btn.disabled = true;
   const songData = items.map(el => ({ id: el.dataset.id, gender: el.dataset.gender, isBreakdance: el.dataset.bd === "true" }));
@@ -1092,7 +1091,7 @@ function aiMagicSetlist() {
     sortedIds.forEach(id => { const matchedEl = items.find(el => el.dataset.id === id); if (matchedEl) pool.appendChild(matchedEl); });
     items.forEach(el => { if (!sortedIds.includes(el.dataset.id)) pool.appendChild(el); });
     if (btn) btn.disabled = false;
-    showToast("สำเร็จ!", "เดลia จัดคิวเพลงสลับชายหญิงให้เรียบร้อยค่ะ 💃", "success");
+    showToast("สำเร็จ", "จัดเรียงคิวเพลงสลับชายหญิงเรียบร้อยค่ะ", "success");
   }, () => { if (btn) btn.disabled = false; });
 }
 
@@ -1111,7 +1110,7 @@ function savePlaylistData() {
   if (btnTop) btnTop.disabled = true; if (btnBot) btnBot.disabled = true;
   fetchAPI("savePlaylist", { eventId: activeEvent.id, date: activeEvent.date, lists: lists }, res => {
     if (btnTop) btnTop.disabled = false; if (btnBot) btnBot.disabled = false;
-    showToast("สำเร็จ!", "บันทึกเพลย์ลิสต์ลง Google Sheets ให้เรียบร้อยค่ะ 💾", "success");
+    showToast("สำเร็จ", "บันทึกเพลย์ลิสต์เรียบร้อยค่ะ");
   }, () => {
     if (btnTop) btnTop.disabled = false; if (btnBot) btnBot.disabled = false;
   });
@@ -1123,20 +1122,20 @@ function handleAddEvent() {
     location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value,
     closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value
   };
-  if (!p.date || !p.name) return showToast("Error", "กรอกข้อมูลให้ครบด้วยนะคะพี่", "error");
+  if (!p.date || !p.name) return showToast("แจ้งเตือน", "กรุณากรอกข้อมูลให้ครบถ้วนค่ะ", "error");
   const btn = document.getElementById('btn-event-submit');
   if (btn) btn.disabled = true;
   fetchAPI("createEvent", p, res => {
-    currentEvents = res; renderCalendar(); closeModal('addEventModal'); showToast("สำเร็จ!", "สร้างอีเวนต์ใหม่ให้เรียบร้อยค่ะ 🎉", "success");
+    currentEvents = res; renderCalendar(); closeModal('addEventModal'); showToast("สำเร็จ", "สร้างกำหนดการเรียบร้อยค่ะ", "success");
     if (btn) btn.disabled = false;
   }, () => { if (btn) btn.disabled = false; });
 }
 
 function confirmDeleteEvent() {
   const id = document.getElementById('edit-event-id').value;
-  showCustomConfirm("ลบอีเวนต์", "แน่ใจนะคะว่าจะลบงานนี้ทิ้งจริงๆ?", () => {
+  showCustomConfirm("ลบกำหนดการ", "คุณต้องการลบงานนี้ใช่หรือไม่?", () => {
     fetchAPI("deleteEvent", { id: id }, res => {
-      currentEvents = res; renderCalendar(); closeModal('editEventModal'); showToast("สำเร็จ", "ลบอีเวนต์เรียบร้อยค่ะ", "success");
+      currentEvents = res; renderCalendar(); closeModal('editEventModal'); showToast("สำเร็จ", "ลบกำหนดการเรียบร้อยค่ะ", "success");
     });
   });
 }
