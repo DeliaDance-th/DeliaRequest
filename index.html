@@ -87,9 +87,9 @@
     </div>
     
     <div class="playlist-workspace" style="position: relative;">
-      <!-- 🌟 ติ่งสำหรับกดเปิดกองกลางบนมือถือ -->
+      <!-- ติ่งสำหรับกดเปิดกองกลางบนมือถือ -->
       <button class="pool-trigger-tab hidden-desktop" id="pool-trigger-btn" onclick="togglePoolSidebar()">
-        <i class="fa-solid fa-box-open"></i> <span>กองกลาง</span>
+        <i class="fa-solid fa-box-open"></i> <span data-i18n="pool">กองกลาง</span>
       </button>
 
       <!-- ฝั่งซ้าย: กองกลาง -->
@@ -127,7 +127,6 @@
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogle()"></script>
   
   <!-- ================= MODALS ================= -->
-  <!-- 💖 Cute Welcome Modal (สไตล์น้องสาวชวนเต้น) 💖 -->
   <div class="modal-overlay" id="welcomeModal">
     <div class="modal-content text-center cute-welcome-box">
       
@@ -138,15 +137,15 @@
 
       <div class="welcome-graphics">
         <img src="DeliaLogo.png" alt="Delia Logo" class="welcome-logo heartbeat-anim">
-        <div class="sparkles">✨💃🕺✨</div>
+        <div class="sparkles">✨🎶✨</div>
       </div>
 
-      <h2 class="welcome-title" data-i18n="welcome">มาเต้นด้วยกันน้า!</h2>
-      <p class="welcome-subtitle text-muted" data-i18n="welcome_sub">เดลia ชวนพี่ๆ มาขอเพลงโปรดหรือกดโหวตเพลงที่อยากเต้นในงาน Random Dance กันค่ะ! 💖</p>
+      <h2 class="welcome-title" data-i18n="welcome">ยินดีต้อนรับสู่ Delia</h2>
+      <p class="welcome-subtitle text-muted" data-i18n="welcome_sub">ร่วมสนุกกับการขอเพลงและโหวตเพลงใน Random Dance ได้เลยค่ะ 💖</p>
       
       <!-- ขั้นตอน 1: ล็อกอินด้วย Google -->
       <div id="step-google-login" class="login-step">
-        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;" data-i18n="google_sub">ล็อกอินด้วย Google เบาๆ เพื่อเริ่มลุยกันเลยค่า</p>
+        <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;" data-i18n="google_sub">เข้าสู่ระบบอย่างปลอดภัยด้วยบัญชี Google ของคุณ</p>
         
         <input type="hidden" id="my-client-id" value="581219017072-hpm10urfslubqrc1a5jd4118hcbqna8k.apps.googleusercontent.com">
         
@@ -162,35 +161,36 @@
       <!-- ขั้นตอน 2: ตั้งชื่อผู้ใช้งาน -->
       <div id="step-username-setup" class="hidden login-step">
         <div class="cute-alert">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="new_user_alert">เย้! เจอพี่คนใหม่แล้ว<br>ขอชื่อเล่นเก๋ๆ ไว้ใช้เรียกในงานหน่อยนะคะ!</span>
+          <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="new_user_alert">ยินดีต้อนรับสมาชิกใหม่!<br>กรุณากรอกชื่อผู้ใช้งานของคุณ</span>
         </div>
         <div class="form-group" style="text-align: left;">
-          <input type="text" id="setup-username" class="form-control cute-input" placeholder="เช่น พี่จูเนียร์สุดหล่อ 🌟" onkeypress="if(event.key === 'Enter') registerNewUser()">
+          <input type="text" id="setup-username" class="form-control cute-input" placeholder="เช่น YutoJR" onkeypress="if(event.key === 'Enter') registerNewUser()">
         </div>
         <button class="btn btn-primary btn-full cute-submit-btn" onclick="registerNewUser()" id="btn-register-user">
-          <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">ลุยกันเลย! 🚀</span>
+          <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">เริ่มใช้งานเลย!</span>
         </button>
       </div>
 
-      <!-- ขั้นตอน 3: ปลดล็อคเซสชันเดิม -->
+      <!-- ขั้นตอน 3: ปลดล็อค (สไลด์อันเดิม) -->
       <div id="step-unlock" class="hidden login-step">
         <div class="cute-alert" style="background: transparent; border: none; margin-bottom: 0; padding-bottom: 5px;">
-          <span style="font-size: 1.1rem; color: var(--text-muted);" data-i18n="welcome_back">ยินดีต้อนรับกลับมานะคะพี่! 💖</span><br>
+          <span style="font-size: 1.05rem; color: var(--text-muted);" data-i18n="welcome_back">ยินดีต้อนรับกลับค่ะ คุณ</span><br>
           <strong id="display-welcome-name" style="font-size: 1.4rem; color: var(--primary);">User</strong>
         </div>
         
         <div class="slider-wrapper">
-          <div class="slider-text" id="slider-text" data-i18n="slide_unlock">เลื่อนเพื่อเข้างานเลย ✨</div>
-          <div class="slider-thumb" id="slider-thumb"><i class="fa-solid fa-chevron-right"></i></div>
+          <div class="slider-text" id="slider-text" data-i18n="slide_login">เลื่อนเพื่อเข้าสู่ระบบ</div>
+          <div class="slider-thumb" id="slider-thumb"><i class="fa-solid fa-arrow-right"></i></div>
           <input type="range" min="0" max="100" value="0" class="slider-input" id="unlock-slider" oninput="handleSlide(this)" onchange="resetSlide(this)">
         </div>
         
-        <button class="btn btn-outline btn-sm btn-full" style="margin-top: 15px; border: none; text-decoration: underline;" onclick="executeLogout()"><span data-i18n="not_me">ไม่ใช่พี่เหรอคะ? (ออกจากระบบ)</span></button>
+        <button class="btn btn-outline btn-sm btn-full" style="margin-top: 15px; border: none; text-decoration: underline;" onclick="executeLogout()"><span data-i18n="not_me">ไม่ใช่ฉัน? (ออกจากระบบ)</span></button>
       </div>
       
     </div>
   </div>
-      
+
+  
     </div>
   </div>
   <div class="modal-overlay" id="logoutModal">
