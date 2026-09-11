@@ -999,17 +999,24 @@ function openPlaylistManager() {
   showView('playlist');
   document.getElementById('list-pool').innerHTML = ''; document.getElementById('dynamic-board').innerHTML = '';
   
-  isPoolOpen = false;
   const pool = document.getElementById('pool-sidebar');
   const workspace = document.querySelector('.playlist-workspace');
-  if (pool) pool.classList.add('collapsed');
-  if (workspace) workspace.classList.add('pool-closed');
-  if (document.getElementById('toggle-sidebar-text')) {
-    document.getElementById('toggle-sidebar-text').innerText = translations[currentLang].show_pool;
+  const textBtn = document.getElementById('toggle-sidebar-text');
+
+  // 🌟 แยกลอจิกการเปิดหน้าต่าง: คอมพิวเตอร์ กับ มือถือ
+  if (window.innerWidth <= 768) {
+    // โหมดมือถือ: พับกองกลางเก็บไว้ และแสดงปุ่มติ่ง
+    isPoolOpen = false;
+    if (pool) pool.classList.add('collapsed');
+    if (workspace) workspace.classList.add('pool-closed');
+    if (textBtn) textBtn.innerText = translations[currentLang].show_pool;
+  } else {
+    // โหมดคอมพิวเตอร์: เปิดกองกลางโชว์ไว้เสมอ และซ่อนปุ่มติ่ง
+    isPoolOpen = true;
+    if (pool) pool.classList.remove('collapsed');
+    if (workspace) workspace.classList.remove('pool-closed');
+    if (textBtn) textBtn.innerText = translations[currentLang].hide_pool;
   }
-  
-  const triggerTab = document.getElementById('pool-trigger-btn');
-  if (triggerTab) triggerTab.classList.remove('hidden-desktop');
 
   fetchAPI("getPlaylist", { eventId: activeEvent.id, date: activeEvent.date }, savedLists => {
     const categoryNames = [...new Set(savedLists.map(s => s.listName))].filter(n => n !== 'list-pool' && n !== 'POOL' && n !== 'กองกลาง');
@@ -1028,7 +1035,6 @@ function openPlaylistManager() {
     initSortables();
   });
 }
-
 function addNewCategory() {
   openInputModal("ชื่อหมวดหมู่", "K-Pop", (newTitle) => {
     if (!newTitle || newTitle.toLowerCase() === 'pool' || newTitle === 'list-pool' || newTitle === 'กองกลาง') return;
