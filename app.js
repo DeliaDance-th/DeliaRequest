@@ -609,8 +609,15 @@ window.quickVote = function(e, songId) {
   e.stopPropagation(); 
   if (!userUUID) return openModal('welcomeModal');
   
+  // 🛡️ ป้องกันการกดสแปมรัวๆ (Debounce)
+  if (window.isVoting) {
+    return showToast("ใจเย็นๆ", "ระบบกำลังประมวลผลการโหวตครับ", "warning");
+  }
+  window.isVoting = true; // ล็อกปุ่ม
+  
   const s = currentSongs.find(x => x.id === songId);
   if (s.creator === userUUID) {
+    window.isVoting = false;
     return showToast("แจ้งเตือน", "โหวตเพลงตัวเองไม่ได้ครับ", "error");
   }
   
@@ -623,6 +630,9 @@ window.quickVote = function(e, songId) {
   fetchAPI("voteSong", { eventId: activeEvent.id, songId: songId, uuid: userUUID }, res => { 
     currentSongs = res; 
     filterSongs(); 
+    window.isVoting = false; // ปลดล็อกปุ่มเมื่อเซิร์ฟเวอร์ทำงานเสร็จ
+  }, () => {
+    window.isVoting = false; // ปลดล็อกปุ่มกรณีเกิด Error
   });
 }
 
