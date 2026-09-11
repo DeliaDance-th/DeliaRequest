@@ -121,55 +121,70 @@
 
   <!-- ================= MODALS ================= -->
   
+  <!-- ================= MODALS ================= -->
+  <!-- 💖 Cute Welcome Modal 💖 -->
   <div class="modal-overlay" id="welcomeModal">
-    <div class="modal-content text-center">
-      <div style="display: flex; justify-content: flex-end; gap: 5px; margin-bottom: 10px;">
-        <button class="btn btn-sm btn-outline lang-btn" onclick="setLanguage('th')" style="padding: 2px 8px; border-radius: 20px;">TH</button>
-        <button class="btn btn-sm btn-outline lang-btn" onclick="setLanguage('en')" style="padding: 2px 8px; border-radius: 20px;">EN</button>
+    <div class="modal-content text-center cute-welcome-box">
+      
+      <!-- 🇹🇭 🇬🇧 สวิตช์เปลี่ยนภาษาแบบน่ารัก -->
+      <div class="lang-toggle-container">
+        <span class="lang-label th-label active" onclick="setLanguage('th')">🇹🇭 TH</span>
+        <span class="lang-label en-label" onclick="setLanguage('en')">🇬🇧 EN</span>
       </div>
-      <h2 style="margin-top: 0; color: var(--primary);"><i class="fa-brands fa-google"></i> <span data-i18n="welcome">เข้าสู่ระบบ</span></h2>
+
+      <!-- โลโก้และกราฟิกต้อนรับ -->
+      <div class="welcome-graphics">
+        <!-- 💡 ถ้ารูปโลโก้ชื่ออื่น ให้เปลี่ยนตรง src="DeliaLogo.png" นะครับ -->
+        <img src="DeliaLogo.png" alt="Delia Logo" class="welcome-logo heartbeat-anim">
+        <div class="sparkles">✨🎶✨</div>
+      </div>
+
+      <h2 class="welcome-title" data-i18n="welcome">ยินดีต้อนรับ</h2>
+      <p class="welcome-subtitle text-muted" data-i18n="welcome_sub">มาร่วมสนุกกับ Delia Randomdance กันเถอะ! 💖</p>
       
       <!-- ขั้นตอน 1: ล็อกอินด้วย Google -->
-      <div id="step-google-login" style="margin-top: 20px;">
-        <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">เข้าสู่ระบบอย่างปลอดภัยด้วยบัญชี Google ของคุณ</p>
+      <div id="step-google-login" class="login-step">
         
-        <!-- ⚠️ ต้องใส่ Client ID ของคุณตรงนี้ -->
-        <div id="g_id_onload"
-             data-client_id="581219017072-hpm10urfslubqrc1a5jd4118hcbqna8k.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="popup"
-             data-callback="handleGoogleLogin"
-             data-auto_prompt="false">
-        </div>
-        
-        <div class="g_id_signin"
-             data-type="standard"
-             data-shape="rectangular"
-             data-theme="outline"
-             data-text="signin_with"
-             data-size="large"
-             data-logo_alignment="center"
-             style="display: flex; justify-content: center;">
+        <div class="google-btn-wrapper">
+          <!-- ⚠️ อย่าลืมใส่ Client ID ของคุณที่นี่ -->
+          <div id="g_id_onload"
+               data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com"
+               data-context="signin"
+               data-ux_mode="popup"
+               data-callback="handleGoogleLogin"
+               data-auto_prompt="false">
+          </div>
+          <div class="g_id_signin"
+               data-type="standard"
+               data-shape="pill"
+               data-theme="outline"
+               data-text="signin_with"
+               data-size="large"
+               data-logo_alignment="center">
+          </div>
         </div>
 
-        <button class="btn btn-outline btn-sm btn-full" style="margin-top: 20px; border-style: dashed;" onclick="openAdminLoginModal()"><span data-i18n="admin_access">🔑 เข้าสู่โหมด Admin</span></button>
+        <!-- ปุ่ม Admin แบบมินิมอล -->
+        <button class="btn-cute-admin" onclick="openAdminLoginModal()">
+          <i class="fa-solid fa-lock"></i> <span data-i18n="admin_access">เข้าสู่โหมดผู้ดูแลระบบ</span>
+        </button>
       </div>
 
-      <!-- ขั้นตอน 2: ตั้งชื่อผู้ใช้งาน (สำหรับคนเข้าครั้งแรก) -->
-      <div id="step-username-setup" class="hidden" style="margin-top: 15px;">
-        <div style="background: #e6f7ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #0050b3;">
-          <i class="fa-solid fa-party-horn"></i> ยินดีต้อนรับสมาชิกใหม่! กรุณาตั้งชื่อที่จะใช้แสดงในระบบ
+      <!-- ขั้นตอน 2: ตั้งชื่อผู้ใช้งาน (ซ่อนไว้จนกว่าจะเป็นคนใหม่) -->
+      <div id="step-username-setup" class="hidden login-step">
+        <div class="cute-alert">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="new_user_alert">เย้! สมาชิกใหม่<br>ตั้งชื่อเล่นเก๋ๆ ของคุณได้เลย</span>
         </div>
         <div class="form-group" style="text-align: left;">
-          <label>ชื่อผู้ใช้งาน (Username)</label>
-          <input type="text" id="setup-username" class="form-control" placeholder="เช่น YutoJR">
+          <input type="text" id="setup-username" class="form-control cute-input" placeholder="เช่น YutoJR 🌟" onkeypress="if(event.key === 'Enter') registerNewUser()">
         </div>
-        <button class="btn btn-primary btn-full" onclick="registerNewUser()" id="btn-register-user"><i class="fa-solid fa-user-check"></i> เริ่มใช้งานเลย!</button>
+        <button class="btn btn-primary btn-full cute-submit-btn" onclick="registerNewUser()" id="btn-register-user">
+          <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">เริ่มใช้งานเลย!</span>
+        </button>
       </div>
       
     </div>
   </div>
-
   <div class="modal-overlay" id="logoutModal">
     <div class="modal-content text-center">
       <i class="modal-close fa-solid fa-xmark" onclick="closeModal('logoutModal')"></i>
