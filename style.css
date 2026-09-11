@@ -460,23 +460,28 @@ body {
     transform: translateX(-105%); 
   }
   
+  /* 🌟 ปรับติ่งกองกลางให้เป็นไอคอนกล่องสี่เหลี่ยมจัตุรัส กะทัดรัด */
   .pool-trigger-tab {
     position: absolute; top: 15px; left: 0; z-index: 99;
     background: var(--primary); color: white;
-    border: none; border-radius: 0 12px 12px 0;
-    padding: 8px 12px 8px 8px; font-size: 0.8rem; font-weight: 600;
+    border: none; border-radius: 0 10px 10px 0;
+    width: 36px; height: 36px; font-size: 1.1rem;
     box-shadow: 2px 2px 8px rgba(255,77,133,0.3);
-    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  /* ซ่อนตัวหนังสือ ให้เหลือแค่ไอคอน */
+  .pool-trigger-tab span {
+    display: none;
+  }
+  /* ขยับติ่งตามลิ้นชักตอนเปิด-ปิด */
   .playlist-workspace:not(.pool-closed) .pool-trigger-tab {
     left: 40%;
-    border-radius: 12px;
+    border-radius: 10px;
   }
   
   .dynamic-board { width: 100%; height: 100%; overflow-y: auto; }
 }
-
 @media (min-width: 769px) {
   .hidden-desktop { display: none !important; }
 }
