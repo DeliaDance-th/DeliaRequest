@@ -583,3 +583,32 @@ body {
   padding: 12px !important;
   box-shadow: 0 5px 15px rgba(255,77,133,0.4) !important;
 }
+
+/* 🌟 สไลเดอร์สุดคิวท์ (Slide to Unlock) */
+.slider-wrapper { 
+  position: relative; width: 100%; height: 55px; 
+  background: var(--primary-light); border-radius: 30px; 
+  overflow: hidden; margin-top: 15px; 
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); 
+}
+.slider-text { 
+  position: absolute; width: 100%; height: 100%; 
+  display: flex; align-items: center; justify-content: center; 
+  color: var(--primary); font-weight: 600; z-index: 1; 
+  pointer-events: none; font-size: 1.05rem; 
+}
+.slider-thumb { 
+  position: absolute; top: 3px; left: 3px; 
+  width: 49px; height: 49px; background: white; 
+  border-radius: 50%; color: var(--primary); 
+  display: flex; align-items: center; justify-content: center; 
+  z-index: 2; pointer-events: none; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+  transition: background 0.2s; font-size: 1.2rem; 
+}
+.slider-input { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  opacity: 0; z-index: 3; cursor: grab; margin: 0; 
+}
+.slider-input:active { cursor: grabbing; }
+
