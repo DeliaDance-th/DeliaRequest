@@ -437,6 +437,7 @@ body {
 ========================================= */
 @media (max-width: 768px) { 
   .hide-mobile { display: none !important; }
+  .hidden-mobile { display: none !important; }
   .song-thumbnail { width: 80px; height: 45px; }
   .calendar-wrapper { padding: 10px; }
   .calendar-days { gap: 3px; }
@@ -444,11 +445,12 @@ body {
   .day-number { font-size: 1rem; margin-bottom: 4px; }
   .day-event { font-size: 0.65rem; padding: 2px 4px; }
   
-  /* 🌟 อัปเดตกองกลางให้อยู่ซ้ายมือแบบลิ้นชัก (Drawer) */
+  /* 🌟 ดีไซน์ลิ้นชักกองกลาง 40% + ติ่งกดเปิดฝั่งซ้าย */
   .playlist-workspace { position: relative; height: calc(100vh - 120px); overflow: hidden; }
+  
   .pool-sidebar { 
     position: absolute; top: 0; left: 0; z-index: 100;
-    width: 85%; max-width: 320px; height: 100%;
+    width: 40% !important; min-width: 160px !important; height: 100%;
     background: rgba(255,255,255,0.98);
     backdrop-filter: blur(10px);
     box-shadow: 5px 0 20px rgba(0,0,0,0.15);
@@ -456,12 +458,31 @@ body {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .pool-sidebar.collapsed {
-    transform: translateX(-110%); 
-    width: 85%; 
+    transform: translateX(-105%); 
   }
+  
+  /* 🌟 ติ่งปุ่มยื่นออกมาข้างๆ สำหรับกดเปิดกองกลาง */
+  .pool-trigger-tab {
+    position: absolute; top: 15px; left: 0; z-index: 99;
+    background: var(--primary); color: white;
+    border: none; border-radius: 0 12px 12px 0;
+    padding: 8px 12px 8px 8px; font-size: 0.8rem; font-weight: 600;
+    box-shadow: 2px 2px 8px rgba(255,77,133,0.3);
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* ตอนเปิดกองกลาง ให้ติ่งขยับตามไปอยู่ที่ขอบ 40% พอดี */
+  .playlist-workspace:not(.pool-closed) .pool-trigger-tab {
+    left: 40%;
+    border-radius: 12px;
+  }
+  
   .dynamic-board { width: 100%; height: 100%; overflow-y: auto; }
 }
 
+@media (min-width: 769px) {
+  .hidden-desktop { display: none !important; }
+}
 /* =========================================
    💖 Cute Welcome Modal UI 💖
 ========================================= */
