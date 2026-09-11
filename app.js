@@ -1,7 +1,6 @@
 // ==========================================
 // 1. ตั้งค่าพื้นฐาน (Configuration)
 // ==========================================
-// *** นำลิงก์ Web App URL ของคุณมาใส่ตรงนี้ ***
 const apiURL = "https://script.google.com/macros/s/AKfycbxTHBDk2j--fcL4tnQo5YH8KRlm0SMvjDK6YqKMhkZPk5GCWOXM8g8xeoeQtxw3ns__zA/exec"; 
 
 let currentEvents = [];
@@ -9,8 +8,6 @@ let currentSongs = [];
 let activeEvent = null;
 let selectedSongId = null;
 let currentViewId = 'calendar';
-
-// ตัวแปรเก็บสัญชาติเพลงชั่วคราว
 let currentOrigin = "K-Pop";
 
 // ==========================================
@@ -20,6 +17,10 @@ const translations = {
   th: {
     welcome: "ยินดีต้อนรับสู่ Delia!", 
     welcome_sub: "มาร่วมสนุกกับ Random Dance กันเถอะ! 💖",
+    google_sub: "เข้าสู่ระบบอย่างปลอดภัยด้วยบัญชี Google",
+    welcome_back: "ยินดีต้อนรับกลับมาครับ!",
+    slide_unlock: "เลื่อนเพื่อปลดล็อค ✨",
+    not_me: "ไม่ใช่ฉัน? (ออกจากระบบ)",
     login: "เข้าสู่ระบบ",
     calendar_title: "Event Calendar", 
     calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน",
@@ -61,6 +62,10 @@ const translations = {
   en: {
     welcome: "Welcome to Delia!", 
     welcome_sub: "Let's join the Random Dance fun! 💖",
+    google_sub: "Sign in securely with your Google account",
+    welcome_back: "Welcome back!",
+    slide_unlock: "Slide to unlock ✨",
+    not_me: "Not you? (Logout)",
     login: "Login",
     calendar_title: "Event Calendar", 
     calendar_sub: "Select a date to view details, or admin click to create an event.",
@@ -107,27 +112,30 @@ function setLanguage(lang) {
   currentLang = lang; 
   localStorage.setItem('delia_lang', lang);
   
-  // อัปเดตข้อความ
   document.querySelectorAll('[data-i18n]').forEach(el => {
     if(translations[lang][el.getAttribute('data-i18n')]) {
        el.innerText = translations[lang][el.getAttribute('data-i18n')];
     }
   });
   
-  // อัปเดต Placeholder
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     if(translations[lang][el.getAttribute('data-i18n-ph')]) {
        el.placeholder = translations[lang][el.getAttribute('data-i18n-ph')];
     }
   });
   
-  // 🌟 อัปเดตแอนิเมชันของสวิตช์ภาษา
   document.querySelectorAll('.lang-label').forEach(el => el.classList.remove('active'));
   document.querySelectorAll(`.${lang}-label`).forEach(el => el.classList.add('active'));
+  
+  // 🌟 สร้างปุ่ม Google ใหม่ทุกครั้งที่เปลี่ยนภาษา
+  if (typeof renderGoogleButton === 'function') {
+    renderGoogleButton(lang);
+  }
   
   renderCalendarDays();
   if (currentEvents.length > 0) renderCalendar();
 }
+
 function renderCalendarDays() {
   const daysTh = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
   const daysEn = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -142,19 +150,12 @@ function formatTime(dtStr) {
   try {
     const d = new Date(dtStr);
     if (isNaN(d)) return dtStr;
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const hrs = String(d.getHours()).padStart(2, '0');
-    const mins = String(d.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hrs}:${mins}`;
-  } catch(e) {
-    return dtStr;
-  }
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  } catch(e) { return dtStr; }
 }
 
 // ==========================================
-// 3. ระบบยืนยันตัวตน (Google Sign-In)
+// 3. ระบบเซสชัน & Google Sign-In (JS API)
 // ==========================================
 let userUUID = localStorage.getItem('delia_uuid') || "";
 let userName = localStorage.getItem('delia_username') || "";
@@ -165,30 +166,53 @@ let pendingEmail = "";
 document.addEventListener("DOMContentLoaded", () => {
   setLanguage(currentLang);
   
-  // เช็กการล็อกอินอัตโนมัติเบื้องหลัง
+  // 🌟 ตรวจสอบเซสชันว่าต้องโชว์หน้าไหน
   if (userUUID) {
-    fetchAPI("auth", { action: "auto_login", clientUuid: userUUID }, res => {
-      saveLoginSession(res); 
-      loadEvents();
-    }, err => {
-      // เซสชันหมดอายุหรือมีปัญหา เคลียร์ข้อมูลทิ้ง
-      localStorage.removeItem('delia_uuid');
-      localStorage.removeItem('delia_username');
-      localStorage.removeItem('delia_role');
-      userUUID = "";
-      userName = "";
-      isAdminLoggedIn = false;
-      isDevLoggedIn = false;
-      updateUserUI();
-      loadEvents();
-    });
+    document.querySelectorAll('.login-step').forEach(el => el.classList.add('hidden'));
+    document.getElementById('step-unlock').classList.remove('hidden');
+    document.getElementById('display-welcome-name').innerText = userName;
+    openModal('welcomeModal');
   } else {
-    updateUserUI();
-    loadEvents();
+    document.querySelectorAll('.login-step').forEach(el => el.classList.add('hidden'));
+    document.getElementById('step-google-login').classList.remove('hidden');
+    openModal('welcomeModal');
   }
+  
+  updateUserUI();
+  loadEvents();
 });
 
-// ถอดรหัสข้อมูลที่ได้จาก Google
+// ฟังก์ชันนี้จะถูกเรียกเมื่อสคริปต์ Google โหลดเสร็จ
+function initGoogle() {
+  renderGoogleButton(currentLang);
+}
+
+function renderGoogleButton(lang) {
+  if (typeof google === 'undefined' || !google.accounts) return;
+  
+  const clientIdEl = document.getElementById('my-client-id');
+  if (!clientIdEl) return;
+  const clientId = clientIdEl.value;
+  if (!clientId || clientId.includes("YOUR_GOOGLE_CLIENT_ID")) return;
+  
+  google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleGoogleLogin,
+    context: "signin",
+    ux_mode: "popup",
+    locale: lang === 'th' ? 'th' : 'en'
+  });
+  
+  const btnContainer = document.getElementById("google-btn-container");
+  if (btnContainer) {
+    btnContainer.innerHTML = ''; 
+    google.accounts.id.renderButton(
+      btnContainer,
+      { theme: "outline", size: "large", shape: "pill", type: "standard", text: "signin_with" }
+    );
+  }
+}
+
 function decodeJwtResponse(token) {
   let base64Url = token.split('.')[1];
   let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -198,11 +222,9 @@ function decodeJwtResponse(token) {
   return JSON.parse(jsonPayload);
 }
 
-// รับค่ากลับจากปุ่ม Google
 function handleGoogleLogin(response) {
   const responsePayload = decodeJwtResponse(response.credential);
   pendingEmail = responsePayload.email;
-  
   showToast("Google Sign-In", "กำลังตรวจสอบบัญชี...", "success");
 
   fetchAPI("auth", { action: "google_login", email: pendingEmail }, res => {
@@ -212,12 +234,9 @@ function handleGoogleLogin(response) {
     } else if (res.status === "login_success") {
       saveLoginSession(res);
     }
-  }, err => {
-    showToast("ข้อผิดพลาดในการเชื่อมต่อ", err, "error");
-  });
+  }, err => { showToast("ข้อผิดพลาด", err, "error"); });
 }
 
-// ตั้งชื่อบัญชีสำหรับผู้ใช้ใหม่
 function registerNewUser() {
   const username = document.getElementById('setup-username').value.trim();
   if (!username) return showToast("แจ้งเตือน", "กรุณาตั้งชื่อผู้ใช้งานก่อนครับ", "error");
@@ -228,10 +247,10 @@ function registerNewUser() {
   
   fetchAPI("auth", { action: "register_user", username: username, email: pendingEmail }, res => {
     saveLoginSession(res);
-    btn.innerHTML = `<i class="fa-solid fa-user-check"></i> เริ่มใช้งานเลย!`; 
+    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">${translations[currentLang].btn_start}</span>`; 
     btn.disabled = false;
   }, err => {
-    btn.innerHTML = `<i class="fa-solid fa-user-check"></i> เริ่มใช้งานเลย!`; 
+    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">${translations[currentLang].btn_start}</span>`; 
     btn.disabled = false;
     showToast("ข้อผิดพลาด", err, "error");
   });
@@ -250,6 +269,70 @@ function saveLoginSession(res) {
   closeModal('welcomeModal');
   updateUserUI();
   showToast(translations[currentLang].welcome, `เข้าสู่ระบบสำเร็จในชื่อ ${userName} 🎉`, "success");
+}
+
+// 🌟 ระบบควบคุมสไลเดอร์ (Slide to Unlock)
+function handleSlide(el) {
+  const val = el.value;
+  const thumb = document.getElementById('slider-thumb');
+  thumb.style.left = `calc(${val}% - ${val * 0.49}px)`; 
+  if (val >= 95) {
+    el.value = 100;
+    thumb.style.left = `calc(100% - 52px)`;
+    el.disabled = true;
+    executeUnlock();
+  }
+}
+
+function resetSlide(el) {
+  if (el.value < 95) {
+    el.value = 0;
+    document.getElementById('slider-thumb').style.left = '3px';
+  }
+}
+
+function executeUnlock() {
+  const sliderText = document.getElementById('slider-text');
+  if (sliderText) sliderText.innerText = "กำลังเชื่อมต่อ... 🚀";
+  
+  fetchAPI("auth", { action: "auto_login", clientUuid: userUUID }, res => {
+    saveLoginSession(res); 
+    loadEvents();
+  }, err => {
+    showToast("เซสชันหมดอายุ", "กรุณาเข้าสู่ระบบใหม่ครับ", "error");
+    executeLogout();
+  });
+}
+
+function executeLogout() {
+  localStorage.removeItem('delia_uuid');
+  localStorage.removeItem('delia_username');
+  localStorage.removeItem('delia_role');
+  
+  userUUID = "";
+  userName = "";
+  isAdminLoggedIn = false;
+  isDevLoggedIn = false;
+  
+  updateUserUI();
+  closeModal('logoutModal');
+  showToast("Logout", "ออกจากระบบเรียบร้อย", "success");
+  goHome();
+  
+  // รีเซ็ตสไลเดอร์กลับสภาพเดิม
+  const slider = document.getElementById('unlock-slider');
+  if(slider) {
+    slider.value = 0;
+    slider.disabled = false;
+    document.getElementById('slider-thumb').style.left = '3px';
+    document.getElementById('slider-text').innerText = translations[currentLang].slide_unlock;
+  }
+  
+  setTimeout(() => {
+    document.querySelectorAll('.login-step').forEach(el => el.classList.add('hidden'));
+    document.getElementById('step-google-login').classList.remove('hidden');
+    openModal('welcomeModal');
+  }, 500);
 }
 
 function openAdminLoginModal() {
@@ -279,28 +362,6 @@ function executeAdminAuth() {
     btn.disabled = false;
     showToast("เข้าสู่ระบบล้มเหลว", err, "error");
   });
-}
-
-function executeLogout() {
-  localStorage.removeItem('delia_uuid');
-  localStorage.removeItem('delia_username');
-  localStorage.removeItem('delia_role');
-  
-  userUUID = "";
-  userName = "";
-  isAdminLoggedIn = false;
-  isDevLoggedIn = false;
-  
-  updateUserUI();
-  closeModal('logoutModal');
-  showToast("Logout", "ออกจากระบบเรียบร้อย", "success");
-  goHome();
-  
-  setTimeout(() => {
-    document.getElementById('step-google-login').classList.remove('hidden');
-    document.getElementById('step-username-setup').classList.add('hidden');
-    openModal('welcomeModal');
-  }, 500);
 }
 
 function updateUserUI() {
@@ -333,12 +394,8 @@ function fetchAPI(action, payload, onSuccess, onError) {
   })
   .then(res => res.json())
   .then(data => {
-    if (data.success) {
-      onSuccess(data.data);
-    } else {
-      showToast("Error", data.message, "error");
-      if (onError) onError();
-    }
+    if (data.success) { onSuccess(data.data); } 
+    else { showToast("Error", data.message, "error"); if (onError) onError(); }
   })
   .catch(err => {
     showToast("Error", "Network failed", "error");
@@ -354,7 +411,6 @@ function goHome() {
   showView('calendar');
   loadEvents();
 }
-
 function showView(viewId) {
   currentViewId = viewId;
   document.getElementById('view-calendar').classList.add('hidden');
@@ -363,16 +419,11 @@ function showView(viewId) {
   document.getElementById('view-' + viewId).classList.remove('hidden');
   updateFABs();
 }
-
 function updateFABs() {
   const fabAddCat = document.getElementById('fab-add-category');
   if(fabAddCat) fabAddCat.classList.add('hidden');
-  
-  if (isAdminLoggedIn && currentViewId === 'playlist' && fabAddCat) {
-    fabAddCat.classList.remove('hidden');
-  }
+  if (isAdminLoggedIn && currentViewId === 'playlist' && fabAddCat) fabAddCat.classList.remove('hidden');
 }
-
 function openModal(id) { 
   if (id === 'logoutModal') {
     const nameDisplay = document.getElementById('profile-name-display');
@@ -381,12 +432,10 @@ function openModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.classList.add('active'); 
 }
-
 function closeModal(id) { 
   const modal = document.getElementById(id);
   if (modal) modal.classList.remove('active'); 
 }
-
 function showToast(title, message, type = "success") {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -410,12 +459,10 @@ function openInputModal(title, defaultVal, callback) {
   openModal('inputModal');
   setTimeout(() => { if (inputVal) inputVal.focus(); }, 100);
 }
-
 function submitInputModal() {
   const inputVal = document.getElementById('input-modal-value');
   if (!inputVal) return;
-  const val = inputVal.value.trim();
-  if (inputModalCallback) inputModalCallback(val);
+  if (inputModalCallback) inputModalCallback(inputVal.value.trim());
   closeModal('inputModal');
 }
 
@@ -426,7 +473,6 @@ function showCustomConfirm(title, message, callback) {
   confirmCallback = callback;
   openModal('customConfirmModal');
 }
-
 const confirmOkBtn = document.getElementById('btn-custom-confirm-ok');
 if (confirmOkBtn) {
   confirmOkBtn.addEventListener('click', () => {
@@ -440,9 +486,7 @@ function getYTThumb(link) {
   let videoId = '';
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = link.match(regExp);
-  if (match && match[2].length === 11) {
-    videoId = match[2];
-  }
+  if (match && match[2].length === 11) videoId = match[2];
   return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : 'DeliaLogo.png';
 }
 
@@ -461,15 +505,11 @@ function loadEvents() {
   fetchAPI("getEvents", {}, res => { 
     currentEvents = res;
     renderCalendar(); 
-    
     const urlParams = new URLSearchParams(window.location.search);
     const sharedEventId = urlParams.get('eventId');
     if (sharedEventId) {
       const ev = currentEvents.find(e => e.id === sharedEventId);
-      if (ev) {
-        activeEvent = ev;
-        enterSongList();
-      }
+      if (ev) { activeEvent = ev; enterSongList(); }
     }
   }, () => {
     if (grid) grid.innerHTML = `<p class="text-center text-muted" style="grid-column: 1 / -1;">Error Loading</p>`;
@@ -524,26 +564,17 @@ function renderCalendar() {
       const evt = document.createElement('div');
       evt.className = `day-event ${e.status === 'Closed' ? 'closed' : ''}`;
       evt.innerHTML = `${e.name} ${e.status === 'Closed' ? '<i class="fa-solid fa-lock"></i>' : ''}`;
-      evt.onclick = (event) => {
-        event.stopPropagation();
-        openEventIntro(e);
-      };
+      evt.onclick = (event) => { event.stopPropagation(); openEventIntro(e); };
       cell.appendChild(evt);
     });
-    
     grid.appendChild(cell);
   }
 }
 
 function changeMonth(dir) {
   currentMonth += dir;
-  if (currentMonth < 0) {
-    currentMonth = 11;
-    currentYear--;
-  } else if (currentMonth > 11) {
-    currentMonth = 0;
-    currentYear++;
-  }
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; } 
+  else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   renderCalendar();
 }
 
@@ -555,11 +586,9 @@ function openEventIntro(event) {
   const monthText = currentLang === 'th' ? monthNamesTh[d.getMonth()] : monthNamesEn[d.getMonth()];
   const yearText = currentLang === 'th' ? d.getFullYear() + 543 : d.getFullYear();
   document.getElementById('intro-date').innerText = `${d.getDate()} ${monthText} ${yearText}`;
-  
   document.getElementById('intro-loc').innerText = event.location;
   document.getElementById('intro-time').innerText = `${formatTime(event.openTime)} - ${formatTime(event.closeTime)}`;
   document.getElementById('intro-det').innerText = event.details || "-";
-  
   document.getElementById('edit-event-id').value = event.id;
   openModal('eventIntroModal');
 }
@@ -570,7 +599,6 @@ function openEventIntro(event) {
 function enterSongList() {
   closeModal('eventIntroModal');
   document.getElementById('view-event-title').innerText = activeEvent.name;
-  
   const statusEl = document.getElementById('view-event-status');
   const addBtn = document.getElementById('btn-add-song-main');
   
@@ -581,12 +609,9 @@ function enterSongList() {
     statusEl.innerHTML = '<span style="color:var(--success)"><i class="fa-solid fa-lock-open"></i> Open</span>';
     if (addBtn) addBtn.classList.remove('hidden');
   }
-  
   showView('songs');
   loadSongs();
-  
-  const newUrl = window.location.pathname + '?eventId=' + activeEvent.id;
-  window.history.replaceState({path: newUrl}, '', newUrl);
+  window.history.replaceState({path: window.location.pathname + '?eventId=' + activeEvent.id}, '', window.location.pathname + '?eventId=' + activeEvent.id);
 }
 
 function goBackToCalendar() {
@@ -598,11 +623,7 @@ function loadSongs() {
   const content = document.getElementById('song-list-content');
   if (!content) return;
   content.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
-  
-  fetchAPI("getSongs", { eventId: activeEvent.id }, res => {
-    currentSongs = res;
-    filterSongs();
-  }, () => {
+  fetchAPI("getSongs", { eventId: activeEvent.id }, res => { currentSongs = res; filterSongs(); }, () => {
     content.innerHTML = `<p class="text-center text-muted">Error Loading</p>`;
   });
 }
@@ -617,12 +638,8 @@ function filterSongs() {
 window.quickVote = function(e, songId) {
   e.stopPropagation(); 
   if (!userUUID) return openModal('welcomeModal');
-  
-  // 🛡️ ป้องกันการกดสแปมรัวๆ (Debounce)
-  if (window.isVoting) {
-    return showToast("ใจเย็นๆ", "ระบบกำลังประมวลผลการโหวตครับ", "warning");
-  }
-  window.isVoting = true; // ล็อกปุ่ม
+  if (window.isVoting) return showToast("ใจเย็นๆ", "ระบบกำลังประมวลผลครับ", "warning");
+  window.isVoting = true;
   
   const s = currentSongs.find(x => x.id === songId);
   if (s.creator === userUUID) {
@@ -637,12 +654,8 @@ window.quickVote = function(e, songId) {
   }
   
   fetchAPI("voteSong", { eventId: activeEvent.id, songId: songId, uuid: userUUID }, res => { 
-    currentSongs = res; 
-    filterSongs(); 
-    window.isVoting = false; // ปลดล็อกปุ่มเมื่อเซิร์ฟเวอร์ทำงานเสร็จ
-  }, () => {
-    window.isVoting = false; // ปลดล็อกปุ่มกรณีเกิด Error
-  });
+    currentSongs = res; filterSongs(); window.isVoting = false; 
+  }, () => { window.isVoting = false; });
 }
 
 function renderSongs(songs) {
@@ -654,9 +667,7 @@ function renderSongs(songs) {
     container.innerHTML = `<p class="text-center text-muted" style="padding: 40px 0;">No songs yet!</p>`;
     return;
   }
-  
-  let maxVotes = 0;
-  if (songs.length > 0) maxVotes = Math.max(...songs.map(s => s.votes));
+  let maxVotes = songs.length > 0 ? Math.max(...songs.map(s => s.votes)) : 0;
   
   songs.forEach(s => {
     const card = document.createElement('div');
@@ -664,17 +675,13 @@ function renderSongs(songs) {
     const topClass = isTopVoted ? 'top-voted' : '';
     const crownIcon = isTopVoted ? '<i class="fa-solid fa-crown crown-icon"></i>' : '';
     
-    let statusClass = '';
-    if (s.status === 'Approved') statusClass = 'status-approved';
-    else if (s.status === 'Played') statusClass = 'status-played';
-    
+    let statusClass = s.status === 'Approved' ? 'status-approved' : (s.status === 'Played' ? 'status-played' : '');
     card.className = `song-card ${statusClass} ${topClass}`;
     
     let tagsHTML = '';
     let originColor = s.origin === 'T-Pop' ? '#FFF59D' : (s.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
     let originTextColor = s.origin === 'T-Pop' ? '#F57F17' : (s.origin === 'J-Pop' ? '#E65100' : '#4A148C');
     tagsHTML += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${s.origin || 'K-Pop'}</span> `;
-    
     if (s.gender === 'M') tagsHTML += `<span class="tag tag-m">M</span>`;
     else if (s.gender === 'F') tagsHTML += `<span class="tag tag-f">F</span>`;
     else tagsHTML += `<span class="tag">Mix</span>`;
@@ -684,14 +691,8 @@ function renderSongs(songs) {
     let voteIcon = "fa-regular fa-heart"; 
     let voteColor = "var(--text-muted)";
     
-    if (userUUID && s.voters && s.voters.includes(userUUID)) { 
-      voteIcon = "fa-solid fa-heart"; 
-      voteColor = "var(--primary)"; 
-    }
-    if (userUUID && s.creator === userUUID) { 
-      voteIcon = "fa-solid fa-star"; 
-      voteColor = "#F39C12"; 
-    }
+    if (userUUID && s.voters && s.voters.includes(userUUID)) { voteIcon = "fa-solid fa-heart"; voteColor = "var(--primary)"; }
+    if (userUUID && s.creator === userUUID) { voteIcon = "fa-solid fa-star"; voteColor = "#F39C12"; }
     
     card.innerHTML = `
       <img src="${getYTThumb(s.link)}" class="song-thumbnail" alt="thumbnail">
@@ -725,26 +726,16 @@ function openSongDetail(id) {
   document.getElementById('det-tag').innerText = tagText;
   
   const linkBtn = document.getElementById('det-link');
-  if (s.link) {
-    linkBtn.href = s.link;
-    linkBtn.classList.remove('hidden');
-  } else {
-    linkBtn.classList.add('hidden');
-  }
+  if (s.link) { linkBtn.href = s.link; linkBtn.classList.remove('hidden'); } 
+  else { linkBtn.classList.add('hidden'); }
   
   const editMySongBtn = document.getElementById('btn-edit-mysong');
-  if (isAdminLoggedIn || (userUUID && s.creator === userUUID)) {
-    if (editMySongBtn) editMySongBtn.classList.remove('hidden');
-  } else {
-    if (editMySongBtn) editMySongBtn.classList.add('hidden');
-  }
+  if (isAdminLoggedIn || (userUUID && s.creator === userUUID)) { if (editMySongBtn) editMySongBtn.classList.remove('hidden'); } 
+  else { if (editMySongBtn) editMySongBtn.classList.add('hidden'); }
   
   const adminControls = document.getElementById('admin-song-controls');
-  if (isAdminLoggedIn) {
-    if (adminControls) adminControls.classList.remove('hidden');
-  } else {
-    if (adminControls) adminControls.classList.add('hidden');
-  }
+  if (isAdminLoggedIn) { if (adminControls) adminControls.classList.remove('hidden'); } 
+  else { if (adminControls) adminControls.classList.add('hidden'); }
   
   openModal('songDetailModal');
 }
@@ -753,9 +744,7 @@ function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
   navigator.clipboard.writeText(url).then(() => {
     showToast("Link Copied", "Share it with friends!", "success");
-  }).catch(() => {
-    showCustomConfirm("Share Link", url, () => {});
-  });
+  }).catch(() => { showCustomConfirm("Share Link", url, () => {}); });
 }
 
 // ==========================================
@@ -765,13 +754,9 @@ function setGenderDropdown(id, val) {
   const sel = document.getElementById(id);
   if(!sel) return;
   Array.from(sel.options).forEach(o => { if(o.value === 'Mix') o.remove(); });
-  
   if(val === 'Mix' || val === 'MixSong') {
-    sel.add(new Option(translations[currentLang].gender_mix || "Mix", "Mix"));
-    sel.value = "Mix";
-  } else {
-    sel.value = val;
-  }
+    sel.add(new Option(translations[currentLang].gender_mix || "Mix", "Mix")); sel.value = "Mix";
+  } else { sel.value = val; }
 }
 
 async function processYoutubeLink(inputId, nameId, artistId, genderId) {
@@ -790,19 +775,14 @@ async function processYoutubeLink(inputId, nameId, artistId, genderId) {
     if (data && data.title) {
       document.getElementById(nameId).value = data.title;
       document.getElementById(artistId).value = data.author_name;
-      
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, dbRes => {
         setGenderDropdown(genderId, dbRes.gender);
         currentOrigin = dbRes.origin || "K-Pop";
-        showToast("พบข้อมูลในฐานระบบ!", `${translations[currentLang].gender}: ${dbRes.gender} | ${currentOrigin}`, "success");
+        showToast("พบข้อมูลในระบบ!", `${translations[currentLang].gender}: ${dbRes.gender} | ${currentOrigin}`, "success");
         if (btn) btn.disabled = false;
-      }, () => {
-        if (btn) btn.disabled = false;
-      });
+      }, () => { if (btn) btn.disabled = false; });
     }
-  } catch (e) {
-    if (btn) btn.disabled = false;
-  }
+  } catch (e) { if (btn) btn.disabled = false; }
 }
 
 function autoFillYoutube() { processYoutubeLink('song-link', 'song-name', 'song-artist', 'song-gender'); }
@@ -810,16 +790,12 @@ function autoFillYoutubeEdit() { processYoutubeLink('edit-song-link', 'edit-song
 
 function checkQuotaAndOpenModal() {
   if (!userUUID) return openModal('welcomeModal');
-  
   if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= 3) {
-    return showToast("Quota Full", "Max 3 songs", "error");
+    return showToast("โควตาเต็ม", "ขอเพลงได้สูงสุด 3 เพลง", "error");
   }
-  
   ['song-link','song-name','song-artist','song-start','song-end'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+    const el = document.getElementById(id); if (el) el.value = '';
   });
-  
   document.getElementById('song-breakdance').checked = false;
   setGenderDropdown('song-gender', 'M');
   currentOrigin = "K-Pop";
@@ -827,129 +803,88 @@ function checkQuotaAndOpenModal() {
 }
 
 let pendingSongData = null;
-
 function preCheckAddSong() {
   const nameInput = document.getElementById('song-name');
   const name = nameInput ? nameInput.value.trim() : "";
   const linkInput = document.getElementById('song-link');
   const link = linkInput ? linkInput.value.trim() : "";
-  
   if (!name) return showToast("Error", "Name required", "error");
   
   const dup = currentSongs.find(s => 
-    (link && s.link === link) || 
-    (s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''))
+    (link && s.link === link) || (s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''))
   );
   
   if (dup) {
-    if (dup.voters && dup.voters.includes(userUUID)) {
-      return showToast("แจ้งเตือน", "คุณได้โหวตเพลงนี้ไปแล้วครับ", "error");
-    } else if (dup.creator === userUUID) {
-      return showToast("แจ้งเตือน", "คุณเป็นคนเสนอเพลงนี้เองครับ", "error");
-    } else {
+    if (dup.voters && dup.voters.includes(userUUID)) return showToast("แจ้งเตือน", "คุณได้โหวตเพลงนี้ไปแล้วครับ", "error");
+    else if (dup.creator === userUUID) return showToast("แจ้งเตือน", "คุณเป็นคนเสนอเพลงนี้เองครับ", "error");
+    else {
       fetchAPI("voteSong", { eventId: activeEvent.id, songId: dup.id, uuid: userUUID }, res => {
-        currentSongs = res;
-        filterSongs();
-        closeModal('addSongModal');
-        showToast("พบเพลงซ้ำในระบบ", "ระบบได้ทำการโหวตให้เพลงที่มีอยู่แล้วให้ครับ 💖", "success");
+        currentSongs = res; filterSongs(); closeModal('addSongModal');
+        showToast("พบเพลงซ้ำ", "ระบบกดโหวตให้เพลงที่มีอยู่แล้วให้ครับ 💖", "success");
       });
       return;
     }
   }
   
   pendingSongData = {
-    name: name,
-    artist: document.getElementById('song-artist').value,
-    link: link,
-    start: document.getElementById('song-start').value,
-    end: document.getElementById('song-end').value,
-    isBreakdance: document.getElementById('song-breakdance').checked,
-    gender: document.getElementById('song-gender').value,
+    name: name, artist: document.getElementById('song-artist').value, link: link,
+    start: document.getElementById('song-start').value, end: document.getElementById('song-end').value,
+    isBreakdance: document.getElementById('song-breakdance').checked, gender: document.getElementById('song-gender').value,
     origin: currentOrigin
   };
-  
   executeAddSong();
 }
 
 function executeAddSong() {
   const btn = document.getElementById('btn-song-submit');
   if (btn) btn.disabled = true;
-  
   fetchAPI("addSong", { eventId: activeEvent.id, songData: pendingSongData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => {
-    currentSongs = res;
-    filterSongs();
-    closeModal('addSongModal');
-    showToast("Success", "Song added", "success");
+    currentSongs = res; filterSongs(); closeModal('addSongModal'); showToast("Success", "Song added", "success");
     if (btn) btn.disabled = false;
-  }, () => {
-    if (btn) btn.disabled = false;
-  });
+  }, () => { if (btn) btn.disabled = false; });
 }
 
 function openUserEditSong() {
   const s = currentSongs.find(song => song.id === selectedSongId);
   if (!s) return;
-  
   document.getElementById('edit-song-link').value = s.link;
   document.getElementById('edit-song-name').value = s.name;
   document.getElementById('edit-song-artist').value = s.artist;
   document.getElementById('edit-song-start').value = s.start;
   document.getElementById('edit-song-end').value = s.end;
   document.getElementById('edit-song-breakdance').checked = (s.isBreakdance === 'Yes' || s.isBreakdance === true);
-  
   currentOrigin = s.origin;
   setGenderDropdown('edit-song-gender', s.gender);
-  
-  closeModal('songDetailModal');
-  openModal('editSongModal');
+  closeModal('songDetailModal'); openModal('editSongModal');
 }
 
 function executeEditSong() {
-  const nameInput = document.getElementById('edit-song-name');
-  const name = nameInput ? nameInput.value.trim() : "";
+  const name = document.getElementById('edit-song-name').value.trim();
   if (!name) return showToast("Error", "Name required", "error");
-  
   const updatedData = {
-    name: name,
-    artist: document.getElementById('edit-song-artist').value,
-    link: document.getElementById('edit-song-link').value,
-    start: document.getElementById('edit-song-start').value,
-    end: document.getElementById('edit-song-end').value,
-    isBreakdance: document.getElementById('edit-song-breakdance').checked,
-    gender: document.getElementById('edit-song-gender').value,
+    name: name, artist: document.getElementById('edit-song-artist').value, link: document.getElementById('edit-song-link').value,
+    start: document.getElementById('edit-song-start').value, end: document.getElementById('edit-song-end').value,
+    isBreakdance: document.getElementById('edit-song-breakdance').checked, gender: document.getElementById('edit-song-gender').value,
     origin: currentOrigin
   };
-  
   const btn = document.getElementById('btn-song-edit-submit');
   if (btn) btn.disabled = true;
-  
   fetchAPI("editSong", { eventId: activeEvent.id, songId: selectedSongId, songData: updatedData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => {
-    currentSongs = res;
-    filterSongs();
-    closeModal('editSongModal');
-    showToast("Success", "Updated", "success");
+    currentSongs = res; filterSongs(); closeModal('editSongModal'); showToast("Success", "Updated", "success");
     if (btn) btn.disabled = false;
-  }, () => {
-    if (btn) btn.disabled = false;
-  });
+  }, () => { if (btn) btn.disabled = false; });
 }
 
 function adminUpdateStatus(status) {
   fetchAPI("updateSongStatus", { eventId: activeEvent.id, songId: selectedSongId, status: status }, res => {
-    currentSongs = res;
-    filterSongs();
-    closeModal('songDetailModal');
-    showToast("Success", "Status Updated");
+    currentSongs = res; filterSongs(); closeModal('songDetailModal'); showToast("Success", "Status Updated");
   });
 }
 
 function confirmDeleteSong() {
   showCustomConfirm("Delete?", "Remove this song?", () => {
     fetchAPI("deleteSong", { eventId: activeEvent.id, songId: selectedSongId }, res => {
-      currentSongs = res;
-      filterSongs();
-      closeModal('songDetailModal');
-      showToast("Deleted", "Song removed", "success");
+      currentSongs = res; filterSongs(); closeModal('songDetailModal'); showToast("Deleted", "Song removed", "success");
     });
   });
 }
@@ -957,14 +892,12 @@ function confirmDeleteSong() {
 // ==========================================
 // 8. Playlist Manager
 // ==========================================
-let sortableLists = [];
-let boardSortable = null;
-let isPoolOpen = true;
+let sortableLists = []; let boardSortable = null; let isPoolOpen = true;
 
 function togglePoolSidebar() {
+  isPoolOpen = !isPoolOpen;
   const pool = document.getElementById('pool-sidebar');
   const text = document.getElementById('toggle-sidebar-text');
-  isPoolOpen = !isPoolOpen;
   if (isPoolOpen) {
     if (pool) pool.classList.remove('collapsed');
     if (text) text.innerText = translations[currentLang].hide_pool;
@@ -977,12 +910,10 @@ function togglePoolSidebar() {
 function openPlaylistManager() {
   document.getElementById('playlist-event-title').innerText = `${translations[currentLang].setlist_title}: ${activeEvent.name}`;
   showView('playlist');
-  document.getElementById('list-pool').innerHTML = '';
-  document.getElementById('dynamic-board').innerHTML = '';
+  document.getElementById('list-pool').innerHTML = ''; document.getElementById('dynamic-board').innerHTML = '';
   
   fetchAPI("getPlaylist", { eventId: activeEvent.id, date: activeEvent.date }, savedLists => {
     const categoryNames = [...new Set(savedLists.map(s => s.listName))].filter(n => n !== 'list-pool' && n !== 'POOL' && n !== 'กองกลาง');
-    
     if (categoryNames.length === 0 && savedLists.length === 0) {
       currentSongs.filter(s => s.status !== 'Played').sort((a,b) => b.votes - a.votes).forEach(s => {
         document.getElementById('list-pool').appendChild(createPlaylistItem(s));
@@ -1001,10 +932,7 @@ function openPlaylistManager() {
 
 function addNewCategory() {
   openInputModal("Name", "K-Pop", (newTitle) => {
-    if (!newTitle) return;
-    if (newTitle.toLowerCase() === 'pool' || newTitle === 'list-pool' || newTitle === 'กองกลาง') {
-      return showToast("Error", "Reserved name", "error");
-    }
+    if (!newTitle || newTitle.toLowerCase() === 'pool' || newTitle === 'list-pool' || newTitle === 'กองกลาง') return;
     createCategoryBox(newTitle);
   });
 }
@@ -1028,11 +956,10 @@ function createCategoryBox(title) {
 }
 
 function renameCategory(zoneId) {
-  const zone = document.getElementById(zoneId);
-  if (!zone) return;
+  const zone = document.getElementById(zoneId); if (!zone) return;
   const oldTitle = zone.getAttribute('data-category');
   openInputModal("Rename", oldTitle, (newTitle) => {
-    if (newTitle && newTitle !== "" && newTitle.toLowerCase() !== 'pool' && newTitle !== 'กองกลาง') {
+    if (newTitle && newTitle.toLowerCase() !== 'pool' && newTitle !== 'กองกลาง') {
       zone.setAttribute('data-category', newTitle);
       zone.previousElementSibling.querySelector('h3').innerHTML = `${newTitle} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${zoneId}')"></i> 
@@ -1042,8 +969,7 @@ function renameCategory(zoneId) {
 }
 
 function deleteCategory(zoneId) {
-  const zone = document.getElementById(zoneId);
-  if (!zone) return;
+  const zone = document.getElementById(zoneId); if (!zone) return;
   const items = Array.from(zone.children);
   if (items.length > 0) {
     showCustomConfirm("Warning", "Move songs to pool?", () => {
@@ -1051,9 +977,7 @@ function deleteCategory(zoneId) {
       items.forEach(el => pool.appendChild(el));
       zone.parentElement.remove();
     });
-  } else {
-    zone.parentElement.remove();
-  }
+  } else { zone.parentElement.remove(); }
 }
 
 function confirmImportFromVotes() {
@@ -1079,11 +1003,9 @@ function createPlaylistItem(song) {
   let originColor = song.origin === 'T-Pop' ? '#FFF59D' : (song.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
   let originTextColor = song.origin === 'T-Pop' ? '#F57F17' : (song.origin === 'J-Pop' ? '#E65100' : '#4A148C');
   tags += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${song.origin || 'K-Pop'}</span> `;
-    
   if (div.dataset.gender === 'M') tags += `<span class="tag tag-m">M</span>`;
   else if (div.dataset.gender === 'F') tags += `<span class="tag tag-f">F</span>`;
   else tags += `<span class="tag">Mix</span>`;
-  
   if (div.dataset.bd === "true") tags += ` <span class="tag tag-bd">BD</span>`;
   
   div.innerHTML = `
@@ -1099,8 +1021,7 @@ function createPlaylistItem(song) {
 }
 
 function initSortables() {
-  sortableLists.forEach(s => s.destroy());
-  sortableLists = [];
+  sortableLists.forEach(s => s.destroy()); sortableLists = [];
   if (boardSortable) boardSortable.destroy();
   
   boardSortable = new Sortable(document.getElementById('dynamic-board'), {
@@ -1109,11 +1030,7 @@ function initSortables() {
   
   document.querySelectorAll('.drop-zone').forEach(zone => {
     sortableLists.push(new Sortable(zone, {
-      group: 'shared', 
-      animation: 150, 
-      ghostClass: 'sortable-ghost',
-      delay: 150,
-      delayOnTouchOnly: true
+      group: 'shared', animation: 150, ghostClass: 'sortable-ghost', delay: 150, delayOnTouchOnly: true
     }));
   });
 }
@@ -1122,23 +1039,16 @@ function randomizeAlternate(containerId) {
   const container = document.getElementById(containerId);
   const items = Array.from(container.children);
   if (items.length < 2) return;
-  
   const shuffle = array => array.sort(() => Math.random() - 0.5);
   let males = shuffle(items.filter(i => i.dataset.gender === 'M'));
   let females = shuffle(items.filter(i => i.dataset.gender === 'F'));
   let mixes = shuffle(items.filter(i => i.dataset.gender !== 'M' && i.dataset.gender !== 'F'));
-  
   container.innerHTML = '';
   let mIdx = 0, fIdx = 0, mixIdx = 0, turn = 'M';
-  
   while (mIdx < males.length || fIdx < females.length || mixIdx < mixes.length) {
-    if (turn === 'M') {
-      if (mIdx < males.length) { container.appendChild(males[mIdx++]); turn = 'F'; } else turn = 'F';
-    } else if (turn === 'F') {
-      if (fIdx < females.length) { container.appendChild(females[fIdx++]); turn = 'Mix'; } else turn = 'Mix';
-    } else if (turn === 'Mix') {
-      if (mixIdx < mixes.length) { container.appendChild(mixes[mixIdx++]); turn = 'M'; } else turn = 'M';
-    }
+    if (turn === 'M') { if (mIdx < males.length) { container.appendChild(males[mIdx++]); turn = 'F'; } else turn = 'F'; } 
+    else if (turn === 'F') { if (fIdx < females.length) { container.appendChild(females[fIdx++]); turn = 'Mix'; } else turn = 'Mix'; } 
+    else if (turn === 'Mix') { if (mixIdx < mixes.length) { container.appendChild(mixes[mixIdx++]); turn = 'M'; } else turn = 'M'; }
   }
 }
 
@@ -1146,25 +1056,16 @@ function aiMagicSetlist() {
   const pool = document.getElementById('list-pool');
   const items = Array.from(pool.children);
   if (items.length < 3) return showToast("Error", "Min 3 songs", "error");
-  
   const btn = document.getElementById('btn-ai-setlist');
   if (btn) btn.disabled = true;
-  
   const songData = items.map(el => ({ id: el.dataset.id, gender: el.dataset.gender, isBreakdance: el.dataset.bd === "true" }));
   fetchAPI("aiMagicSetlist", { songs: songData }, sortedIds => {
     pool.innerHTML = '';
-    sortedIds.forEach(id => {
-      const matchedEl = items.find(el => el.dataset.id === id);
-      if (matchedEl) pool.appendChild(matchedEl);
-    });
-    items.forEach(el => {
-      if (!sortedIds.includes(el.dataset.id)) pool.appendChild(el);
-    });
+    sortedIds.forEach(id => { const matchedEl = items.find(el => el.dataset.id === id); if (matchedEl) pool.appendChild(matchedEl); });
+    items.forEach(el => { if (!sortedIds.includes(el.dataset.id)) pool.appendChild(el); });
     if (btn) btn.disabled = false;
     showToast("สำเร็จ", "จัดคิวเพลงเรียบร้อย", "success");
-  }, () => {
-    if (btn) btn.disabled = false;
-  });
+  }, () => { if (btn) btn.disabled = false; });
 }
 
 function savePlaylistData() {
@@ -1177,55 +1078,37 @@ function savePlaylistData() {
       if (s) lists.push({ listName: listName, id: s.id, name: s.name, artist: s.artist, gender: s.gender, isBreakdance: s.isBreakdance, time: `${s.start}-${s.end}`, link: s.link });
     }
   });
-  
   const btnTop = document.getElementById('btn-save-playlist-top');
   const btnBot = document.getElementById('btn-save-playlist-bottom');
-  if (btnTop) btnTop.disabled = true;
-  if (btnBot) btnBot.disabled = true;
-  
+  if (btnTop) btnTop.disabled = true; if (btnBot) btnBot.disabled = true;
   fetchAPI("savePlaylist", { eventId: activeEvent.id, date: activeEvent.date, lists: lists }, res => {
-    if (btnTop) btnTop.disabled = false;
-    if (btnBot) btnBot.disabled = false;
+    if (btnTop) btnTop.disabled = false; if (btnBot) btnBot.disabled = false;
     showToast("Success", "Saved to Sheet");
   }, () => {
-    if (btnTop) btnTop.disabled = false;
-    if (btnBot) btnBot.disabled = false;
+    if (btnTop) btnTop.disabled = false; if (btnBot) btnBot.disabled = false;
   });
 }
 
 function handleAddEvent() {
   const p = {
-    date: document.getElementById('event-date').value,
-    name: document.getElementById('event-name').value,
-    location: document.getElementById('event-loc').value,
-    openTime: document.getElementById('event-open').value,
-    closeTime: document.getElementById('event-close').value,
-    details: document.getElementById('event-det').value
+    date: document.getElementById('event-date').value, name: document.getElementById('event-name').value,
+    location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value,
+    closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value
   };
   if (!p.date || !p.name) return showToast("Error", "Fill required fields", "error");
-  
   const btn = document.getElementById('btn-event-submit');
   if (btn) btn.disabled = true;
-  
   fetchAPI("createEvent", p, res => {
-    currentEvents = res;
-    renderCalendar();
-    closeModal('addEventModal');
-    showToast("Success", "Created", "success");
+    currentEvents = res; renderCalendar(); closeModal('addEventModal'); showToast("Success", "Created", "success");
     if (btn) btn.disabled = false;
-  }, () => {
-    if (btn) btn.disabled = false;
-  });
+  }, () => { if (btn) btn.disabled = false; });
 }
 
 function confirmDeleteEvent() {
   const id = document.getElementById('edit-event-id').value;
   showCustomConfirm("ลบกำหนดการ", "คุณต้องการลบงานนี้ใช่หรือไม่?", () => {
     fetchAPI("deleteEvent", { id: id }, res => {
-      currentEvents = res;
-      renderCalendar();
-      closeModal('editEventModal');
-      showToast("สำเร็จ", "ลบกำหนดการแล้ว", "success");
+      currentEvents = res; renderCalendar(); closeModal('editEventModal'); showToast("สำเร็จ", "ลบกำหนดการแล้ว", "success");
     });
   });
 }
