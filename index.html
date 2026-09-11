@@ -8,7 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="stylesheet" href="style.css">
+  
 </head>
 <body>
 
@@ -125,18 +127,46 @@
         <button class="btn btn-sm btn-outline lang-btn" onclick="setLanguage('th')" style="padding: 2px 8px; border-radius: 20px;">TH</button>
         <button class="btn btn-sm btn-outline lang-btn" onclick="setLanguage('en')" style="padding: 2px 8px; border-radius: 20px;">EN</button>
       </div>
-      <h2 style="margin-top: 0; color: var(--primary);"><i class="fa-solid fa-hand-sparkles"></i> <span data-i18n="welcome">ยินดีต้อนรับ</span></h2>
-      <p class="text-muted" data-i18n="enter_name_prompt">ใส่ชื่อของคุณที่นี่</p>
+      <h2 style="margin-top: 0; color: var(--primary);"><i class="fa-brands fa-google"></i> <span data-i18n="welcome">เข้าสู่ระบบ</span></h2>
       
-      <div class="form-group" style="margin-top: 20px;">
-        <input type="text" id="welcome-username" class="form-control text-center" placeholder="Username" style="font-size: 1.2rem; font-weight: 500;" onkeypress="if(event.key === 'Enter') checkSlideAndLogin()">
+      <!-- ขั้นตอน 1: ล็อกอินด้วย Google -->
+      <div id="step-google-login" style="margin-top: 20px;">
+        <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">เข้าสู่ระบบอย่างปลอดภัยด้วยบัญชี Google ของคุณ</p>
+        
+        <!-- ⚠️ ต้องใส่ Client ID ของคุณตรงนี้ -->
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleGoogleLogin"
+             data-auto_prompt="false">
+        </div>
+        
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signin_with"
+             data-size="large"
+             data-logo_alignment="center"
+             style="display: flex; justify-content: center;">
+        </div>
+
+        <button class="btn btn-outline btn-sm btn-full" style="margin-top: 20px; border-style: dashed;" onclick="openAdminLoginModal()"><span data-i18n="admin_access">🔑 เข้าสู่โหมด Admin</span></button>
+      </div>
+
+      <!-- ขั้นตอน 2: ตั้งชื่อผู้ใช้งาน (สำหรับคนเข้าครั้งแรก) -->
+      <div id="step-username-setup" class="hidden" style="margin-top: 15px;">
+        <div style="background: #e6f7ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #0050b3;">
+          <i class="fa-solid fa-party-horn"></i> ยินดีต้อนรับสมาชิกใหม่! กรุณาตั้งชื่อที่จะใช้แสดงในระบบ
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label>ชื่อผู้ใช้งาน (Username)</label>
+          <input type="text" id="setup-username" class="form-control" placeholder="เช่น YutoJR">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="registerNewUser()" id="btn-register-user"><i class="fa-solid fa-user-check"></i> เริ่มใช้งานเลย!</button>
       </div>
       
-      <div class="slider-wrapper">
-        <div class="slider-text" id="slider-text" data-i18n="slide_login">เลื่อนเพื่อเข้าสู่ระบบ</div>
-        <div class="slider-thumb" id="slider-thumb"><i class="fa-solid fa-arrow-right"></i></div>
-        <input type="range" min="0" max="100" value="0" class="slider-input" id="login-slider" oninput="handleSlide(this)" onchange="resetSlide(this)">
-      </div>
     </div>
   </div>
 
