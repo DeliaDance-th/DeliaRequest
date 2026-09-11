@@ -10,7 +10,7 @@ let activeEvent = null;
 let selectedSongId = null;
 let currentViewId = 'calendar';
 
-// ตัวแปรใหม่สำหรับเก็บสัญชาติเพลงชั่วคราว
+// ตัวแปรเก็บสัญชาติเพลงชั่วคราว
 let currentOrigin = "K-Pop";
 
 // ==========================================
@@ -19,8 +19,6 @@ let currentOrigin = "K-Pop";
 const translations = {
   th: {
     welcome: "ยินดีต้อนรับ", 
-    enter_name_prompt: "ใส่ชื่อของคุณที่นี่", 
-    slide_login: "เลื่อนเพื่อเข้าสู่ระบบ", 
     login: "เข้าสู่ระบบ",
     calendar_title: "Event Calendar", 
     calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน",
@@ -28,7 +26,6 @@ const translations = {
     btn_back: "กลับปฏิทิน", 
     btn_add_song: "ขอเพลงใหม่", 
     btn_manage_pl: "จัด Playlist", 
-    btn_copy_dj: "คัดลอกให้ DJ",
     search_ph: "ค้นหาชื่อเพลง หรือ ศิลปิน...", 
     setlist_title: "Setlist Manager", 
     btn_back_list: "กลับหน้ารายการ", 
@@ -60,8 +57,6 @@ const translations = {
   },
   en: {
     welcome: "Welcome", 
-    enter_name_prompt: "Enter your name here", 
-    slide_login: "Slide to Login", 
     login: "Login",
     calendar_title: "Event Calendar", 
     calendar_sub: "Select a date to view details, or admin click to create an event.",
@@ -69,7 +64,6 @@ const translations = {
     btn_back: "Back to Calendar", 
     btn_add_song: "Request Song", 
     btn_manage_pl: "Manage Playlist", 
-    btn_copy_dj: "Copy for DJ",
     search_ph: "Search song or artist...", 
     setlist_title: "Setlist Manager", 
     btn_back_list: "Back to Requests", 
@@ -122,9 +116,7 @@ function setLanguage(lang) {
   }
   
   renderCalendarDays();
-  if (currentEvents.length > 0) {
-    renderCalendar();
-  }
+  if (currentEvents.length > 0) renderCalendar();
 }
 
 function renderCalendarDays() {
@@ -153,137 +145,106 @@ function formatTime(dtStr) {
 }
 
 // ==========================================
-// 3. ระบบระบุตัวตน & Slide to Login
+// 3. ระบบยืนยันตัวตน (Google Sign-In)
 // ==========================================
-const CACHE_TIME = 12 * 60 * 60 * 1000;
-let loginTime = localStorage.getItem('delia_login_time') || 0;
-
-if (Date.now() - loginTime > CACHE_TIME) {
-  localStorage.removeItem('delia_uuid');
-  localStorage.removeItem('delia_username');
-  localStorage.removeItem('delia_role');
-  localStorage.removeItem('delia_login_time');
-}
-
 let userUUID = localStorage.getItem('delia_uuid') || "";
 let userName = localStorage.getItem('delia_username') || "";
 let isAdminLoggedIn = localStorage.getItem('delia_role') === 'Admin';
 let isDevLoggedIn = localStorage.getItem('delia_role') === 'Developer';
+let pendingEmail = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   setLanguage(currentLang);
-  updateUserUI();
-  loadEvents();
   
-  if (!userUUID && !isAdminLoggedIn) {
-    openModal('welcomeModal');
+  // เช็กการล็อกอินอัตโนมัติเบื้องหลัง
+  if (userUUID) {
+    fetchAPI("auth", { action: "auto_login", clientUuid: userUUID }, res => {
+      saveLoginSession(res); 
+      loadEvents();
+    }, err => {
+      // เซสชันหมดอายุหรือมีปัญหา เคลียร์ข้อมูลทิ้ง
+      localStorage.removeItem('delia_uuid');
+      localStorage.removeItem('delia_username');
+      localStorage.removeItem('delia_role');
+      userUUID = "";
+      userName = "";
+      isAdminLoggedIn = false;
+      isDevLoggedIn = false;
+      updateUserUI();
+      loadEvents();
+    });
+  } else {
+    updateUserUI();
+    loadEvents();
   }
 });
 
-function goHome() {
-  window.history.replaceState({}, document.title, window.location.pathname);
-  showView('calendar');
-  loadEvents();
+// ถอดรหัสข้อมูลที่ได้จาก Google
+function decodeJwtResponse(token) {
+  let base64Url = token.split('.')[1];
+  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+  return JSON.parse(jsonPayload);
 }
 
-function updateUserUI() {
-  const profileBtn = document.getElementById('btn-user-profile');
-  const btnLogin = document.getElementById('btn-login-main');
+// รับค่ากลับจากปุ่ม Google
+function handleGoogleLogin(response) {
+  const responsePayload = decodeJwtResponse(response.credential);
+  pendingEmail = responsePayload.email;
   
-  if (isAdminLoggedIn || isDevLoggedIn) {
-    // ให้ Dev มีไอคอน < / > ส่วน Admin เป็นมงกุฎ
-    let icon = isDevLoggedIn ? "<i class='fa-solid fa-code'></i>" : "<i class='fa-solid fa-crown'></i>";
-    profileBtn.innerHTML = `${icon} <span class="hide-mobile">${userName}</span>`;
-    profileBtn.classList.remove('hidden');
-    if (btnLogin) btnLogin.classList.add('hidden');
-    
-    // ให้ Dev มีสิทธิ์เทียบเท่า Admin ในการจัดการงาน
-    document.querySelectorAll('.admin-only:not(.fab-btn)').forEach(el => el.classList.remove('hidden'));
-    
-    // เปิดการแสดงผลเครื่องมือ Dev
-    if (isDevLoggedIn) {
-      document.querySelectorAll('.dev-only').forEach(el => el.classList.remove('hidden'));
-    } else {
-      document.querySelectorAll('.dev-only').forEach(el => el.classList.add('hidden'));
+  showToast("Google Sign-In", "กำลังตรวจสอบบัญชี...", "success");
+
+  fetchAPI("auth", { action: "google_login", email: pendingEmail }, res => {
+    if (res.status === "need_username") {
+      document.getElementById('step-google-login').classList.add('hidden');
+      document.getElementById('step-username-setup').classList.remove('hidden');
+    } else if (res.status === "login_success") {
+      saveLoginSession(res);
     }
-  } else if (userUUID && userName) {
-    profileBtn.innerHTML = `<i class='fa-solid fa-user'></i> <span class="hide-mobile">${userName}</span>`;
-    profileBtn.classList.remove('hidden');
-    if (btnLogin) btnLogin.classList.add('hidden');
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.dev-only').forEach(el => el.classList.add('hidden'));
-  } else {
-    profileBtn.classList.add('hidden');
-    if (btnLogin) btnLogin.classList.remove('hidden');
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.dev-only').forEach(el => el.classList.add('hidden'));
-  }
-  updateFABs();
-}
-
-function handleSlide(el) {
-  const val = el.value;
-  const thumb = document.getElementById('slider-thumb');
-  thumb.style.left = `calc(${val}% - ${val * 0.5}px)`;
-  if (val >= 95) {
-    el.value = 100;
-    thumb.style.left = `calc(100% - 50px)`;
-    el.disabled = true;
-    checkSlideAndLogin();
-  }
-}
-
-function resetSlide(el) {
-  if (el.value < 95) {
-    el.value = 0;
-    document.getElementById('slider-thumb').style.left = '0px';
-  }
-}
-
-function checkSlideAndLogin() {
-  const u = document.getElementById('welcome-username').value.trim();
-  const slider = document.getElementById('login-slider');
-  const sliderText = document.getElementById('slider-text');
-  
-  if (!u) {
-    showToast("Error", "กรุณาใส่ชื่อของคุณ", "error");
-    if (slider) { slider.disabled = false; slider.value = 0; }
-    const thumb = document.getElementById('slider-thumb');
-    if (thumb) thumb.style.left = '0px';
-    return;
-  }
-  
-  if (sliderText) sliderText.innerText = "กำลังเข้าสู่ระบบ...";
-  
-  // แนบ UUID เก่าไปให้ Server เช็กด้วยเพื่อป้องกันการสวมรอย
-  fetchAPI("auth", { username: u, password: "", uuid: userUUID }, res => {
-    userUUID = res.uuid;
-    userName = res.username;
-    isAdminLoggedIn = (res.role === 'Admin');
-    isDevLoggedIn = (res.role === 'Developer');
-    
-    localStorage.setItem('delia_uuid', userUUID);
-    localStorage.setItem('delia_username', userName);
-    localStorage.setItem('delia_role', res.role);
-    localStorage.setItem('delia_login_time', Date.now());
-    
-    updateUserUI();
-    closeModal('welcomeModal');
-    showToast(translations[currentLang].welcome, userName, "success");
-    
-    if (slider) { slider.disabled = false; slider.value = 0; }
-    const thumb = document.getElementById('slider-thumb');
-    if (thumb) thumb.style.left = '0px';
-    if (sliderText) sliderText.innerText = translations[currentLang].slide_login;
-  }, () => { 
-    if (slider) { slider.disabled = false; slider.value = 0; }
-    const thumb = document.getElementById('slider-thumb');
-    if (thumb) thumb.style.left = '0px';
-    if (sliderText) sliderText.innerText = translations[currentLang].slide_login; 
+  }, err => {
+    showToast("ข้อผิดพลาดในการเชื่อมต่อ", err, "error");
   });
 }
 
+// ตั้งชื่อบัญชีสำหรับผู้ใช้ใหม่
+function registerNewUser() {
+  const username = document.getElementById('setup-username').value.trim();
+  if (!username) return showToast("แจ้งเตือน", "กรุณาตั้งชื่อผู้ใช้งานก่อนครับ", "error");
+  
+  const btn = document.getElementById('btn-register-user');
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...`; 
+  btn.disabled = true;
+  
+  fetchAPI("auth", { action: "register_user", username: username, email: pendingEmail }, res => {
+    saveLoginSession(res);
+    btn.innerHTML = `<i class="fa-solid fa-user-check"></i> เริ่มใช้งานเลย!`; 
+    btn.disabled = false;
+  }, err => {
+    btn.innerHTML = `<i class="fa-solid fa-user-check"></i> เริ่มใช้งานเลย!`; 
+    btn.disabled = false;
+    showToast("ข้อผิดพลาด", err, "error");
+  });
+}
+
+function saveLoginSession(res) {
+  userUUID = res.uuid; 
+  userName = res.username;
+  isAdminLoggedIn = (res.role === 'Admin'); 
+  isDevLoggedIn = (res.role === 'Developer');
+  
+  localStorage.setItem('delia_uuid', userUUID);
+  localStorage.setItem('delia_username', userName);
+  localStorage.setItem('delia_role', res.role);
+  
+  closeModal('welcomeModal');
+  updateUserUI();
+  showToast(translations[currentLang].welcome, `เข้าสู่ระบบสำเร็จในชื่อ ${userName} 🎉`, "success");
+}
+
 function openAdminLoginModal() {
+  closeModal('welcomeModal');
   closeModal('logoutModal');
   openModal('adminLoginModal');
 }
@@ -291,36 +252,23 @@ function openAdminLoginModal() {
 function executeAdminAuth() {
   const u = document.getElementById('admin-user').value.trim();
   const p = document.getElementById('admin-pass').value.trim();
-  
-  if (!u || !p) {
-    return showToast("ข้อผิดพลาด", "ใส่ข้อมูลให้ครบ", "error");
-  }
+  if (!u || !p) return showToast("ข้อผิดพลาด", "ใส่ข้อมูลให้ครบ", "error");
   
   const btn = document.getElementById('btn-admin-submit');
+  const originalText = btn.innerHTML;
   btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
   btn.disabled = true;
 
-  fetchAPI("auth", { username: u, password: p, uuid: userUUID }, res => {
-    userUUID = res.uuid;
-    userName = res.username;
-    isAdminLoggedIn = (res.role === 'Admin');
-    isDevLoggedIn = (res.role === 'Developer');
-    
-    localStorage.setItem('delia_uuid', userUUID);
-    localStorage.setItem('delia_username', userName);
-    localStorage.setItem('delia_role', res.role);
-    localStorage.setItem('delia_login_time', Date.now());
-    
-    updateUserUI();
+  fetchAPI("auth", { action: "admin_login", username: u, password: p }, res => {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    saveLoginSession(res); 
     closeModal('adminLoginModal');
-    
-    if (isAdminLoggedIn) showToast("Admin", "เข้าสู่โหมดผู้ดูแลระบบ", "success");
-    btn.innerText = translations[currentLang].login;
-    btn.disabled = false;
     renderCalendar();
-  }, () => {
-    btn.innerText = translations[currentLang].login;
+  }, err => {
+    btn.innerHTML = originalText;
     btn.disabled = false;
+    showToast("เข้าสู่ระบบล้มเหลว", err, "error");
   });
 }
 
@@ -328,18 +276,45 @@ function executeLogout() {
   localStorage.removeItem('delia_uuid');
   localStorage.removeItem('delia_username');
   localStorage.removeItem('delia_role');
-  localStorage.removeItem('delia_login_time');
   
   userUUID = "";
   userName = "";
   isAdminLoggedIn = false;
+  isDevLoggedIn = false;
   
   updateUserUI();
   closeModal('logoutModal');
   showToast("Logout", "ออกจากระบบเรียบร้อย", "success");
   goHome();
   
-  setTimeout(() => openModal('welcomeModal'), 500);
+  setTimeout(() => {
+    document.getElementById('step-google-login').classList.remove('hidden');
+    document.getElementById('step-username-setup').classList.add('hidden');
+    openModal('welcomeModal');
+  }, 500);
+}
+
+function updateUserUI() {
+  const profileBtn = document.getElementById('btn-user-profile');
+  const btnLogin = document.getElementById('btn-login-main');
+  
+  if (isAdminLoggedIn || isDevLoggedIn) {
+    let icon = isDevLoggedIn ? "<i class='fa-solid fa-code'></i>" : "<i class='fa-solid fa-crown'></i>";
+    profileBtn.innerHTML = `${icon} <span class="hide-mobile">${userName}</span>`;
+    profileBtn.classList.remove('hidden');
+    if (btnLogin) btnLogin.classList.add('hidden');
+    document.querySelectorAll('.admin-only:not(.fab-btn)').forEach(el => el.classList.remove('hidden'));
+  } else if (userUUID && userName) {
+    profileBtn.innerHTML = `<i class='fa-solid fa-user'></i> <span class="hide-mobile">${userName}</span>`;
+    profileBtn.classList.remove('hidden');
+    if (btnLogin) btnLogin.classList.add('hidden');
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+  } else {
+    profileBtn.classList.add('hidden');
+    if (btnLogin) btnLogin.classList.remove('hidden');
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+  }
+  updateFABs();
 }
 
 function fetchAPI(action, payload, onSuccess, onError) {
@@ -365,6 +340,12 @@ function fetchAPI(action, payload, onSuccess, onError) {
 // ==========================================
 // 4. UI View Control & Modals
 // ==========================================
+function goHome() {
+  window.history.replaceState({}, document.title, window.location.pathname);
+  showView('calendar');
+  loadEvents();
+}
+
 function showView(viewId) {
   currentViewId = viewId;
   document.getElementById('view-calendar').classList.add('hidden');
@@ -448,7 +429,6 @@ if (confirmOkBtn) {
 function getYTThumb(link) {
   if (!link) return 'DeliaLogo.png';
   let videoId = '';
-  // ✨ อัปเดต Regex เพิ่ม "shorts\/" ให้รองรับคลิปสั้น ✨
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = link.match(regExp);
   if (match && match[2].length === 11) {
@@ -572,12 +552,11 @@ function openEventIntro(event) {
   document.getElementById('intro-det').innerText = event.details || "-";
   
   document.getElementById('edit-event-id').value = event.id;
-  
   openModal('eventIntroModal');
 }
 
 // ==========================================
-// 6. ขอเพลง & โหวต (Quick Vote)
+// 6. ขอเพลง & โหวต
 // ==========================================
 function enterSongList() {
   closeModal('eventIntroModal');
@@ -626,7 +605,6 @@ function filterSongs() {
   renderSongs(filtered);
 }
 
-// ฟังก์ชันหัวใจโหวตด่วนหน้าการ์ดเพลง
 window.quickVote = function(e, songId) {
   e.stopPropagation(); 
   if (!userUUID) return openModal('welcomeModal');
@@ -659,9 +637,7 @@ function renderSongs(songs) {
   }
   
   let maxVotes = 0;
-  if (songs.length > 0) {
-    maxVotes = Math.max(...songs.map(s => s.votes));
-  }
+  if (songs.length > 0) maxVotes = Math.max(...songs.map(s => s.votes));
   
   songs.forEach(s => {
     const card = document.createElement('div');
@@ -676,8 +652,6 @@ function renderSongs(songs) {
     card.className = `song-card ${statusClass} ${topClass}`;
     
     let tagsHTML = '';
-    
-    // ป้ายบอกสัญชาติ (Origin Tag) แสดงเป็นสีต่างๆ
     let originColor = s.origin === 'T-Pop' ? '#FFF59D' : (s.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
     let originTextColor = s.origin === 'T-Pop' ? '#F57F17' : (s.origin === 'J-Pop' ? '#E65100' : '#4A148C');
     tagsHTML += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${s.origin || 'K-Pop'}</span> `;
@@ -756,19 +730,6 @@ function openSongDetail(id) {
   openModal('songDetailModal');
 }
 
-function handleVote() {
-  if (!userUUID) {
-    closeModal('songDetailModal');
-    return openModal('welcomeModal');
-  }
-  
-  fetchAPI("voteSong", { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID }, res => {
-    currentSongs = res;
-    filterSongs();
-    openSongDetail(selectedSongId);
-  });
-}
-
 function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
   navigator.clipboard.writeText(url).then(() => {
@@ -778,46 +739,13 @@ function shareSong() {
   });
 }
 
-function exportDJ() {
-  if (currentSongs.length === 0) {
-    return showToast("แจ้งเตือน", "ยังไม่มีเพลงในรายการเลยครับ", "error");
-  }
-  
-  // เรียงเพลงตามคะแนนโหวตจากมากไปน้อย
-  let sortedSongs = [...currentSongs].sort((a, b) => b.votes - a.votes);
-  
-  // สร้างข้อความสรุป
-  let text = `🎵 รายชื่อเพลง: ${activeEvent.name} 🎵\n`;
-  text += `อัปเดตเมื่อ: ${new Date().toLocaleTimeString('th-TH')}\n\n`;
-  
-  sortedSongs.forEach((s, idx) => {
-    let bdTag = (s.isBreakdance === 'Yes' || s.isBreakdance === true) ? " [BD]" : "";
-    text += `${idx + 1}. ${s.name} - ${s.artist} ${bdTag} (${s.votes} โหวต)\n`;
-    text += `   🕒 ท่อน: ${s.start} - ${s.end}\n`;
-    if (s.link) text += `   🔗 ลิงก์: ${s.link}\n`;
-    text += `\n`;
-  });
-  
-  // คัดลอกลง Clipboard
-  navigator.clipboard.writeText(text).then(() => {
-    showToast("คัดลอกสำเร็จ", "นำไปวางส่งให้ DJ ได้เลย!", "success");
-  }).catch(() => {
-    // ถ้าเบราว์เซอร์ไม่รองรับ ให้เปิดหน้าต่างขึ้นมาให้ก๊อปปี้เอง
-    showCustomConfirm("คัดลอกรายชื่อเพลง", text, () => {});
-  });
-}
-
-// ------------------------------------------
-// การทำงานเกี่ยวกับฟอร์มขอเพลง
-// ------------------------------------------
-
+// ==========================================
+// 7. การขอและแก้ไขเพลง (Form Handling)
+// ==========================================
 function setGenderDropdown(id, val) {
   const sel = document.getElementById(id);
   if(!sel) return;
-  
-  Array.from(sel.options).forEach(o => {
-    if(o.value === 'Mix') o.remove();
-  });
+  Array.from(sel.options).forEach(o => { if(o.value === 'Mix') o.remove(); });
   
   if(val === 'Mix' || val === 'MixSong') {
     sel.add(new Option(translations[currentLang].gender_mix || "Mix", "Mix"));
@@ -841,16 +769,13 @@ async function processYoutubeLink(inputId, nameId, artistId, genderId) {
     const res = await fetch(`https://noembed.com/embed?dataType=json&url=${url}`);
     const data = await res.json();
     if (data && data.title) {
-      
-      // เอาชื่อวิดีโอและช่องไปใส่ฟอร์มเลยตามที่ขอ
       document.getElementById(nameId).value = data.title;
       document.getElementById(artistId).value = data.author_name;
       
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, dbRes => {
         setGenderDropdown(genderId, dbRes.gender);
-        // ดึง origin (สัญชาติ) มาเก็บไว้ใช้ตอนบันทึกลง Database
         currentOrigin = dbRes.origin || "K-Pop";
-        showToast("Auto-Filled!", `${translations[currentLang].gender}: ${dbRes.gender} | ${currentOrigin}`, "success");
+        showToast("พบข้อมูลในฐานระบบ!", `${translations[currentLang].gender}: ${dbRes.gender} | ${currentOrigin}`, "success");
         if (btn) btn.disabled = false;
       }, () => {
         if (btn) btn.disabled = false;
@@ -878,7 +803,7 @@ function checkQuotaAndOpenModal() {
   
   document.getElementById('song-breakdance').checked = false;
   setGenderDropdown('song-gender', 'M');
-  currentOrigin = "K-Pop"; // รีเซ็ตสัญชาติ
+  currentOrigin = "K-Pop";
   openModal('addSongModal');
 }
 
@@ -892,7 +817,6 @@ function preCheckAddSong() {
   
   if (!name) return showToast("Error", "Name required", "error");
   
-  // ตรวจจับเพลงซ้ำจากลิงก์หรือชื่อเพลง
   const dup = currentSongs.find(s => 
     (link && s.link === link) || 
     (s.name.toLowerCase().replace(/\s/g, '') === name.toLowerCase().replace(/\s/g, ''))
@@ -901,12 +825,9 @@ function preCheckAddSong() {
   if (dup) {
     if (dup.voters && dup.voters.includes(userUUID)) {
       return showToast("แจ้งเตือน", "คุณได้โหวตเพลงนี้ไปแล้วครับ", "error");
-    }
-    else if (dup.creator === userUUID) {
+    } else if (dup.creator === userUUID) {
       return showToast("แจ้งเตือน", "คุณเป็นคนเสนอเพลงนี้เองครับ", "error");
-    }
-    else {
-      // เพิ่มโหวตแทนการเพิ่มเพลงใหม่
+    } else {
       fetchAPI("voteSong", { eventId: activeEvent.id, songId: dup.id, uuid: userUUID }, res => {
         currentSongs = res;
         filterSongs();
@@ -925,7 +846,7 @@ function preCheckAddSong() {
     end: document.getElementById('song-end').value,
     isBreakdance: document.getElementById('song-breakdance').checked,
     gender: document.getElementById('song-gender').value,
-    origin: currentOrigin // แนบสัญชาติไปให้ Server ด้วย
+    origin: currentOrigin
   };
   
   executeAddSong();
@@ -957,7 +878,7 @@ function openUserEditSong() {
   document.getElementById('edit-song-end').value = s.end;
   document.getElementById('edit-song-breakdance').checked = (s.isBreakdance === 'Yes' || s.isBreakdance === true);
   
-  currentOrigin = s.origin; // จำสัญชาติเดิมไว้
+  currentOrigin = s.origin;
   setGenderDropdown('edit-song-gender', s.gender);
   
   closeModal('songDetailModal');
@@ -1136,8 +1057,6 @@ function createPlaylistItem(song) {
   div.dataset.bd = (song.isBreakdance === 'Yes' || song.isBreakdance === true) ? "true" : "false";
   
   let tags = '';
-  
-  // ป้ายบอกสัญชาติในหน้าจัด Playlist
   let originColor = song.origin === 'T-Pop' ? '#FFF59D' : (song.origin === 'J-Pop' ? '#FFCC80' : '#E1BEE7');
   let originTextColor = song.origin === 'T-Pop' ? '#F57F17' : (song.origin === 'J-Pop' ? '#E65100' : '#4A148C');
   tags += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${song.origin || 'K-Pop'}</span> `;
@@ -1174,10 +1093,8 @@ function initSortables() {
       group: 'shared', 
       animation: 150, 
       ghostClass: 'sortable-ghost',
-      
-      // ✨ เพิ่ม 2 บรรทัดนี้ เพื่อแก้ปัญหานิ้วล็อกบนมือถือ ✨
-      delay: 150,             // หน่วงเวลา 150ms ก่อนเริ่มจับลาก
-      delayOnTouchOnly: true  // ให้มีผลเฉพาะตอนทัชสกรีน (ใช้เมาส์คอมฯ จะลากได้ทันที)
+      delay: 150,
+      delayOnTouchOnly: true
     }));
   });
 }
@@ -1225,7 +1142,7 @@ function aiMagicSetlist() {
       if (!sortedIds.includes(el.dataset.id)) pool.appendChild(el);
     });
     if (btn) btn.disabled = false;
-    showToast("Success", "AI Sorted", "success");
+    showToast("สำเร็จ", "จัดคิวเพลงเรียบร้อย", "success");
   }, () => {
     if (btn) btn.disabled = false;
   });
@@ -1293,42 +1210,3 @@ function confirmDeleteEvent() {
     });
   });
 }
-
-// ==========================================
-// 🚀 Developer AI Diagnostics
-// ==========================================
-function setAIStatus(status, state = 'normal') {
-  const textEl = document.getElementById('ai-status-text');
-  const iconEl = document.getElementById('ai-status-icon');
-  if (!textEl || !iconEl) return;
-  
-  textEl.innerText = status;
-  if (state === 'processing') {
-    iconEl.className = 'fa-solid fa-robot fa-fade';
-    iconEl.style.color = '#FFA500'; // ไฟกระพริบสีส้ม
-    textEl.style.color = '#FFA500';
-  } else if (state === 'error') {
-    iconEl.className = 'fa-solid fa-triangle-exclamation fa-shake';
-    iconEl.style.color = '#FF4D85'; // สั่นสีแดง
-    textEl.style.color = '#FF4D85';
-  } else {
-    iconEl.className = 'fa-solid fa-robot';
-    iconEl.style.color = '#00FF00'; // สีเขียวปกติ
-    textEl.style.color = '#00FF00';
-  }
-}
-
-function executeTestAI() {
-  setAIStatus('AI: Testing...', 'processing');
-  fetchAPI("testAI", {}, res => {
-    setAIStatus('AI: Online', 'normal');
-    showToast("AI System OK", res.message, "success");
-  }, () => {
-    setAIStatus('AI: Error', 'error');
-  });
-}
-
-// 💡 วิธีเรียกใช้:
-// คุณสามารถนำคำสั่ง setAIStatus('AI: Analyzing...', 'processing'); 
-// ไปวางไว้หน้าฟังก์ชัน fetchAPI("aiProcess"...) ได้เลย
-// และนำ setAIStatus('AI: Standby', 'normal'); ไปวางไว้ใน onSuccess() ครับ
