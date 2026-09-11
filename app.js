@@ -684,14 +684,19 @@ function renderSongs(songs) {
     let statusClass = s.status === 'Approved' ? 'status-approved' : (s.status === 'Played' ? 'status-played' : '');
     card.className = `song-card ${statusClass} ${topClass}`;
     
-    // 🌟 อัปเดตการแสดงผลแท็ก: ลบเพศและสัญชาติออก แสดงแค่เวลาและ Breakdance
     let tagsHTML = '';
     
-    // 1. แท็กช่วงเวลาเต้น
-    let timeText = (s.start || s.end) ? `${s.start || '-'} - ${s.end || '-'}` : 'ยังไม่ระบุเวลา';
+    // 🌟 ดึงข้อมูลช่วงเวลาเต้น หรือชื่อท่อนมาแสดง
+    let timeText = '';
+    if (s.end) {
+      timeText = `${s.start} - ${s.end}`;
+    } else if (s.start) {
+      timeText = s.start; // เช่น จะแสดงคำว่า Hook 1
+    } else {
+      timeText = 'ยังไม่ระบุเวลา';
+    }
     tagsHTML += `<span class="tag" style="background: #E8F5E9; color: #2E7D32; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${timeText}</span> `;
     
-    // 2. แท็ก Breakdance (ถ้ามี)
     if (s.isBreakdance === 'Yes' || s.isBreakdance === true) {
       tagsHTML += `<span class="tag tag-bd" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80;"><i class="fa-solid fa-bolt"></i> Dance Break</span>`;
     }
@@ -727,11 +732,19 @@ function openSongDetail(id) {
   document.getElementById('det-title').innerText = s.name;
   document.getElementById('det-artist').innerText = s.artist;
   
-  // แสดงผลช่วงเวลาเต้น
-  document.getElementById('det-time').innerText = (s.start || s.end) ? `${s.start || '-'} - ${s.end || '-'}` : 'ยังไม่ระบุเวลา';
+  // 🌟 ดึงข้อมูลช่วงเวลาเต้น หรือชื่อท่อนมาแสดง
+  let timeText = '';
+  if (s.end) {
+    timeText = `${s.start} - ${s.end}`;
+  } else if (s.start) {
+    timeText = s.start;
+  } else {
+    timeText = 'ยังไม่ระบุเวลา';
+  }
+  document.getElementById('det-time').innerText = timeText;
+  
   document.getElementById('det-votes').innerText = `${s.votes}`;
   
-  // 🌟 อัปเดตรายละเอียด: ซ่อนเพศ แสดงแค่ข้อมูล Breakdance
   let tagText = '';
   if (s.isBreakdance === 'Yes' || s.isBreakdance === true) {
     tagText = 'มี Dance Break ⚡';
@@ -754,6 +767,7 @@ function openSongDetail(id) {
   
   openModal('songDetailModal');
 }
+
 function shareSong() {
   const url = window.location.origin + window.location.pathname + "?eventId=" + activeEvent.id;
   navigator.clipboard.writeText(url).then(() => {
@@ -764,6 +778,19 @@ function shareSong() {
 // ==========================================
 // 7. การขอและแก้ไขเพลง (Form Handling)
 // ==========================================
+
+// 🌟 ฟังก์ชันควบคุมการแสดง/ซ่อนช่องเวลาเต้น
+window.toggleTimeInputs = function(mode) {
+  const prefix = mode === 'add' ? 'song' : 'edit-song';
+  const part = document.getElementById(`${prefix}-dance-part`).value;
+  const timeDiv = document.getElementById(`${prefix}-time-inputs`);
+  if (part === 'Custom') {
+    timeDiv.style.display = 'flex';
+  } else {
+    timeDiv.style.display = 'none';
+  }
+};
+
 function setGenderDropdown(id, val) {
   const sel = document.getElementById(id);
   if(!sel) return;
@@ -792,7 +819,7 @@ async function processYoutubeLink(inputId, nameId, artistId, genderId) {
       fetchAPI("aiProcess", { title: data.title, author: data.author_name }, dbRes => {
         setGenderDropdown(genderId, dbRes.gender);
         currentOrigin = dbRes.origin || "K-Pop";
-        showToast("สำเร็จ", `ตรวจสอบข้อมูลเรียบร้อย: ${dbRes.gender} | ${currentOrigin}`, "success");
+        showToast("สำเร็จ", `ตรวจสอบข้อมูลสำเร็จ`, "success");
         if (btn) btn.disabled = false;
       }, () => { if (btn) btn.disabled = false; });
     }
@@ -805,12 +832,17 @@ function autoFillYoutubeEdit() { processYoutubeLink('edit-song-link', 'edit-song
 function checkQuotaAndOpenModal() {
   if (!userUUID) return openModal('welcomeModal');
   if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= 3) {
-    return showToast("โควตาเต็ม", "คุณขอเพลงครบ 3 เพลงแล้วค่ะ", "error");
+    return showToast("โควตาเต็ม", "ขอเพลงได้สูงสุด 3 เพลงค่ะ", "error");
   }
   ['song-link','song-name','song-artist','song-start','song-end'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  
+  // รีเซ็ตค่าเริ่มต้น
   document.getElementById('song-breakdance').checked = false;
+  document.getElementById('song-dance-part').value = 'Hook 1';
+  toggleTimeInputs('add');
+  
   setGenderDropdown('song-gender', 'M');
   currentOrigin = "K-Pop";
   openModal('addSongModal');
@@ -840,9 +872,20 @@ function preCheckAddSong() {
     }
   }
   
+  // 🌟 ประมวลผลเวลาเต้นจาก Dropdown
+  const part = document.getElementById('song-dance-part').value;
+  let finalStart = "", finalEnd = "";
+  if (part === 'Custom') {
+    finalStart = document.getElementById('song-start').value.trim();
+    finalEnd = document.getElementById('song-end').value.trim();
+  } else {
+    finalStart = part; // บันทึกชื่อท่อนลงในช่อง start ไปเลย
+    finalEnd = "";
+  }
+  
   pendingSongData = {
     name: name, artist: document.getElementById('song-artist').value, link: link,
-    start: document.getElementById('song-start').value, end: document.getElementById('song-end').value,
+    start: finalStart, end: finalEnd,
     isBreakdance: document.getElementById('song-breakdance').checked, gender: document.getElementById('song-gender').value,
     origin: currentOrigin
   };
@@ -861,11 +904,24 @@ function executeAddSong() {
 function openUserEditSong() {
   const s = currentSongs.find(song => song.id === selectedSongId);
   if (!s) return;
+  
   document.getElementById('edit-song-link').value = s.link;
   document.getElementById('edit-song-name').value = s.name;
   document.getElementById('edit-song-artist').value = s.artist;
-  document.getElementById('edit-song-start').value = s.start;
-  document.getElementById('edit-song-end').value = s.end;
+  
+  // 🌟 นำข้อมูลเวลามาตั้งค่า Dropdown กลับ
+  const predefinedParts = ['Hook 1', 'Hook 2', 'Dance Break'];
+  if (predefinedParts.includes(s.start) && !s.end) {
+    document.getElementById('edit-song-dance-part').value = s.start;
+    document.getElementById('edit-song-start').value = '';
+    document.getElementById('edit-song-end').value = '';
+  } else {
+    document.getElementById('edit-song-dance-part').value = 'Custom';
+    document.getElementById('edit-song-start').value = s.start || '';
+    document.getElementById('edit-song-end').value = s.end || '';
+  }
+  toggleTimeInputs('edit');
+  
   document.getElementById('edit-song-breakdance').checked = (s.isBreakdance === 'Yes' || s.isBreakdance === true);
   currentOrigin = s.origin;
   setGenderDropdown('edit-song-gender', s.gender);
@@ -875,12 +931,25 @@ function openUserEditSong() {
 function executeEditSong() {
   const name = document.getElementById('edit-song-name').value.trim();
   if (!name) return showToast("Error", "Name required", "error");
+  
+  // 🌟 ประมวลผลเวลาเต้นจาก Dropdown สำหรับตอนแก้ไข
+  const part = document.getElementById('edit-song-dance-part').value;
+  let finalStart = "", finalEnd = "";
+  if (part === 'Custom') {
+    finalStart = document.getElementById('edit-song-start').value.trim();
+    finalEnd = document.getElementById('edit-song-end').value.trim();
+  } else {
+    finalStart = part;
+    finalEnd = "";
+  }
+  
   const updatedData = {
     name: name, artist: document.getElementById('edit-song-artist').value, link: document.getElementById('edit-song-link').value,
-    start: document.getElementById('edit-song-start').value, end: document.getElementById('edit-song-end').value,
+    start: finalStart, end: finalEnd,
     isBreakdance: document.getElementById('edit-song-breakdance').checked, gender: document.getElementById('edit-song-gender').value,
     origin: currentOrigin
   };
+  
   const btn = document.getElementById('btn-song-edit-submit');
   if (btn) btn.disabled = true;
   fetchAPI("editSong", { eventId: activeEvent.id, songId: selectedSongId, songData: updatedData, uuid: userUUID, isAdmin: isAdminLoggedIn }, res => {
