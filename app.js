@@ -18,7 +18,8 @@ let currentOrigin = "K-Pop";
 // ==========================================
 const translations = {
   th: {
-    welcome: "ยินดีต้อนรับ", 
+    welcome: "ยินดีต้อนรับสู่ Delia!", 
+    welcome_sub: "มาร่วมสนุกกับ Random Dance กันเถอะ! 💖",
     login: "เข้าสู่ระบบ",
     calendar_title: "Event Calendar", 
     calendar_sub: "เลือกวันที่บนปฏิทินเพื่อดูรายละเอียด หรือแอดมินคลิกเพื่อสร้างงาน",
@@ -38,7 +39,7 @@ const translations = {
     start_time: "เริ่ม (นาที:วินาที)", 
     end_time: "จบ (นาที:วินาที)", 
     btn_submit: "ส่งข้อมูล", 
-    admin_access: "🔑 เข้าสู่โหมด Admin", 
+    admin_access: "เข้าสู่โหมดผู้ดูแลระบบ", 
     logout: "ออกจากระบบ",
     admin_login: "Admin Login", 
     admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน",
@@ -53,10 +54,13 @@ const translations = {
     gender_f: "ศิลปินหญิง (Girl Group)",
     has_breakdance: "เพลงนี้มี Breakdance ใช่มั้ย?", 
     ex_time: "เช่น 1:30", 
-    edit_song: "แก้ไขข้อมูลเพลง"
+    edit_song: "แก้ไขข้อมูลเพลง",
+    new_user_alert: "เย้! สมาชิกใหม่\nตั้งชื่อเล่นเก๋ๆ ของคุณได้เลย",
+    btn_start: "เริ่มใช้งานเลย!"
   },
   en: {
-    welcome: "Welcome", 
+    welcome: "Welcome to Delia!", 
+    welcome_sub: "Let's join the Random Dance fun! 💖",
     login: "Login",
     calendar_title: "Event Calendar", 
     calendar_sub: "Select a date to view details, or admin click to create an event.",
@@ -70,13 +74,13 @@ const translations = {
     pool: "📦 Pool",
     hide_pool: "Hide Pool", 
     show_pool: "Show Pool", 
-    btn_fetch_votes: "Fetch Song Requests", 
+    btn_fetch_votes: "Fetch Requests", 
     btn_add_cat: "Add Category", 
     btn_save: "Save to Sheet",
     start_time: "Start (Min:Sec)", 
     end_time: "End (Min:Sec)", 
     btn_submit: "Submit", 
-    admin_access: "🔑 Admin Access", 
+    admin_access: "Admin Access", 
     logout: "Logout",
     admin_login: "Admin Login", 
     admin_sub: "Enter admin username and password",
@@ -91,7 +95,9 @@ const translations = {
     gender_f: "Girl Group",
     has_breakdance: "Has Breakdance?", 
     ex_time: "e.g., 1:30", 
-    edit_song: "Edit Song Info"
+    edit_song: "Edit Song Info",
+    new_user_alert: "Yay! New Member\nEnter your cool nickname here",
+    btn_start: "Let's Go!"
   }
 };
 
@@ -101,24 +107,27 @@ function setLanguage(lang) {
   currentLang = lang; 
   localStorage.setItem('delia_lang', lang);
   
+  // อัปเดตข้อความ
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.innerText = translations[lang][el.getAttribute('data-i18n')];
+    if(translations[lang][el.getAttribute('data-i18n')]) {
+       el.innerText = translations[lang][el.getAttribute('data-i18n')];
+    }
   });
   
+  // อัปเดต Placeholder
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    el.placeholder = translations[lang][el.getAttribute('data-i18n-ph')];
+    if(translations[lang][el.getAttribute('data-i18n-ph')]) {
+       el.placeholder = translations[lang][el.getAttribute('data-i18n-ph')];
+    }
   });
   
-  const langBtns = document.querySelectorAll('.lang-btn');
-  if (langBtns.length >= 2) {
-    langBtns[0].classList.toggle('active', lang === 'th');
-    langBtns[1].classList.toggle('active', lang === 'en');
-  }
+  // 🌟 อัปเดตแอนิเมชันของสวิตช์ภาษา
+  document.querySelectorAll('.lang-label').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll(`.${lang}-label`).forEach(el => el.classList.add('active'));
   
   renderCalendarDays();
   if (currentEvents.length > 0) renderCalendar();
 }
-
 function renderCalendarDays() {
   const daysTh = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
   const daysEn = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
