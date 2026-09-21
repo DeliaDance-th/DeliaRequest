@@ -724,7 +724,8 @@ function renderSongs(songs) {
   }
   let maxVotes = songs.length > 0 ? Math.max(...songs.map(s => s.votes)) : 0;
   
-  songs.forEach(s => {
+// ... (ในฟังก์ชัน renderSongs ลูป forEach) ...
+  songs.forEach((s, index) => {
     const card = document.createElement('div');
     const isTopVoted = (s.votes === maxVotes && maxVotes > 0);
     const topClass = isTopVoted ? 'top-voted' : '';
@@ -732,6 +733,10 @@ function renderSongs(songs) {
     
     let statusClass = s.status === 'Approved' ? 'status-approved' : (s.status === 'Played' ? 'status-played' : '');
     card.className = `song-card ${statusClass} ${topClass}`;
+    
+    // 🌟 เพิ่ม Delay ให้แอนิเมชัน (การ์ดละ 0.05 วินาที ไล่ระดับไปเรื่อยๆ)
+    card.style.animationDelay = `${index * 0.05}s`;
+    
     
     let tagsHTML = '';
     
