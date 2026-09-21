@@ -424,14 +424,18 @@ function fetchAPI(action, payload, onSuccess, onError) {
     if (data.success) { 
       onSuccess(data.data); 
     } else { 
-      // แจ้งเตือนข้อผิดพลาดจากระบบหลังบ้าน (เช่น โควตาเต็ม, เพลงซ้ำ)
       showToast("แจ้งเตือน", data.message, "error"); 
       if (onError) onError(data.message); 
     }
   })
   .catch(err => {
-    // 🌟 ดักจับกรณีเน็ตมือถือหลุด หรือสลับแอป
-    showToast("เครือข่ายขัดข้อง", "สัญญาณอินเทอร์เน็ตอาจไม่เสถียร ลองใหม่อีกครั้งนะคะ", "warning");
+    console.error("System Error details:", err); // พิมพ์ Error ลง Console ให้เราสืบได้
+    
+    // แยกแยะระหว่าง "เน็ตหลุดจริงๆ" กับ "โค้ดพัง"
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      showToast("เครือข่ายขัดข้อง", "สัญญาณอินเทอร์เน็ตอาจไม่เสถียร ลองใหม่อีกครั้งนะคะ", "warning");
+    }
+    
     if (onError) onError("NETWORK_ERROR");
   });
 }
@@ -1280,32 +1284,32 @@ function confirmDeleteEvent() {
   const id = document.getElementById('edit-event-id').value;
   showCustomConfirm("ลบกำหนดการ", "คุณต้องการลบงานนี้ใช่หรือไม่?", () => {
     fetchAPI("deleteEvent", { id: id }, res => {
-      currentEvents = res; renderCalendar(); closeModal('editEventModal'); showToast("สำเร็จ", "ลบกำหนดการเรียบร้อยค่ะ", "success");
+      currentEvents = res; 
+      renderCalendar(); 
+      closeModal('editEventModal'); 
+      showToast("สำเร็จ", "ลบกำหนดการเรียบร้อยค่ะ", "success");
     });
   });
+}
 
-  // ==========================================
+// ==========================================
 // ระบบคำนวณและแสดง Upcoming Event
 // ==========================================
 function renderUpcomingEvent() {
   const container = document.getElementById('upcoming-event-container');
   if (!container || currentEvents.length === 0) return;
 
-  // 1. หาวันที่ปัจจุบัน (เคลียร์เวลาออกให้เหลือแต่วันที่ เพื่อเทียบแบบแม่นยำ)
   const now = new Date();
   now.setHours(0, 0, 0, 0); 
   
-  // 2. กรองเฉพาะงานที่ยังไม่ผ่านพ้นไป
   let upcomingEvents = currentEvents.filter(e => {
     const evDate = new Date(e.date);
     evDate.setHours(0, 0, 0, 0);
     return evDate >= now;
   });
 
-  // 3. เรียงลำดับจากวันที่ใกล้ที่สุดไปไกลสุด
   upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // 4. วาดการ์ดแสดงผลงานแรกสุดที่เจอ
   if (upcomingEvents.length > 0) {
     const nextEv = upcomingEvents[0];
     const d = new Date(nextEv.date);
@@ -1332,14 +1336,11 @@ function renderUpcomingEvent() {
     `;
     container.style.display = 'block';
   } else {
-    // ถ้าไม่มีงานในอนาคตเลย ก็ซ่อนกล่องไว้
     container.style.display = 'none';
   }
 }
 
-// 🌟 ฟังก์ชันตัวกลางสำหรับกดจากการ์ด Upcoming
 window.openEventIntroUpcoming = function(id) {
   const ev = currentEvents.find(e => e.id === id);
   if (ev) openEventIntro(ev);
 };
-}
