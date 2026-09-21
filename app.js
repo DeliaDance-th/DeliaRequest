@@ -57,7 +57,9 @@ const translations = {
     ex_time: "เช่น 1:30", 
     edit_song: "แก้ไขข้อมูลเพลง",
     new_user_alert: "ยินดีต้อนรับสมาชิกใหม่!\nกรุณากรอกชื่อผู้ใช้งานของคุณ",
+    dance_part: "ท่อนที่ใช้เต้น",
     btn_start: "เริ่มใช้งานเลย!"
+    
   },
   en: {
     welcome: "Welcome to Delia", 
@@ -102,6 +104,7 @@ const translations = {
     ex_time: "e.g., 1:30", 
     edit_song: "Edit Song Info",
     new_user_alert: "Welcome New Member!\nPlease enter your username",
+    dance_part: "Dance Part",
     btn_start: "Let's Go!"
   }
 };
