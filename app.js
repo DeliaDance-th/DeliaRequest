@@ -166,11 +166,24 @@ document.addEventListener("DOMContentLoaded", () => {
   setLanguage(currentLang);
   
   if (userUUID) {
-    document.querySelectorAll('.login-step').forEach(el => el.classList.add('hidden'));
-    document.getElementById('step-unlock').classList.remove('hidden');
-    document.getElementById('display-welcome-name').innerText = userName;
-    openModal('welcomeModal');
+    // 🌟 เช็คว่านี่คือการกดรีเฟรชหน้าจอ (มี active_session) หรือเพิ่งเปิดเบราว์เซอร์ใหม่
+    if (sessionStorage.getItem('delia_active_session')) {
+      // แอบล็อกอินเบื้องหลัง ไม่ต้องโชว์สไลเดอร์ให้รำคาญ
+      fetchAPI("auth", { action: "auto_login", clientUuid: userUUID }, res => {
+        saveLoginSession(res); 
+      }, err => {
+        // ถ้าเซสชันหมดอายุหรือหาบัญชีไม่เจอจริงๆ ค่อยเตะออก (ข้ามกรณีเน็ตกระตุก)
+        if (err !== "NETWORK_ERROR") executeLogout();
+      });
+    } else {
+      // เพิ่งเปิดเว็บใหม่ โชว์สไลเดอร์ Welcome Back
+      document.querySelectorAll('.login-step').forEach(el => el.classList.add('hidden'));
+      document.getElementById('step-unlock').classList.remove('hidden');
+      document.getElementById('display-welcome-name').innerText = userName;
+      openModal('welcomeModal');
+    }
   } else {
+    // ผู้ใช้ใหม่ ยังไม่เคยล็อกอิน
     document.querySelectorAll('.login-step').forEach(el => el.classList.add('hidden'));
     document.getElementById('step-google-login').classList.remove('hidden');
     openModal('welcomeModal');
@@ -263,6 +276,9 @@ function saveLoginSession(res) {
   localStorage.setItem('delia_username', userName);
   localStorage.setItem('delia_role', res.role);
   
+  // 🌟 ติดตราประทับชั่วคราวว่า "คนนี้กำลังใช้งานอยู่นะ ถ้ารีเฟรชห้ามถามซ้ำ!"
+  sessionStorage.setItem('delia_active_session', 'true');
+  
   closeModal('welcomeModal');
   updateUserUI();
 }
@@ -295,8 +311,21 @@ function executeUnlock() {
     saveLoginSession(res); 
     loadEvents();
   }, err => {
-    showToast("เซสชันหมดอายุ", "กรุณาเข้าสู่ระบบใหม่อีกครั้งค่ะ", "error");
-    executeLogout();
+    // 🌟 ถ้าระบบบอกว่าแค่ "เน็ตหลุด" (NETWORK_ERROR)
+    if (err === "NETWORK_ERROR") {
+      // รีเซ็ตสไลเดอร์ให้กลับไปเริ่มต้น โดยไม่เตะผู้ใช้ออก
+      const slider = document.getElementById('unlock-slider');
+      if(slider) {
+        slider.value = 0;
+        slider.disabled = false;
+        document.getElementById('slider-thumb').style.left = '0px';
+        document.getElementById('slider-text').innerText = translations[currentLang].slide_login || "เลื่อนเพื่อเข้าสู่ระบบ";
+      }
+    } else {
+      // แต่ถ้าหาข้อมูลบัญชีไม่เจอจริงๆ ค่อยเตะออกจากระบบ
+      showToast("เซสชันหมดอายุ", "ไม่พบข้อมูลบัญชี กรุณาล็อกอินด้วย Google ใหม่ค่ะ", "error");
+      executeLogout();
+    }
   });
 }
 
@@ -304,6 +333,9 @@ function executeLogout() {
   localStorage.removeItem('delia_uuid');
   localStorage.removeItem('delia_username');
   localStorage.removeItem('delia_role');
+  
+  // 🌟 ล้างตราประทับชั่วคราวทิ้งด้วย
+  sessionStorage.removeItem('delia_active_session');
   
   userUUID = "";
   userName = "";
@@ -320,7 +352,7 @@ function executeLogout() {
     slider.value = 0;
     slider.disabled = false;
     document.getElementById('slider-thumb').style.left = '0px';
-    document.getElementById('slider-text').innerText = translations[currentLang].slide_login;
+    document.getElementById('slider-text').innerText = translations[currentLang].slide_login || "เลื่อนเพื่อเข้าสู่ระบบ";
   }
   
   setTimeout(() => {
@@ -389,12 +421,18 @@ function fetchAPI(action, payload, onSuccess, onError) {
   })
   .then(res => res.json())
   .then(data => {
-    if (data.success) { onSuccess(data.data); } 
-    else { showToast("Error", data.message, "error"); if (onError) onError(); }
+    if (data.success) { 
+      onSuccess(data.data); 
+    } else { 
+      // แจ้งเตือนข้อผิดพลาดจากระบบหลังบ้าน (เช่น โควตาเต็ม, เพลงซ้ำ)
+      showToast("แจ้งเตือน", data.message, "error"); 
+      if (onError) onError(data.message); 
+    }
   })
   .catch(err => {
-    showToast("Error", "Network failed", "error");
-    if (onError) onError();
+    // 🌟 ดักจับกรณีเน็ตมือถือหลุด หรือสลับแอป
+    showToast("เครือข่ายขัดข้อง", "สัญญาณอินเทอร์เน็ตอาจไม่เสถียร ลองใหม่อีกครั้งนะคะ", "warning");
+    if (onError) onError("NETWORK_ERROR");
   });
 }
 
