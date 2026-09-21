@@ -23,7 +23,7 @@
 }
 
 /* =========================================
-   2. การตั้งค่าพื้นฐาน
+   2. การตั้งค่าพื้นฐาน & แอนิเมชันสลับหน้าจอ
 ========================================= */
 * { 
   box-sizing: border-box; 
@@ -58,6 +58,16 @@ body {
 .hidden { display: none !important; }
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
+
+/* แอนิเมชันสลับหน้าจอ (Page Transitions) */
+@keyframes fadeInSlideUp {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.view-animate {
+  animation: fadeInSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
 
 /* =========================================
    3. แถบนำทาง (Navbar)
@@ -309,6 +319,11 @@ body {
 /* =========================================
    7. การ์ดเพลง (Song Cards)
 ========================================= */
+@keyframes slideInRightCard {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
 .song-card { 
   background: var(--card-bg); 
   border-radius: var(--radius-md); 
@@ -317,6 +332,10 @@ body {
   justify-content: space-between; align-items: center; gap: 12px; 
   border-left: 4px solid #B0BEC5; cursor: pointer; transition: transform 0.2s; 
   border-right: 1px solid var(--border-color); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); 
+  
+  /* 🌟 เพิ่มแอนิเมชันให้การ์ดเพลง */
+  opacity: 0; 
+  animation: slideInRightCard 0.4s ease-out forwards;
 }
 
 .song-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -426,26 +445,16 @@ body {
   50% { opacity: 1; transform: scale(1.02); }
   100% { opacity: 1; transform: scale(1); }
 }
-
-.modal {
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
+.modal { transition: opacity 0.3s ease, visibility 0.3s ease; }
 .modal.active .modal-content {
   animation: popInModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 /* =========================================
-   10. Slide to Login & Language UI
+   10. ปุ่มสลับภาษา (Language UI)
 ========================================= */
 .lang-btn { border-color: var(--border-color); color: var(--text-muted); transition: 0.2s; }
 .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-.slider-wrapper { position: relative; width: 100%; height: 50px; background: var(--primary-light); border-radius: 25px; overflow: hidden; margin-top: 20px; }
-.slider-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 600; z-index: 1; pointer-events: none; transition: 0.2s; }
-.slider-thumb { position: absolute; top: 0; left: 0; width: 50px; height: 50px; background: var(--primary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; z-index: 2; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.2s; }
-.slider-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 3; cursor: grab; margin: 0; }
-.slider-input:active { cursor: grabbing; }
 
 /* =========================================
    11. การแสดงผลบนมือถือ (Mobile Responsive)
@@ -500,8 +509,9 @@ body {
 @media (min-width: 769px) {
   .hidden-desktop { display: none !important; }
 }
+
 /* =========================================
-   💖 Cute Welcome Modal UI 💖
+   💖 12. Cute Welcome Modal UI 💖
 ========================================= */
 .cute-welcome-box {
   background: linear-gradient(135deg, #ffffff 0%, #FFF0F5 100%);
@@ -662,7 +672,9 @@ body {
 }
 .slider-input:active { cursor: grabbing; }
 
-/* ================= Upcoming Event Card ================= */
+/* =========================================
+   13. Upcoming Event Card 
+========================================= */
 .upcoming-card {
   background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%);
   border-radius: 15px;
@@ -702,16 +714,4 @@ body {
 @media (max-width: 480px) {
   .upcoming-card { flex-direction: column; align-items: flex-start; gap: 12px; }
   .upcoming-action { align-self: stretch; text-align: center; }
-}
-
-/* แอนิเมชันการ์ดเพลง */
-@keyframes slideInRightCard {
-  0% { opacity: 0; transform: translateX(-20px); }
-  100% { opacity: 1; transform: translateX(0); }
-}
-
-.song-card {
-  /* ... (ของเดิมที่มีอยู่แล้ว) ... */
-  opacity: 0; /* ซ่อนไว้ก่อน */
-  animation: slideInRightCard 0.4s ease-out forwards;
 }
