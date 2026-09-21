@@ -538,6 +538,10 @@ function loadEvents() {
   fetchAPI("getEvents", {}, res => { 
     currentEvents = res;
     renderCalendar(); 
+    
+    // 🌟 สั่งให้วาดป้าย Upcoming Event หลังจากโหลดปฏิทินเสร็จ
+    renderUpcomingEvent(); 
+    
     const urlParams = new URLSearchParams(window.location.search);
     const sharedEventId = urlParams.get('eventId');
     if (sharedEventId) {
@@ -1259,4 +1263,63 @@ function confirmDeleteEvent() {
       currentEvents = res; renderCalendar(); closeModal('editEventModal'); showToast("สำเร็จ", "ลบกำหนดการเรียบร้อยค่ะ", "success");
     });
   });
+
+  // ==========================================
+// ระบบคำนวณและแสดง Upcoming Event
+// ==========================================
+function renderUpcomingEvent() {
+  const container = document.getElementById('upcoming-event-container');
+  if (!container || currentEvents.length === 0) return;
+
+  // 1. หาวันที่ปัจจุบัน (เคลียร์เวลาออกให้เหลือแต่วันที่ เพื่อเทียบแบบแม่นยำ)
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); 
+  
+  // 2. กรองเฉพาะงานที่ยังไม่ผ่านพ้นไป
+  let upcomingEvents = currentEvents.filter(e => {
+    const evDate = new Date(e.date);
+    evDate.setHours(0, 0, 0, 0);
+    return evDate >= now;
+  });
+
+  // 3. เรียงลำดับจากวันที่ใกล้ที่สุดไปไกลสุด
+  upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // 4. วาดการ์ดแสดงผลงานแรกสุดที่เจอ
+  if (upcomingEvents.length > 0) {
+    const nextEv = upcomingEvents[0];
+    const d = new Date(nextEv.date);
+    const monthText = currentLang === 'th' ? monthNamesTh[d.getMonth()] : monthNamesEn[d.getMonth()];
+    const yearText = currentLang === 'th' ? d.getFullYear() + 543 : d.getFullYear();
+    const dateStr = `${d.getDate()} ${monthText} ${yearText}`;
+
+    let badgeText = currentLang === 'th' ? 'งานถัดไปที่กำลังจะมาถึง' : 'Upcoming Event';
+    let actionText = currentLang === 'th' ? 'ดูรายละเอียด / ขอเพลง' : 'View Details';
+
+    container.innerHTML = `
+      <div class="upcoming-card" onclick="openEventIntroUpcoming('${nextEv.id}')">
+        <div class="upcoming-info">
+          <div style="font-size: 0.75rem; font-weight: bold; background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 12px; display: inline-block; margin-bottom: 8px;">
+            <i class="fa-solid fa-star"></i> ${badgeText}
+          </div>
+          <h3>${nextEv.name}</h3>
+          <p><i class="fa-regular fa-calendar"></i> ${dateStr} &nbsp;|&nbsp; <i class="fa-solid fa-location-dot"></i> ${nextEv.location}</p>
+        </div>
+        <div class="upcoming-action">
+          ${actionText} <i class="fa-solid fa-chevron-right"></i>
+        </div>
+      </div>
+    `;
+    container.style.display = 'block';
+  } else {
+    // ถ้าไม่มีงานในอนาคตเลย ก็ซ่อนกล่องไว้
+    container.style.display = 'none';
+  }
+}
+
+// 🌟 ฟังก์ชันตัวกลางสำหรับกดจากการ์ด Upcoming
+window.openEventIntroUpcoming = function(id) {
+  const ev = currentEvents.find(e => e.id === id);
+  if (ev) openEventIntro(ev);
+};
 }
