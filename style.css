@@ -420,6 +420,21 @@ body {
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .loader { display: flex; justify-content: center; padding: 30px; color: var(--primary); }
 
+/* แอนิเมชันป๊อปอัป */
+@keyframes popInModal {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.modal {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.active .modal-content {
+  animation: popInModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 /* =========================================
    10. Slide to Login & Language UI
 ========================================= */
@@ -687,4 +702,16 @@ body {
 @media (max-width: 480px) {
   .upcoming-card { flex-direction: column; align-items: flex-start; gap: 12px; }
   .upcoming-action { align-self: stretch; text-align: center; }
+}
+
+/* แอนิเมชันการ์ดเพลง */
+@keyframes slideInRightCard {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.song-card {
+  /* ... (ของเดิมที่มีอยู่แล้ว) ... */
+  opacity: 0; /* ซ่อนไว้ก่อน */
+  animation: slideInRightCard 0.4s ease-out forwards;
 }
