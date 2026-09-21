@@ -873,9 +873,14 @@ function autoFillYoutubeEdit() { processYoutubeLink('edit-song-link', 'edit-song
 
 function checkQuotaAndOpenModal() {
   if (!userUUID) return openModal('welcomeModal');
-  if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= 3) {
-    return showToast("โควตาเต็ม", "ขอเพลงได้สูงสุด 3 เพลงค่ะ", "error");
+  
+  // 🌟 ดึงค่าโควตาสูงสุดจากงานนั้นๆ (ถ้าไม่ได้ตั้งไว้ ให้ค่าเริ่มต้นคือ 3)
+  const maxQuota = parseInt(activeEvent.quota) || 3;
+  
+  if (!isAdminLoggedIn && currentSongs.filter(s => s.creator === userUUID).length >= maxQuota) {
+    return showToast("โควตาเต็ม", `คุณขอเพลงครบโควตา ${maxQuota} เพลงแล้วค่ะ`, "error");
   }
+  
   ['song-link','song-name','song-artist','song-start','song-end'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -1242,18 +1247,33 @@ function savePlaylistData() {
 }
 
 function handleAddEvent() {
+  // 🌟 ดึงค่าโควตาจากช่อง input (ถ้าหาช่องไม่เจอจะตั้งเป็น 3)
+  const quotaInput = document.getElementById('event-quota');
+  
   const p = {
-    date: document.getElementById('event-date').value, name: document.getElementById('event-name').value,
-    location: document.getElementById('event-loc').value, openTime: document.getElementById('event-open').value,
-    closeTime: document.getElementById('event-close').value, details: document.getElementById('event-det').value
+    date: document.getElementById('event-date').value, 
+    name: document.getElementById('event-name').value,
+    location: document.getElementById('event-loc').value, 
+    openTime: document.getElementById('event-open').value,
+    closeTime: document.getElementById('event-close').value, 
+    details: document.getElementById('event-det').value,
+    quota: quotaInput ? quotaInput.value : 3 // 🌟 ส่งโควตาไปหลังบ้าน
   };
+  
   if (!p.date || !p.name) return showToast("แจ้งเตือน", "กรุณากรอกข้อมูลให้ครบถ้วนค่ะ", "error");
+  
   const btn = document.getElementById('btn-event-submit');
   if (btn) btn.disabled = true;
+  
   fetchAPI("createEvent", p, res => {
-    currentEvents = res; renderCalendar(); closeModal('addEventModal'); showToast("สำเร็จ", "สร้างกำหนดการเรียบร้อยค่ะ", "success");
+    currentEvents = res; 
+    renderCalendar(); 
+    closeModal('addEventModal'); 
+    showToast("สำเร็จ", "สร้างกำหนดการเรียบร้อยค่ะ", "success");
     if (btn) btn.disabled = false;
-  }, () => { if (btn) btn.disabled = false; });
+  }, () => { 
+    if (btn) btn.disabled = false; 
+  });
 }
 
 function confirmDeleteEvent() {
