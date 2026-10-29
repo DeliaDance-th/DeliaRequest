@@ -2453,3 +2453,123 @@ function processAndRenderLeaderboard() {
     }
   }
 }
+function openGlobalLeaderboardModal() {
+  const tbody = document.getElementById("leaderboard-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดอันดับภาพรวม...</td></tr>`;
+
+  // เปลี่ยนหัวข้อ Modal ชั่วคราวให้รู้ว่าเป็นอันดับรวม
+  const modalTitle = document.querySelector("#leaderboardModal h2");
+  if (modalTitle) modalTitle.innerText = "Global Top 5 Active Requesters";
+
+  const modalSub = document.querySelector("#leaderboardModal p");
+  if (modalSub)
+    modalSub.innerText =
+      "ตารางอันดับผู้ที่มีส่วนร่วมสูงสุดทุกอีเวนต์ตลอดกาล 🌟";
+
+  openModal("leaderboardModal");
+
+  fetchAPI(
+    "getGlobalLeaderboard",
+    {},
+    (res) => {
+      processAndRenderGlobalLeaderboard(res.songs, res.members);
+    },
+    () => {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+    },
+  );
+}
+
+function processAndRenderGlobalLeaderboard(songs, memberMap) {
+  const tbody = document.getElementById("leaderboard-tbody");
+  if (!tbody) return;
+
+  let userStatsMap = {};
+
+  songs.forEach((song) => {
+    // 1. ประมวลผลผู้ขอเพลงรวมทุกงาน
+    if (song.creator) {
+      let creatorKey = song.creator.trim().toLowerCase();
+      let rawName = memberMap[creatorKey] || song.creator;
+      let displayName = rawName.includes("@") ? rawName.split("@")[0] : rawName;
+
+      if (!userStatsMap[creatorKey]) {
+        userStatsMap[creatorKey] = {
+          id: creatorKey,
+          username: displayName,
+          requestedCount: 0,
+          votedCount: 0,
+          receivedVotes: 0,
+        };
+      }
+      userStatsMap[creatorKey].requestedCount += 1;
+      userStatsMap[creatorKey].receivedVotes += song.votes || 0;
+    }
+
+    // 2. ประมวลผลผู้กดโหวตรวมทุกงาน
+    if (song.voters) {
+      let voterList = Array.isArray(song.voters)
+        ? song.voters
+        : song.voters.split(",").filter((v) => v !== "");
+      voterList.forEach((voterId) => {
+        let voterKey = voterId.trim().toLowerCase();
+        let rawVoterName = memberMap[voterKey] || voterId;
+        let displayVoterName = rawVoterName.includes("@")
+          ? rawVoterName.split("@")[0]
+          : rawVoterName;
+
+        if (!userStatsMap[voterKey]) {
+          userStatsMap[voterKey] = {
+            id: voterKey,
+            username: displayVoterName,
+            requestedCount: 0,
+            votedCount: 0,
+            receivedVotes: 0,
+          };
+        }
+        userStatsMap[voterKey].votedCount += 1;
+      });
+    }
+  });
+
+  // กรอง Admin ออกและจัดเรียงคะแนน
+  let leaderboardData = Object.values(userStatsMap)
+    .filter((user) => {
+      let lowerName = user.username.toLowerCase();
+      return !lowerName.startsWith("admin") && lowerName !== "admin";
+    })
+    .sort((a, b) => {
+      let scoreA = a.receivedVotes * 3 + a.requestedCount * 2 + a.votedCount;
+      let scoreB = b.receivedVotes * 3 + b.requestedCount * 2 + b.votedCount;
+      return scoreB - scoreA;
+    });
+
+  let top5 = leaderboardData.slice(0, 5);
+  tbody.innerHTML = "";
+
+  top5.forEach((user, index) => {
+    let rankBadge =
+      index === 0
+        ? "🥇"
+        : index === 1
+          ? "🥈"
+          : index === 2
+            ? "🥉"
+            : `#${index + 1}`;
+    let totalScore =
+      user.receivedVotes * 3 + user.requestedCount * 2 + user.votedCount;
+    let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
+    let isMe = user.id === currentEmailKey;
+
+    let tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="padding: 10px 8px; font-weight: bold;">${rankBadge}</td>
+      <td style="padding: 10px 8px; font-weight: 600;">${user.username} ${isMe ? "(คุณ ✨)" : ""}</td>
+      <td style="padding: 10px 8px; text-align: center;">${user.requestedCount}</td>
+      <td style="padding: 10px 8px; text-align: center;">${user.votedCount}</td>
+      <td style="padding: 10px 8px; text-align: center; font-weight: bold; color: var(--primary);">${totalScore}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
