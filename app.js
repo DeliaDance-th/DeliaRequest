@@ -72,6 +72,13 @@ const translations = {
     btnAddSongAdmin: "+ เพิ่มเพลงใหม่ (Admin)",
     btnViewFeedbackAdmin: "📊 ดู Feedback งานนี้",
     txtDashboardTitle: "Dashboard สรุป Feedback งานนี้",
+    filter_all: "ทั้งหมด",
+    filter_bd: "Dance Break ⚡",
+    tab_all: "🎵 เพลงทั้งหมด",
+    tab_mine: "👤 เพลงของฉัน",
+    tab_voted: "💖 ที่ฉันโหวต",
+    leaderboard_title: "Top 5 Active Requesters",
+    leaderboard_sub: "ตารางอันดับผู้ใช้งานที่มีส่วนร่วมสูงสุดในงานนี้ 🌟",
   },
   en: {
     welcome: "Welcome to Delia",
@@ -131,6 +138,13 @@ const translations = {
     btnAddSongAdmin: "+ Add New Song (Admin)",
     btnViewFeedbackAdmin: "📊 View Event Feedback",
     txtDashboardTitle: "Event Feedback Dashboard Summary",
+    filter_all: "All",
+    filter_bd: "Dance Break ⚡",
+    tab_all: "🎵 All Songs",
+    tab_mine: "👤 My Songs",
+    tab_voted: "💖 Voted",
+    leaderboard_title: "Top 5 Active Requesters",
+    leaderboard_sub: "Top active users in this event 🌟",
   },
 };
 
@@ -900,7 +914,7 @@ function enterSongList() {
 
   if (activeEvent.status === "Closed") {
     statusEl.innerHTML =
-      '<span style="color:var(--danger)"><i class="fa-solid fa-lock"></i> Closed (Vote Only)</span>';
+      '<span style="color:var(--danger)"><i class="fa-solid fa-lock"></i> Closed </span>';
     if (addBtn) addBtn.classList.add("hidden");
   } else {
     statusEl.innerHTML =
@@ -943,10 +957,72 @@ function loadSongs() {
 function filterSongs() {
   const searchInput = document.getElementById("search-bar");
   const q = searchInput ? searchInput.value.toLowerCase() : "";
-  const filtered = currentSongs.filter(
+
+  let visibleSongs = currentSongs;
+  if (!isAdminLoggedIn) {
+    visibleSongs = currentSongs.filter((s) => s.status !== "AdminOnly");
+  }
+
+  // 1. ค้นหาด้วยชื่อเพลงหรือศิลปิน
+  let filtered = visibleSongs.filter(
     (s) =>
       s.name.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q),
   );
+
+  // 2. กรองด้วย Quick Filter Pills (ปรับปรุงให้รองรับทุกรูปแบบข้อมูลในชีตและฐานข้อมูล)
+  if (currentQuickFilter !== "all") {
+    if (currentQuickFilter === "BD") {
+      filtered = filtered.filter(
+        (s) =>
+          s.isBreakdance === "Yes" ||
+          s.isBreakdance === true ||
+          String(s.isBreakdance).toLowerCase() === "true",
+      );
+    } else if (["K-Pop", "T-Pop", "J-Pop"].includes(currentQuickFilter)) {
+      filtered = filtered.filter(
+        (s) =>
+          s.origin === currentQuickFilter || s.category === currentQuickFilter,
+      );
+    } else if (currentQuickFilter === "M") {
+      // กรอง Boy Group / ศิลปินชาย (ครอบคลุมทุกคำที่สื่อถึงศิลปินชาย/บอยกรุ๊ป)
+      filtered = filtered.filter((s) => {
+        let gField = String(s.gender || s.artistType || s.groupType || "")
+          .trim()
+          .toLowerCase();
+        return (
+          gField === "m" ||
+          gField === "boy" ||
+          gField === "male" ||
+          gField.includes("boy group") ||
+          gField.includes("ศิลปินชาย") ||
+          gField === "boy group"
+        );
+      });
+    } else if (currentQuickFilter === "F") {
+      // กรอง Girl Group / ศิลปินหญิง (ครอบคลุมทุกคำที่สื่อถึงศิลปินหญิง/เกิร์ลกรุ๊ป)
+      filtered = filtered.filter((s) => {
+        let gField = String(s.gender || s.artistType || s.groupType || "")
+          .trim()
+          .toLowerCase();
+        return (
+          gField === "f" ||
+          gField === "girl" ||
+          gField === "female" ||
+          gField.includes("girl group") ||
+          gField.includes("ศิลปินหญิง") ||
+          gField === "girl group"
+        );
+      });
+    }
+  }
+
+  // 3. กรองด้วย Activity Tabs (เพลงของฉัน / ที่ฉันโหวต)
+  if (currentActivityTab === "mine") {
+    filtered = filtered.filter((s) => s.creator === userUUID);
+  } else if (currentActivityTab === "voted") {
+    filtered = filtered.filter((s) => s.voters && s.voters.includes(userUUID));
+  }
+
   renderSongs(filtered);
 }
 
@@ -1272,6 +1348,7 @@ function checkQuotaAndOpenModal() {
 }
 
 let pendingSongData = null;
+
 function preCheckAddSong() {
   const nameInput = document.getElementById("song-name");
   const name = nameInput ? nameInput.value.trim() : "";
@@ -1279,33 +1356,21 @@ function preCheckAddSong() {
   const link = linkInput ? linkInput.value.trim() : "";
   if (!name) return showToast("แจ้งเตือน", "กรุณากรอกชื่อเพลงค่ะ", "error");
 
-  const dup = currentSongs.find(
+  let dup = currentSongs.find(
     (s) =>
-      (link && s.link === link) ||
+      (link && s.link.toLowerCase().trim() === link.toLowerCase().trim()) ||
       s.name.toLowerCase().replace(/\s/g, "") ===
         name.toLowerCase().replace(/\s/g, ""),
   );
 
   if (dup) {
-    if (dup.voters && dup.voters.includes(userUUID))
+    if (dup.voters && dup.voters.includes(userUUID)) {
       return showToast("แจ้งเตือน", "คุณได้โหวตเพลงนี้ไปแล้วค่ะ", "error");
-    else if (dup.creator === userUUID)
+    } else if (dup.creator === userUUID) {
       return showToast("แจ้งเตือน", "คุณเป็นผู้เสนอเพลงนี้ค่ะ", "error");
-    else {
-      fetchAPI(
-        "voteSong",
-        { eventId: activeEvent.id, songId: dup.id, uuid: userUUID },
-        (res) => {
-          currentSongs = res;
-          filterSongs();
-          closeModal("addSongModal");
-          showToast(
-            "พบเพลงซ้ำ",
-            "ระบบได้ทำการเพิ่มโหวตให้เพลงที่มีอยู่แล้วค่ะ",
-            "success",
-          );
-        },
-      );
+    } else {
+      // 🌟 เปิด Smart Duplicate Modal แทนการเพิ่มอัตโนมัติ
+      openDuplicateModal(dup);
       return;
     }
   }
@@ -1334,6 +1399,34 @@ function preCheckAddSong() {
   executeAddSong();
 }
 
+function openDuplicateModal(dupSong) {
+  duplicateSongTarget = dupSong;
+  document.getElementById("dup-song-name").innerText = dupSong.name;
+  document.getElementById("dup-song-artist").innerText = dupSong.artist;
+  document.getElementById("dup-song-votes").innerText = dupSong.votes || 0;
+  document.getElementById("dup-song-thumb").src = getYTThumb(dupSong.link);
+  openModal("duplicateSongModal");
+}
+
+function executeDuplicateVote() {
+  if (!duplicateSongTarget) return;
+  fetchAPI(
+    "voteSong",
+    { eventId: activeEvent.id, songId: duplicateSongTarget.id, uuid: userUUID },
+    (res) => {
+      currentSongs = res;
+      filterSongs();
+      closeModal("duplicateSongModal");
+      closeModal("addSongModal");
+      showToast(
+        "สำเร็จ",
+        "เพิ่มโหวตให้เพลงที่มีอยู่แล้วเรียบร้อยค่ะ! 💖",
+        "success",
+      );
+    },
+  );
+}
+
 function executeAddSong() {
   const btn = document.getElementById("btn-song-submit");
   if (btn) btn.disabled = true;
@@ -1351,11 +1444,33 @@ function executeAddSong() {
       closeModal("addSongModal");
       showToast("สำเร็จ", "เพิ่มเพลงเรียบร้อยค่ะ", "success");
       if (btn) btn.disabled = false;
+
+      // 🌟 หากกำลังเปิดหน้า Playlist Manager อยู่ ให้เพิ่มเพลงใหม่ลงใน Pool ทันที
+      if (currentViewId === "playlist") {
+        refreshPoolIfNeeded();
+      }
     },
     () => {
       if (btn) btn.disabled = false;
     },
   );
+}
+
+// 🌟 ฟังก์ชันช่วยตรวจสอบและดึงเพลงใหม่เข้า Pool
+function refreshPoolIfNeeded() {
+  const pool = document.getElementById("list-pool");
+  if (!pool) return;
+
+  const existingIds = new Set();
+  document
+    .querySelectorAll(".drop-zone [data-id]")
+    .forEach((el) => existingIds.add(el.dataset.id));
+
+  currentSongs.forEach((s) => {
+    if (s.status !== "Played" && !existingIds.has(s.id)) {
+      pool.appendChild(createPlaylistItem(s));
+    }
+  });
 }
 
 function openUserEditSong() {
@@ -2023,8 +2138,17 @@ function handleFeedbackSubmit(e) {
 }
 
 function openAdminFeedbackDashboard() {
-  const modal = document.getElementById("adminFeedbackDashboardModal");
-  if (modal) modal.classList.remove("hidden");
+  const targetEventId = activeEvent ? activeEvent.id : currentEventId;
+  if (!targetEventId) {
+    return showToast(
+      "แจ้งเตือน",
+      "ไม่พบข้อมูลงาน กรุณาเลือกงานก่อนค่ะ",
+      "warning",
+    );
+  }
+
+  // 🌟 ใช้ระบบเปิด Modal หลักของเว็บเพื่อให้แสดงผลถูกต้อง (.active)
+  openModal("adminFeedbackDashboardModal");
 
   const container = document.getElementById("feedbackListContainer");
   if (container)
@@ -2032,7 +2156,7 @@ function openAdminFeedbackDashboard() {
 
   fetchAPI(
     "getFeedback",
-    { eventId: currentEventId },
+    { eventId: targetEventId },
     (data) => {
       renderDashboardData(data);
     },
@@ -2041,6 +2165,11 @@ function openAdminFeedbackDashboard() {
         container.innerHTML = `<p class="text-center text-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
     },
   );
+}
+
+function closeAdminFeedbackModal() {
+  // 🌟 ใช้ระบบปิด Modal หลักของเว็บ
+  closeModal("adminFeedbackDashboardModal");
 }
 
 function openAdminAddSongModal() {
@@ -2065,8 +2194,8 @@ function openAdminAddSongModal() {
 }
 
 function closeAdminFeedbackModal() {
-  const modal = document.getElementById("adminFeedbackDashboardModal");
-  if (modal) modal.classList.add("hidden");
+  // 🌟 ใช้ระบบปิด Modal หลักของเว็บ
+  closeModal("adminFeedbackDashboardModal");
 }
 
 function renderDashboardData(data) {
@@ -2119,6 +2248,208 @@ function renderDashboardData(data) {
 function toggleLanguage() {
   const newLang = currentLang === "th" ? "en" : "th";
   setLanguage(newLang);
-  const el = document.getElementById("current-lang-text");
-  if (el) el.innerText = newLang.toUpperCase();
+
+  // อัปเดตข้อความบนปุ่มสลับภาษาใน Navbar
+  const langTextEl = document.getElementById("current-lang-text");
+  if (langTextEl) {
+    langTextEl.innerText = newLang.toUpperCase();
+  }
+
+  // แสดง Toast แจ้งเตือนการเปลี่ยนภาษาเบาๆ
+  showToast(
+    newLang === "th" ? "เปลี่ยนภาษา" : "Language Changed",
+    newLang === "th"
+      ? "เปลี่ยนเป็นภาษาไทยเรียบร้อยค่ะ 🇹🇭"
+      : "Switched to English successfully 🇬🇧",
+    "success",
+  );
+}
+
+let currentQuickFilter = "all";
+let currentActivityTab = "all";
+let duplicateSongTarget = null;
+
+function setQuickFilter(filter) {
+  currentQuickFilter = filter;
+  document
+    .querySelectorAll(".filter-pill")
+    .forEach((b) => b.classList.remove("active"));
+  event.currentTarget.classList.add("active");
+  filterSongs();
+}
+
+function setActivityTab(tab) {
+  currentActivityTab = tab;
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach((b) => b.classList.remove("active"));
+  event.currentTarget.classList.add("active");
+  filterSongs();
+}
+
+let globalMemberMap = {};
+
+function openLeaderboardModal() {
+  const tbody = document.getElementById("leaderboard-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูลอันดับ...</td></tr>`;
+
+  openModal("leaderboardModal");
+
+  // ดึงข้อมูลสมาชิกจากชีต Members มาจับคู่ Email กับ Username
+  fetchAPI(
+    "getMembers",
+    {},
+    (memberMap) => {
+      globalMemberMap = memberMap || {};
+      processAndRenderLeaderboard();
+    },
+    () => {
+      globalMemberMap = {};
+      processAndRenderLeaderboard();
+    },
+  );
+}
+
+function processAndRenderLeaderboard() {
+  const tbody = document.getElementById("leaderboard-tbody");
+  if (!tbody) return;
+
+  let userStatsMap = {};
+
+  currentSongs.forEach((song) => {
+    // 1. ประมวลผลผู้ขอเพลง
+    if (song.creator) {
+      let creatorKey = song.creator.trim().toLowerCase();
+      // ดึง Username จากชีต Members โดยเทียบจาก Email (creatorKey)
+      let displayName =
+        globalMemberMap[creatorKey] || song.creatorName || song.creator;
+
+      if (!userStatsMap[creatorKey]) {
+        userStatsMap[creatorKey] = {
+          id: creatorKey,
+          username: displayName,
+          requestedCount: 0,
+          votedCount: 0,
+          receivedVotes: 0,
+        };
+      } else {
+        if (globalMemberMap[creatorKey]) {
+          userStatsMap[creatorKey].username = globalMemberMap[creatorKey];
+        }
+      }
+      userStatsMap[creatorKey].requestedCount += 1;
+      userStatsMap[creatorKey].receivedVotes += song.votes || 0;
+    }
+
+    // 2. ประมวลผลผู้กดโหวต (Voters)
+    if (song.voters) {
+      let voterList = Array.isArray(song.voters)
+        ? song.voters
+        : song.voters.split(",").filter((v) => v !== "");
+      voterList.forEach((voterId) => {
+        let voterKey = voterId.trim().toLowerCase();
+        let displayVoterName = globalMemberMap[voterKey] || voterId;
+
+        if (!userStatsMap[voterKey]) {
+          userStatsMap[voterKey] = {
+            id: voterKey,
+            username: displayVoterName,
+            requestedCount: 0,
+            votedCount: 0,
+            receivedVotes: 0,
+          };
+        }
+        userStatsMap[voterKey].votedCount += 1;
+      });
+    }
+  });
+
+  // กรอง Admin ออกจากการจัดอันดับ
+  let leaderboardData = Object.values(userStatsMap)
+    .filter((user) => {
+      let lowerName = user.username.toLowerCase();
+      return !lowerName.startsWith("admin") && lowerName !== "admin";
+    })
+    .sort((a, b) => {
+      let scoreA = a.receivedVotes * 3 + a.requestedCount * 2 + a.votedCount;
+      let scoreB = b.receivedVotes * 3 + b.requestedCount * 2 + b.votedCount;
+      return scoreB - scoreA;
+    });
+
+  let top5 = leaderboardData.slice(0, 5);
+
+  if (top5.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">ยังไม่มีข้อมูลการขอเพลงในขณะนี้</td></tr>`;
+    document.getElementById("my-rank-footer").innerHTML = isAdminLoggedIn
+      ? "👑 <strong>แอดมินไม่นับนะจ๊ะ</strong> (มาคุมงานเฉยๆ)"
+      : "ยังไม่มีอันดับของคุณในขณะนี้";
+    return;
+  }
+
+  tbody.innerHTML = "";
+  top5.forEach((user, index) => {
+    let rankBadge =
+      index === 0
+        ? "🥇"
+        : index === 1
+          ? "🥈"
+          : index === 2
+            ? "🥉"
+            : `#${index + 1}`;
+    let displayName = user.username;
+
+    let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
+    let isMe =
+      user.id === currentEmailKey ||
+      user.username.toLowerCase() === userName.toLowerCase();
+    let totalScore =
+      user.receivedVotes * 3 + user.requestedCount * 2 + user.votedCount;
+
+    let tr = document.createElement("tr");
+
+    if (index === 0) tr.className = "leaderboard-row-top1";
+    else if (index === 1) tr.className = "leaderboard-row-top2";
+    else if (index === 2) tr.className = "leaderboard-row-top3";
+    else tr.style.borderBottom = "1px solid var(--border-color)";
+
+    if (isMe) {
+      tr.style.outline = "2px dashed var(--primary)";
+    }
+
+    tr.innerHTML = `
+      <td style="padding: 10px 8px; font-weight: bold;">${rankBadge}</td>
+      <td style="padding: 10px 8px; font-weight: 600; color: var(--dark);">${displayName} ${isMe ? "(คุณ ✨)" : ""}</td>
+      <td style="padding: 10px 8px; text-align: center;">${user.requestedCount}</td>
+      <td style="padding: 10px 8px; text-align: center;">${user.votedCount}</td>
+      <td style="padding: 10px 8px; text-align: center; font-weight: bold; color: var(--primary);">${totalScore}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // แสดงลำดับของผู้ใช้งานปัจจุบันที่ด้านล่าง Modal
+  const myRankFooter = document.getElementById("my-rank-footer");
+  if (myRankFooter) {
+    if (isAdminLoggedIn) {
+      myRankFooter.innerHTML = `👑 <strong>แอดมินไม่นับนะจ๊ะ</strong> (ยินดีต้อนรับผู้ดูแลระบบสุดน่ารัก)`;
+    } else {
+      let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
+      let myIndex = leaderboardData.findIndex(
+        (u) =>
+          u.id === currentEmailKey ||
+          u.username.toLowerCase() === userName.toLowerCase(),
+      );
+      if (myIndex !== -1) {
+        let myRank = myIndex + 1;
+        let myData = leaderboardData[myIndex];
+        let myScore =
+          myData.receivedVotes * 3 +
+          myData.requestedCount * 2 +
+          myData.votedCount;
+        myRankFooter.innerHTML = `🎯 อันดับปัจจุบันของคุณ: <strong>#${myRank}</strong> (${myData.username} - คะแนนรวม: ${myScore} แต้ม)`;
+      } else {
+        myRankFooter.innerHTML = `💡 คุณยังไม่มีรายชื่อใน Leaderboard ลองขอเพลงหรือกดโหวตเพิ่มเลย!`;
+      }
+    }
+  }
 }

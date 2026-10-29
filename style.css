@@ -1601,3 +1601,132 @@ body {
 #feedbackModal .btn-primary:hover {
   background: var(--primary-hover);
 }
+
+/* Quick Filter Pills Styling */
+.quick-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  margin-bottom: 12px;
+  scrollbar-width: none; /* Firefox */
+}
+.quick-filters::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+.filter-pill {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.filter-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.filter-pill.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 2px 6px rgba(255, 77, 133, 0.3);
+}
+
+/* Activity Tabs Styling */
+.activity-tabs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 5px;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  font-family: "Prompt", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 4px;
+  position: relative;
+  transition: color 0.2s;
+}
+.tab-btn:hover {
+  color: var(--primary);
+}
+.tab-btn.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--primary);
+  border-radius: 3px 3px 0 0;
+}
+@keyframes top3Glow {
+  0% {
+    box-shadow: 0 0 4px rgba(243, 156, 18, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(243, 156, 18, 0.7);
+    transform: scale(1.005);
+  }
+  100% {
+    box-shadow: 0 0 4px rgba(243, 156, 18, 0.3);
+    transform: scale(1);
+  }
+}
+
+.leaderboard-row-top1 {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.2),
+    rgba(255, 255, 255, 0.8)
+  );
+  animation: top3Glow 2s infinite ease-in-out;
+  border-left: 4px solid #f1c40f;
+}
+
+.leaderboard-row-top2 {
+  background: linear-gradient(
+    135deg,
+    rgba(192, 192, 192, 0.2),
+    rgba(255, 255, 255, 0.8)
+  );
+  animation: top3Glow 2.5s infinite ease-in-out;
+  border-left: 4px solid #bdc3c7;
+}
+
+.leaderboard-row-top3 {
+  background: linear-gradient(
+    135deg,
+    rgba(205, 127, 50, 0.2),
+    rgba(255, 255, 255, 0.8)
+  );
+  animation: top3Glow 3s infinite ease-in-out;
+  border-left: 4px solid #d35400;
+}
+
+.my-rank-footer {
+  margin-top: 15px;
+  padding: 12px;
+  background: var(--bg-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--dark);
+  text-align: center;
+  border: 1px dashed var(--primary);
+}
