@@ -1730,3 +1730,43 @@ body {
   text-align: center;
   border: 1px dashed var(--primary);
 }
+
+/* =========================================
+   Toast บนมือถือ: เต็มความกว้าง ไม่บังหัวข้อหน้า
+========================================= */
+@media (max-width: 600px) {
+  #toast-container {
+    top: 60px;
+    left: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+  .toast {
+    min-width: 0;
+    width: 100%;
+    padding: 8px 12px;
+  }
+  .toast-body h4 {
+    font-size: 0.85rem;
+  }
+  .toast-body p {
+    font-size: 0.78rem;
+  }
+}
+
+/* ช่องเลือกวันที่ (flatpickr) ให้หน้าตาเหมือนช่องกรอกอื่น ๆ */
+input.form-control.flatpickr-input[readonly] {
+  background-color: #fff;
+  cursor: pointer;
+}
+.flatpickr-calendar {
+  font-family: inherit;
+}
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.flatpickr-day.today:not(.selected) {
+  border-color: var(--primary);
+}
