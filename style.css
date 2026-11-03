@@ -1770,3 +1770,40 @@ input.form-control.flatpickr-input[readonly] {
 .flatpickr-day.today:not(.selected) {
   border-color: var(--primary);
 }
+
+/* Toast ข้อมูลทั่วไป */
+.toast.info {
+  border-left-color: #3498db;
+}
+.toast.info .toast-icon {
+  color: #3498db;
+}
+
+/* รายการลิสต์ในหน้าต่างกู้คืน */
+#restore-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.restore-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+.restore-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.restore-info .text-muted {
+  font-size: 0.8rem;
+}

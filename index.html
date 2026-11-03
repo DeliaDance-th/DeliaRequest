@@ -379,6 +379,30 @@
             <div style="flex: 1"></div>
             <button
               class="btn btn-outline btn-sm"
+              id="btn-pl-restore"
+              onclick="openPlaylistRestoreModal()"
+            >
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span data-i18n="btn_pl_restore">กู้คืนลิสต์</span>
+            </button>
+            <button
+              class="btn btn-outline btn-sm"
+              id="btn-pl-backup"
+              onclick="backupPlaylistCopy()"
+            >
+              <i class="fa-solid fa-copy"></i>
+              <span data-i18n="btn_pl_backup">สำรองลิสต์</span>
+            </button>
+            <button
+              class="btn btn-outline btn-sm"
+              id="btn-pl-csv"
+              onclick="downloadPlaylistCSV()"
+            >
+              <i class="fa-solid fa-file-csv"></i>
+              <span data-i18n="btn_pl_csv">ดาวน์โหลด CSV</span>
+            </button>
+            <button
+              class="btn btn-outline btn-sm"
               onclick="confirmImportFromVotes()"
             >
               <i class="fa-solid fa-rotate-left"></i>
@@ -1451,6 +1475,29 @@
       >
         Test AI
       </button>
+    </div>
+
+    <!-- กู้คืนลิสต์เพลง -->
+    <div class="modal-overlay" id="playlistRestoreModal">
+      <div class="modal-content" style="max-width: 520px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('playlistRestoreModal')"
+        ></i>
+        <h2 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span data-i18n="restore_title">กู้คืนลิสต์เพลง</span>
+        </h2>
+        <p
+          class="text-muted"
+          style="font-size: 0.85rem; margin-bottom: 15px"
+          data-i18n="restore_hint"
+        >
+          เลือกลิสต์ที่เคยบันทึกไว้เพื่อโหลดกลับมาที่กระดาน
+          ลิสต์จะยังไม่ถูกบันทึกทับจนกว่าคุณจะกดเซฟ
+        </p>
+        <div id="restore-list"></div>
+      </div>
     </div>
 
     <!-- Leaderboard Modal -->

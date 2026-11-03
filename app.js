@@ -47,6 +47,7 @@ const translations = {
     admin_login: "Admin Login",
     admin_sub: "กรุณากรอกชื่อและรหัสผ่านแอดมิน",
     btn_cancel: "ยกเลิก",
+    btn_ok: "ตกลง",
     btn_view_songs: "ดูรายการเพลง",
     yt_link: "ลิงก์ Youtube",
     song_name: "ชื่อเพลง",
@@ -57,28 +58,207 @@ const translations = {
     gender_f: "ศิลปินหญิง (Girl Group)",
     has_breakdance: "เพลงนี้มี Breakdance ใช่ไหม?",
     ex_time: "เช่น 1:30",
+    ex_time_end: "เช่น 2:05",
+    opt_custom: "อื่นๆ (กำหนดเวลาเอง)",
     edit_song: "แก้ไขข้อมูลเพลง",
     new_user_alert: "ยินดีต้อนรับสมาชิกใหม่!\nกรุณากรอกชื่อผู้ใช้งานของคุณ",
+    username_ph: "เช่น YutoJR",
     dance_part: "ท่อนที่ใช้เต้น",
     btn_start: "เริ่มใช้งานเลย!",
+
+    // ฟอร์มประเมิน
     txtFeedbackTitle: "แสดงความคิดเห็นสำหรับงานนี้",
     lblSongList: "1. SONG LIST (รายการเพลงในงาน)",
     lblPlace: "2. PLACE (สถานที่จัดงาน/บรรยากาศ)",
     lblWebsite: "3. WEBSITE REQUEST SONG (ระบบเว็บขอเพลง)",
     lblAdditional: "4. ADDITIONAL COMMENT (ข้อเสนอแนะเพิ่มเติม)",
+    fb_comment_ph: "ความคิดเห็นเพิ่มเติม...",
+    fb_additional_ph: "พิมพ์ข้อเสนอแนะของคุณที่นี่...",
     txtDontShowToday: "ไม่ต้องแสดงอีกในวันนี้",
     btnSkipFeedback: "ข้าม",
     btnSubmitFeedback: "ส่งความคิดเห็น",
-    btnAddSongAdmin: "+ เพิ่มเพลงใหม่ (Admin)",
-    btnViewFeedbackAdmin: "📊 ดู Feedback งานนี้",
+    fbp_title: "งานจบแล้ว! 🎉",
+    fbp_msg:
+      "ขอบคุณที่มาร่วมสนุกกันนะคะ\nรบกวนเวลาสักนิด ช่วยประเมินงานนี้ให้เราหน่อยน้า 💖",
+    go_feedback_form: "ไปหน้ากรอกแบบประเมิน",
+    fbp_skip: "ข้าม (ดูรายการเพลงอย่างเดียว)",
+    form_submitted: "คุณได้กรอกแบบฟอร์มแล้วค่ะ",
+
+    // แดชบอร์ด
     txtDashboardTitle: "Dashboard สรุป Feedback งานนี้",
+    stat_requesters: "ผู้ขอเพลงทั้งหมด",
+    stat_responders: "ผู้ตอบแบบประเมิน",
+    stat_percent: "คิดเป็นเปอร์เซ็นต์",
+    dash_details: "รายละเอียดความคิดเห็น (รายบุคคล)",
+    no_feedback: "ยังไม่มีผู้ทำแบบประเมินค่ะ",
+    load_error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+
+    // ปุ่ม/ป้ายในหน้าต่าง ๆ
+    brand_title: "กลับหน้าแรก",
+    global_leaderboard: "Global Leaderboard (อันดับรวมภาพรวม) 🌟",
+    btn_edit_event: "แก้ไขงาน/ลบงาน",
+    btn_close_event: "ปิดงาน",
+    btn_add_song_admin: "เพิ่มเพลงใหม่ (Admin)",
+    btn_view_feedback_admin: "ดู Feedback งานนี้",
+    shuffle_mf: "สุ่ม (M/F)",
+    add_category_title: "เพิ่มหมวดหมู่ใหม่",
     filter_all: "ทั้งหมด",
     filter_bd: "Dance Break ⚡",
     tab_all: "🎵 เพลงทั้งหมด",
     tab_mine: "👤 เพลงของฉัน",
     tab_voted: "💖 ที่ฉันโหวต",
+    status_open: "เปิดรับขอเพลง",
+    status_closed: "ปิดรับแล้ว",
+    err_loading: "โหลดข้อมูลไม่สำเร็จ",
+    no_songs: "ยังไม่มีเพลงในระบบค่ะ มาเสนอเพลงกันเถอะ! 🎵",
+    time_unspecified: "ยังไม่ระบุเวลา",
+    has_dance_break: "มี Dance Break ⚡",
+    no_dance_break: "ไม่มี Dance Break",
+
+    // รายละเอียดเพลง
+    det_category: "หมวดหมู่",
+    det_dance: "ท่อนเต้น",
+    det_votes: "คะแนนโหวต",
+    det_listen: "ฟังเพลง",
+    det_share: "คัดลอกลิงก์แชร์",
+    btn_approve: "อนุมัติ",
+    btn_played: "เล่นแล้ว",
+    btn_delete: "ลบ",
+
+    // สร้าง/แก้ไขงาน
+    ev_create_title: "สร้างงานใหม่",
+    ev_edit_title: "แก้ไขงาน",
+    ev_date: "วันที่จัดงาน",
+    ev_name: "ชื่องาน",
+    ev_location: "สถานที่",
+    ev_open: "เวลาเปิดรับ",
+    ev_close: "เวลาปิดรับ",
+    ev_details: "รายละเอียด",
+    ev_quota: "จำกัดจำนวนเพลง (ต่อคน)",
+    ev_create_btn: "สร้างกำหนดการ",
+    ev_save_btn: "บันทึกการแก้ไข",
+    ev_delete_btn: "ลบกำหนดการ",
+    upcoming_badge: "งานถัดไปที่กำลังจะมาถึง",
+    upcoming_action: "ดูรายละเอียด / ขอเพลง",
+
+    // เพลงซ้ำ
+    dup_title: "พบเพลงนี้ในระบบแล้ว!",
+    dup_msg:
+      "เพลงนี้มีเพื่อนๆ ขอเข้ามาแล้วค่ะ แทนที่จะสร้างซ้ำ มาร่วมกดโหวตให้เพลงนี้กันเถอะ! 💖",
+    dup_vote: "โหวตให้เพลงนี้ทันที (+1)",
+
+    // Leaderboard
     leaderboard_title: "Top 5 Active Requesters",
     leaderboard_sub: "ตารางอันดับผู้ใช้งานที่มีส่วนร่วมสูงสุดในงานนี้ 🌟",
+    lb_global_title: "Global Top 5 Active Requesters",
+    lb_global_sub: "ตารางอันดับผู้ที่มีส่วนร่วมสูงสุดทุกอีเวนต์ตลอดกาล 🌟",
+    lb_col_user: "ผู้ใช้งาน",
+    lb_col_req: "ขอเพลง",
+    lb_col_vote: "โหวต",
+    lb_col_received: "โหวตรวมที่ได้รับ",
+    lb_col_score: "คะแนนรวม",
+    lb_loading: "กำลังโหลดข้อมูลอันดับ...",
+    lb_global_loading: "กำลังโหลดอันดับภาพรวม...",
+    lb_loading_me: "กำลังโหลดข้อมูลของคุณ...",
+    lb_empty: "ยังไม่มีข้อมูลการขอเพลงในขณะนี้",
+    lb_load_fail: "ไม่สามารถโหลดข้อมูลได้",
+    lb_no_rank: "ยังไม่มีอันดับของคุณในขณะนี้",
+    lb_admin_note1: "👑 <strong>แอดมินไม่นับนะจ๊ะ</strong> (มาคุมงานเฉยๆ)",
+    lb_admin_note2:
+      "👑 <strong>แอดมินไม่นับนะจ๊ะ</strong> (ยินดีต้อนรับผู้ดูแลระบบสุดน่ารัก)",
+    lb_you: "(คุณ ✨)",
+    lb_my_rank:
+      "🎯 อันดับปัจจุบันของคุณ: <strong>#{rank}</strong> ({name} - คะแนนรวม: {score} แต้ม)",
+    lb_not_listed:
+      "💡 คุณยังไม่มีรายชื่อใน Leaderboard ลองขอเพลงหรือกดโหวตเพิ่มเลย!",
+
+    // กู้คืน / สำรองลิสต์
+    btn_pl_restore: "กู้คืนลิสต์",
+    btn_pl_backup: "สำรองลิสต์",
+    btn_pl_csv: "ดาวน์โหลด CSV",
+    restore_title: "กู้คืนลิสต์เพลง",
+    restore_hint:
+      "เลือกลิสต์ที่เคยบันทึกไว้เพื่อโหลดกลับมาที่กระดาน ลิสต์จะยังไม่ถูกบันทึกทับจนกว่าคุณจะกดเซฟ",
+    restore_none: "ยังไม่มีลิสต์ที่เคยบันทึกไว้สำหรับงานนี้",
+    restore_kind_main_current: "ลิสต์หลัก (วันที่ปัจจุบัน)",
+    restore_kind_main_other: "ลิสต์หลัก (บันทึกไว้ตอนวันที่ {date})",
+    restore_kind_backup: "สำเนาสำรอง: {label}",
+    restore_count: "{n} เพลง",
+    restore_load: "โหลด",
+    restore_confirm_title: "โหลดลิสต์นี้?",
+    restore_confirm_msg:
+      "กระดานปัจจุบันจะถูกแทนที่ด้วยลิสต์ที่เลือก (ยังไม่บันทึกจนกว่าจะกดเซฟ)",
+    restore_done: "โหลดลิสต์เรียบร้อยค่ะ อย่าลืมกดเซฟถ้าต้องการใช้ลิสต์นี้",
+    restore_found:
+      "พบลิสต์ที่เคยบันทึกไว้ตอนวันที่อื่นของงานนี้ กดปุ่ม 'กู้คืนลิสต์' เพื่อโหลดกลับมา",
+    need_deploy: "ฟังก์ชันนี้ต้องอัปเดต Apps Script (Code.gs) ก่อน",
+    merged_new: "เพิ่มเพลงที่ขอเข้ามาใหม่ {n} เพลงเข้ากองกลางแล้ว",
+    backup_label_title: "ตั้งชื่อสำเนาสำรอง",
+    backup_empty: "ยังไม่มีเพลงในกระดานให้สำรองค่ะ",
+    backup_saved: "สร้างสำเนาสำรองแล้ว ดูได้ในชีตชื่อ \"{name}\"",
+    csv_done: "ดาวน์โหลดไฟล์ CSV แล้วค่ะ",
+
+    // Toast / กล่องยืนยัน
+    toast_notice: "แจ้งเตือน",
+    toast_error: "ข้อผิดพลาด",
+    toast_success: "สำเร็จ",
+    toast_network: "เครือข่ายขัดข้อง",
+    toast_network_msg: "สัญญาณอินเทอร์เน็ตอาจไม่เสถียร ลองใหม่อีกครั้งนะคะ",
+    msg_checking_account: "กำลังตรวจสอบบัญชี...",
+    msg_enter_username: "กรุณากรอกชื่อผู้ใช้งานก่อนค่ะ",
+    msg_saving: "กำลังบันทึก...",
+    msg_sending: "กำลังส่ง...",
+    msg_logging_in: "กำลังเข้าสู่ระบบค่ะ...",
+    session_expired: "เซสชันหมดอายุ",
+    session_expired_msg: "ไม่พบข้อมูลบัญชี กรุณาล็อกอินด้วย Google ใหม่ค่ะ",
+    logout_done: "ออกจากระบบเรียบร้อยค่ะ",
+    msg_fill_all: "กรุณากรอกข้อมูลให้ครบค่ะ",
+    login_failed: "เข้าสู่ระบบล้มเหลว",
+    close_event_title: "ประกาศจบงาน",
+    close_event_msg:
+      "ระบบจะเปลี่ยนสถานะเป็น 'จบแล้ว' (Closed) และเปิดหน้าฟอร์มประเมินทันที ยืนยันหรือไม่?",
+    close_event_done: "ประกาศจบงานเรียบร้อยค่ะ",
+    confirm_skip_title: "ยืนยันการข้าม",
+    confirm_skip_msg: "แน่ใจหรือไม่ว่าต้องการข้ามการประเมิน?",
+    event_over_no_vote: "งานถูกจัดไปแล้ว ไม่สามารถโหวตเพิ่มได้ค่ะ",
+    cant_vote_own: "ไม่สามารถโหวตเพลงของตนเองได้ค่ะ",
+    copied_title: "คัดลอกสำเร็จ",
+    copied_msg: "คัดลอกลิงก์เรียบร้อยแล้วค่ะ",
+    verify_ok: "ตรวจสอบข้อมูลสำเร็จ",
+    quota_full: "โควตาเต็ม",
+    quota_full_msg: "คุณขอเพลงครบโควตา {n} เพลงแล้วค่ะ",
+    enter_song_name: "กรุณากรอกชื่อเพลงค่ะ",
+    already_voted: "คุณได้โหวตเพลงนี้ไปแล้วค่ะ",
+    you_are_creator: "คุณเป็นผู้เสนอเพลงนี้ค่ะ",
+    vote_added: "เพิ่มโหวตให้เพลงที่มีอยู่แล้วเรียบร้อยค่ะ! 💖",
+    song_added: "เพิ่มเพลงเรียบร้อยค่ะ",
+    song_updated: "อัปเดตข้อมูลสำเร็จ",
+    status_updated: "อัปเดตสถานะเรียบร้อย",
+    delete_song_title: "ลบเพลง",
+    delete_song_msg: "ต้องการลบเพลงนี้ออกจากระบบใช่หรือไม่?",
+    song_deleted: "ลบเพลงเรียบร้อยค่ะ",
+    category_name: "ชื่อหมวดหมู่",
+    category_rename: "เปลี่ยนชื่อหมวดหมู่",
+    category_drag_hint: "กดค้าง 2 วินาทีเพื่อย้ายตำแหน่งหมวดหมู่",
+    confirm_delete: "ยืนยันการลบ",
+    delete_cat_msg: "เพลงในหมวดนี้จะถูกย้ายกลับไปกองกลางทั้งหมด ยืนยันหรือไม่?",
+    refetch_title: "ดึงข้อมูลใหม่",
+    refetch_msg: "เพลงทั้งหมดจะถูกย้ายกลับไปกองกลาง ยืนยันหรือไม่?",
+    refetch_done: "ดึงข้อมูลเพลงกลับกองกลางเรียบร้อยค่ะ",
+    need_3_songs: "ต้องการเพลงในกองกลางอย่างน้อย 3 เพลงค่ะ",
+    ai_sorted: "จัดเรียงคิวเพลงสลับชายหญิงเรียบร้อยค่ะ",
+    playlist_saved: "บันทึกเพลย์ลิสต์เรียบร้อยค่ะ",
+    msg_fill_required: "กรุณากรอกข้อมูลให้ครบถ้วนค่ะ",
+    event_created: "สร้างกำหนดการเรียบร้อยค่ะ",
+    msg_fill_date_name: "กรุณากรอกวันที่และชื่องานให้ครบถ้วนค่ะ",
+    event_updated: "แก้ไขข้อมูลและวันจัดงานเรียบร้อยค่ะ",
+    delete_event_title: "ลบกำหนดการ",
+    delete_event_msg: "คุณต้องการลบงานนี้ใช่หรือไม่?",
+    event_deleted: "ลบกำหนดการเรียบร้อยค่ะ",
+    feedback_thanks: "ส่งความคิดเห็นเรียบร้อยแล้วค่ะ ขอบคุณนะคะ! 💖",
+    event_not_found: "ไม่พบข้อมูลงาน กรุณาเลือกงานก่อนค่ะ",
+    lang_changed_title: "เปลี่ยนภาษา",
+    lang_changed_msg: "เปลี่ยนเป็นภาษาไทยเรียบร้อยค่ะ 🇹🇭",
   },
   en: {
     welcome: "Welcome to Delia",
@@ -113,6 +293,7 @@ const translations = {
     admin_login: "Admin Login",
     admin_sub: "Enter admin username and password",
     btn_cancel: "Cancel",
+    btn_ok: "OK",
     btn_view_songs: "View Songs",
     yt_link: "YouTube Link",
     song_name: "Song Name",
@@ -123,46 +304,270 @@ const translations = {
     gender_f: "Girl Group",
     has_breakdance: "Has Breakdance?",
     ex_time: "e.g., 1:30",
+    ex_time_end: "e.g., 2:05",
+    opt_custom: "Other (custom time)",
     edit_song: "Edit Song Info",
     new_user_alert: "Welcome New Member!\nPlease enter your username",
+    username_ph: "e.g., YutoJR",
     dance_part: "Dance Part",
     btn_start: "Let's Go!",
+
+    // Feedback form
     txtFeedbackTitle: "Event Feedback Form",
     lblSongList: "1. SONG LIST",
     lblPlace: "2. PLACE",
     lblWebsite: "3. WEBSITE REQUEST SONG",
     lblAdditional: "4. ADDITIONAL COMMENT",
+    fb_comment_ph: "Additional comments...",
+    fb_additional_ph: "Type your suggestions here...",
     txtDontShowToday: "Don't show again today",
     btnSkipFeedback: "Skip",
     btnSubmitFeedback: "Submit Feedback",
-    btnAddSongAdmin: "+ Add New Song (Admin)",
-    btnViewFeedbackAdmin: "📊 View Event Feedback",
+    fbp_title: "The event has ended! 🎉",
+    fbp_msg:
+      "Thanks for joining the fun!\nPlease take a moment to rate this event 💖",
+    go_feedback_form: "Go to feedback form",
+    fbp_skip: "Skip (just view the songs)",
+    form_submitted: "You have already submitted the form.",
+
+    // Dashboard
     txtDashboardTitle: "Event Feedback Dashboard Summary",
+    stat_requesters: "Total Requesters",
+    stat_responders: "Respondents",
+    stat_percent: "Response Rate",
+    dash_details: "Feedback Details (Individual)",
+    no_feedback: "No feedback submitted yet.",
+    load_error: "Failed to load data.",
+
+    // Buttons / labels
+    brand_title: "Back to home",
+    global_leaderboard: "Global Leaderboard 🌟",
+    btn_edit_event: "Edit / Delete Event",
+    btn_close_event: "Close Event",
+    btn_add_song_admin: "Add New Song (Admin)",
+    btn_view_feedback_admin: "View Event Feedback",
+    shuffle_mf: "Shuffle (M/F)",
+    add_category_title: "Add new category",
     filter_all: "All",
     filter_bd: "Dance Break ⚡",
     tab_all: "🎵 All Songs",
     tab_mine: "👤 My Songs",
     tab_voted: "💖 Voted",
+    status_open: "Open",
+    status_closed: "Closed",
+    err_loading: "Error loading",
+    no_songs: "No songs yet. Be the first to request one! 🎵",
+    time_unspecified: "No time specified",
+    has_dance_break: "Has Dance Break ⚡",
+    no_dance_break: "No Dance Break",
+
+    // Song detail
+    det_category: "Category",
+    det_dance: "Dance Part",
+    det_votes: "Votes",
+    det_listen: "Listen",
+    det_share: "Copy share link",
+    btn_approve: "Approve",
+    btn_played: "Played",
+    btn_delete: "Delete",
+
+    // Create / edit event
+    ev_create_title: "Create New Event",
+    ev_edit_title: "Edit Event",
+    ev_date: "Event Date",
+    ev_name: "Event Name",
+    ev_location: "Location",
+    ev_open: "Opens At",
+    ev_close: "Closes At",
+    ev_details: "Details",
+    ev_quota: "Song limit (per person)",
+    ev_create_btn: "Create Event",
+    ev_save_btn: "Save Changes",
+    ev_delete_btn: "Delete Event",
+    upcoming_badge: "Upcoming Event",
+    upcoming_action: "View Details",
+
+    // Duplicate song
+    dup_title: "This song already exists!",
+    dup_msg:
+      "Others have already requested this song. Instead of creating a duplicate, add your vote! 💖",
+    dup_vote: "Vote for this song now (+1)",
+
+    // Leaderboard
     leaderboard_title: "Top 5 Active Requesters",
     leaderboard_sub: "Top active users in this event 🌟",
+    lb_global_title: "Global Top 5 Active Requesters",
+    lb_global_sub: "Top active users across all events, all time 🌟",
+    lb_col_user: "User",
+    lb_col_req: "Requests",
+    lb_col_vote: "Votes",
+    lb_col_received: "Votes Received",
+    lb_col_score: "Total Score",
+    lb_loading: "Loading leaderboard...",
+    lb_global_loading: "Loading global ranking...",
+    lb_loading_me: "Loading your rank...",
+    lb_empty: "No song requests yet.",
+    lb_load_fail: "Unable to load data.",
+    lb_no_rank: "You are not ranked yet.",
+    lb_admin_note1: "👑 <strong>Admins are not ranked</strong> (just here to supervise)",
+    lb_admin_note2:
+      "👑 <strong>Admins are not ranked</strong> (welcome, dear admin!)",
+    lb_you: "(You ✨)",
+    lb_my_rank:
+      "🎯 Your current rank: <strong>#{rank}</strong> ({name} - Total score: {score} pts)",
+    lb_not_listed:
+      "💡 You're not on the leaderboard yet. Try requesting or voting for a song!",
+
+    // Restore / backup
+    btn_pl_restore: "Restore",
+    btn_pl_backup: "Backup copy",
+    btn_pl_csv: "Download CSV",
+    restore_title: "Restore playlist",
+    restore_hint:
+      "Pick a saved list to load back onto the board. Nothing is overwritten until you press Save.",
+    restore_none: "No saved playlists for this event yet.",
+    restore_kind_main_current: "Main list (current date)",
+    restore_kind_main_other: "Main list (saved under date {date})",
+    restore_kind_backup: "Backup: {label}",
+    restore_count: "{n} songs",
+    restore_load: "Load",
+    restore_confirm_title: "Load this list?",
+    restore_confirm_msg:
+      "The current board will be replaced by the selected list (not saved until you press Save).",
+    restore_done: "List loaded. Press Save if you want to keep it.",
+    restore_found:
+      "Found a list saved under a different date for this event. Press 'Restore' to load it.",
+    need_deploy: "This feature needs the updated Apps Script (Code.gs).",
+    merged_new: "{n} newly requested song(s) added to the pool.",
+    backup_label_title: "Name this backup",
+    backup_empty: "There are no songs on the board to back up.",
+    backup_saved: "Backup created in sheet \"{name}\"",
+    csv_done: "CSV downloaded.",
+
+    // Toasts / confirm dialogs
+    toast_notice: "Notice",
+    toast_error: "Error",
+    toast_success: "Success",
+    toast_network: "Network Error",
+    toast_network_msg: "Your connection may be unstable. Please try again.",
+    msg_checking_account: "Verifying your account...",
+    msg_enter_username: "Please enter a username first.",
+    msg_saving: "Saving...",
+    msg_sending: "Sending...",
+    msg_logging_in: "Logging in...",
+    session_expired: "Session expired",
+    session_expired_msg: "Account not found. Please sign in with Google again.",
+    logout_done: "You have been logged out.",
+    msg_fill_all: "Please fill in all fields.",
+    login_failed: "Login failed",
+    close_event_title: "Close Event",
+    close_event_msg:
+      "The event will be marked as Closed and the feedback form will open immediately. Continue?",
+    close_event_done: "Event closed.",
+    confirm_skip_title: "Confirm Skip",
+    confirm_skip_msg: "Are you sure you want to skip the feedback?",
+    event_over_no_vote: "This event has ended. Voting is closed.",
+    cant_vote_own: "You can't vote for your own song.",
+    copied_title: "Copied",
+    copied_msg: "Link copied to clipboard.",
+    verify_ok: "Song info verified.",
+    quota_full: "Quota reached",
+    quota_full_msg: "You've reached your limit of {n} song requests.",
+    enter_song_name: "Please enter a song name.",
+    already_voted: "You have already voted for this song.",
+    you_are_creator: "You requested this song.",
+    vote_added: "Your vote has been added to the existing song! 💖",
+    song_added: "Song added.",
+    song_updated: "Song updated.",
+    status_updated: "Status updated.",
+    delete_song_title: "Delete Song",
+    delete_song_msg: "Delete this song from the system?",
+    song_deleted: "Song deleted.",
+    category_name: "Category name",
+    category_rename: "Rename category",
+    category_drag_hint: "Press and hold for 2 seconds to reorder",
+    confirm_delete: "Confirm Delete",
+    delete_cat_msg:
+      "All songs in this category will be moved back to the pool. Continue?",
+    refetch_title: "Re-fetch Requests",
+    refetch_msg: "All songs will be moved back to the pool. Continue?",
+    refetch_done: "Songs moved back to the pool.",
+    need_3_songs: "You need at least 3 songs in the pool.",
+    ai_sorted: "Songs arranged alternating by gender.",
+    playlist_saved: "Playlist saved.",
+    msg_fill_required: "Please fill in all required fields.",
+    event_created: "Event created.",
+    msg_fill_date_name: "Please enter the event date and name.",
+    event_updated: "Event updated.",
+    delete_event_title: "Delete Event",
+    delete_event_msg: "Do you want to delete this event?",
+    event_deleted: "Event deleted.",
+    feedback_thanks: "Thank you for your feedback! 💖",
+    event_not_found: "Event not found. Please select an event first.",
+    lang_changed_title: "Language Changed",
+    lang_changed_msg: "Switched to English successfully 🇬🇧",
   },
 };
 
 let currentLang = localStorage.getItem("delia_lang") || "th";
+if (!translations[currentLang]) currentLang = "th";
+
+// ดึงข้อความตามภาษาปัจจุบัน รองรับตัวแปรแบบ {name}
+// ถ้าไม่มีคีย์ในภาษานั้น จะ fallback เป็นภาษาไทย แล้วค่อยเป็นชื่อคีย์
+function t(key, vars) {
+  let text = translations[currentLang]?.[key] ?? translations.th[key] ?? key;
+  if (vars) {
+    Object.keys(vars).forEach((k) => {
+      text = text.split(`{${k}}`).join(vars[k]);
+    });
+  }
+  return text;
+}
+
+// แปลงข้อความจากผู้ใช้ให้ปลอดภัยก่อนใส่ลงใน innerHTML (กัน XSS)
+function escapeHTML(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    (ch) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        ch
+      ],
+  );
+}
+
+// ลิงก์ที่อนุญาตให้ใส่ใน href: เฉพาะ http(s) (กัน javascript: URL)
+function safeUrl(url) {
+  const u = String(url ?? "").trim();
+  return /^https?:\/\//i.test(u) ? u : "";
+}
 
 function setLanguage(lang) {
+  if (!translations[lang]) lang = "th";
   currentLang = lang;
   localStorage.setItem("delia_lang", lang);
 
+  // 1. ภาษาของเอกสาร + ปุ่มสลับภาษาบน Navbar (ทำที่นี่ที่เดียว ทุกเส้นทางที่เปลี่ยนภาษาจึงถูกต้อง)
+  document.documentElement.lang = lang;
+  const langTextEl = document.getElementById("current-lang-text");
+  if (langTextEl) langTextEl.innerText = lang.toUpperCase();
+
+  // 2. ข้อความคงที่ใน HTML
   document.querySelectorAll("[data-i18n]").forEach((el) => {
-    if (translations[lang][el.getAttribute("data-i18n")]) {
-      el.innerText = translations[lang][el.getAttribute("data-i18n")];
+    const key = el.getAttribute("data-i18n");
+    if (translations[lang][key] !== undefined) {
+      el.innerText = translations[lang][key];
     }
   });
-
   document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
-    if (translations[lang][el.getAttribute("data-i18n-ph")]) {
-      el.placeholder = translations[lang][el.getAttribute("data-i18n-ph")];
+    const key = el.getAttribute("data-i18n-ph");
+    if (translations[lang][key] !== undefined) {
+      el.placeholder = translations[lang][key];
+    }
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    if (translations[lang][key] !== undefined) {
+      el.title = translations[lang][key];
     }
   });
 
@@ -177,8 +582,46 @@ function setLanguage(lang) {
     renderGoogleButton(lang);
   }
 
+  // 3. ส่วนที่สร้างด้วย JS ต้องวาดใหม่
   renderCalendarDays();
-  if (currentEvents.length > 0) renderCalendar();
+  if (currentEvents.length > 0) {
+    renderCalendar();
+    renderUpcomingEvent();
+  }
+  refreshDynamicTexts();
+  refreshDatePickerLocale();
+}
+
+// อัปเดตข้อความที่ถูกสร้าง/แก้ด้วย JS (ชื่อหัวข้อ สถานะงาน รายการเพลง ฯลฯ)
+function refreshDynamicTexts() {
+  // ชื่องานจริงต้องไม่ถูกแทนด้วยคำแปลคงที่
+  if (activeEvent) {
+    const viewTitle = document.getElementById("view-event-title");
+    if (viewTitle) viewTitle.innerText = activeEvent.name;
+    const plTitle = document.getElementById("playlist-event-title");
+    if (plTitle) plTitle.innerText = `${t("setlist_title")}: ${activeEvent.name}`;
+    renderEventStatus();
+  }
+
+  const poolText = document.getElementById("toggle-sidebar-text");
+  if (poolText) poolText.innerText = t(isPoolOpen ? "hide_pool" : "show_pool");
+
+  document
+    .querySelectorAll(".dynamic-category .list-col-header")
+    .forEach((h) => (h.title = t("category_drag_hint")));
+
+  // วาดรายการเพลงใหม่ (ข้อความ "ยังไม่ระบุเวลา" ฯลฯ)
+  if (currentSongs.length > 0 && currentViewId === "songs") filterSongs();
+}
+
+function renderEventStatus() {
+  const statusEl = document.getElementById("view-event-status");
+  if (!statusEl || !activeEvent) return;
+  if (activeEvent.status === "Closed") {
+    statusEl.innerHTML = `<span style="color:var(--danger)"><i class="fa-solid fa-lock"></i> ${t("status_closed")}</span>`;
+  } else {
+    statusEl.innerHTML = `<span style="color:var(--success)"><i class="fa-solid fa-lock-open"></i> ${t("status_open")}</span>`;
+  }
 }
 
 function renderCalendarDays() {
@@ -190,6 +633,72 @@ function renderCalendarDays() {
       .map((d) => `<div>${d}</div>`)
       .join("");
   }
+}
+
+// วันที่แบบยาว เช่น "15 พฤศจิกายน 2026" / "15 November 2026" (ใช้ ค.ศ. ทั้งหมด)
+function formatLongDate(d) {
+  const monthText =
+    currentLang === "th" ? monthNamesTh[d.getMonth()] : monthNamesEn[d.getMonth()];
+  return `${d.getDate()} ${monthText} ${d.getFullYear()}`;
+}
+
+// ==========================================
+// ตัวเลือกวันที่ (แสดง วัน/เดือน/ปี ค่าจริงยังเป็น YYYY-MM-DD เหมือนเดิม)
+// ==========================================
+const DATE_PICKER_IDS = ["event-date", "edit-event-date"];
+const DATETIME_PICKER_IDS = [
+  "event-open",
+  "event-close",
+  "edit-event-open",
+  "edit-event-close",
+];
+
+function initDatePickers() {
+  // ถ้าโหลดไลบรารีไม่สำเร็จ จะใช้ input วันที่ของเบราว์เซอร์ตามเดิม
+  if (typeof flatpickr === "undefined") return;
+  const common = {
+    altInput: true,
+    disableMobile: true,
+    allowInput: false,
+    time_24hr: true,
+    locale: currentLang === "th" ? "th" : "default",
+  };
+  DATE_PICKER_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el || el._flatpickr) return;
+    el.placeholder = "dd/mm/yyyy";
+    flatpickr(el, { ...common, dateFormat: "Y-m-d", altFormat: "d/m/Y" });
+  });
+  DATETIME_PICKER_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el || el._flatpickr) return;
+    el.placeholder = "dd/mm/yyyy hh:mm";
+    flatpickr(el, {
+      ...common,
+      enableTime: true,
+      dateFormat: "Y-m-d\\TH:i",
+      altFormat: "d/m/Y H:i",
+    });
+  });
+  refreshDatePickerLocale();
+}
+
+function refreshDatePickerLocale() {
+  [...DATE_PICKER_IDS, ...DATETIME_PICKER_IDS].forEach((id) => {
+    const fp = document.getElementById(id)?._flatpickr;
+    if (!fp) return;
+    fp.set("locale", currentLang === "th" ? "th" : "default");
+    fp.l10n.firstDayOfWeek = 0; // ให้สัปดาห์เริ่มวันอาทิตย์เหมือนปฏิทินของแอป
+    fp.redraw();
+  });
+}
+
+// กำหนดค่าให้ช่องวันที่ (รองรับทั้งแบบมี flatpickr และ input ปกติ)
+function setPickerValue(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el._flatpickr) el._flatpickr.setDate(value || null, false);
+  else el.value = value || "";
 }
 
 function formatTime(dtStr) {
@@ -213,6 +722,7 @@ let isDevLoggedIn = localStorage.getItem("delia_role") === "Developer";
 let pendingEmail = "";
 
 document.addEventListener("DOMContentLoaded", () => {
+  initDatePickers();
   setLanguage(currentLang);
 
   if (userUUID) {
@@ -275,6 +785,7 @@ function renderGoogleButton(lang) {
       shape: "pill",
       type: "standard",
       text: "signin_with",
+      locale: lang === "th" ? "th" : "en",
     });
   }
 }
@@ -296,7 +807,7 @@ function decodeJwtResponse(token) {
 function handleGoogleLogin(response) {
   const responsePayload = decodeJwtResponse(response.credential);
   pendingEmail = responsePayload.email;
-  showToast("Google Sign-In", "กำลังตรวจสอบบัญชี...", "success");
+  showToast("Google Sign-In", t("msg_checking_account"), "success");
 
   fetchAPI(
     "auth",
@@ -312,7 +823,7 @@ function handleGoogleLogin(response) {
       }
     },
     (err) => {
-      showToast("ข้อผิดพลาด", err, "error");
+      showToast(t("toast_error"), err, "error");
     },
   );
 }
@@ -320,10 +831,10 @@ function handleGoogleLogin(response) {
 function registerNewUser() {
   const username = document.getElementById("setup-username").value.trim();
   if (!username)
-    return showToast("แจ้งเตือน", "กรุณากรอกชื่อผู้ใช้งานก่อนค่ะ", "error");
+    return showToast(t("toast_notice"), t("msg_enter_username"), "error");
 
   const btn = document.getElementById("btn-register-user");
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...`;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t("msg_saving")}`;
   btn.disabled = true;
 
   fetchAPI(
@@ -331,13 +842,13 @@ function registerNewUser() {
     { action: "register_user", username: username, email: pendingEmail },
     (res) => {
       saveLoginSession(res);
-      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">${translations[currentLang].btn_start}</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">${t("btn_start")}</span>`;
       btn.disabled = false;
     },
     (err) => {
-      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">${translations[currentLang].btn_start}</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_start">${t("btn_start")}</span>`;
       btn.disabled = false;
-      showToast("ข้อผิดพลาด", err, "error");
+      showToast(t("toast_error"), err, "error");
     },
   );
 }
@@ -378,7 +889,7 @@ function resetSlide(el) {
 
 function executeUnlock() {
   const sliderText = document.getElementById("slider-text");
-  if (sliderText) sliderText.innerText = "กำลังเข้าสู่ระบบค่ะ...";
+  if (sliderText) sliderText.innerText = t("msg_logging_in");
 
   fetchAPI(
     "auth",
@@ -395,12 +906,12 @@ function executeUnlock() {
           slider.disabled = false;
           document.getElementById("slider-thumb").style.left = "0px";
           document.getElementById("slider-text").innerText =
-            translations[currentLang].slide_login || "เลื่อนเพื่อเข้าสู่ระบบ";
+            t("slide_login");
         }
       } else {
         showToast(
-          "เซสชันหมดอายุ",
-          "ไม่พบข้อมูลบัญชี กรุณาล็อกอินด้วย Google ใหม่ค่ะ",
+          t("session_expired"),
+          t("session_expired_msg"),
           "error",
         );
         executeLogout();
@@ -422,7 +933,7 @@ function executeLogout() {
 
   updateUserUI();
   closeModal("logoutModal");
-  showToast("Logout", "ออกจากระบบเรียบร้อยค่ะ", "success");
+  showToast(t("logout"), t("logout_done"), "success");
   goHome();
 
   const slider = document.getElementById("unlock-slider");
@@ -431,7 +942,7 @@ function executeLogout() {
     slider.disabled = false;
     document.getElementById("slider-thumb").style.left = "0px";
     document.getElementById("slider-text").innerText =
-      translations[currentLang].slide_login || "เลื่อนเพื่อเข้าสู่ระบบ";
+      t("slide_login");
   }
 
   setTimeout(() => {
@@ -453,7 +964,7 @@ function executeAdminAuth() {
   const u = document.getElementById("admin-user").value.trim();
   const p = document.getElementById("admin-pass").value.trim();
   if (!u || !p)
-    return showToast("ข้อผิดพลาด", "กรุณากรอกข้อมูลให้ครบค่ะ", "error");
+    return showToast(t("toast_error"), t("msg_fill_all"), "error");
 
   const btn = document.getElementById("btn-admin-submit");
   const originalText = btn.innerHTML;
@@ -473,7 +984,7 @@ function executeAdminAuth() {
     (err) => {
       btn.innerHTML = originalText;
       btn.disabled = false;
-      showToast("เข้าสู่ระบบล้มเหลว", err, "error");
+      showToast(t("login_failed"), err, "error");
     },
   );
 }
@@ -486,14 +997,14 @@ function updateUserUI() {
     let icon = isDevLoggedIn
       ? "<i class='fa-solid fa-code'></i>"
       : "<i class='fa-solid fa-crown'></i>";
-    profileBtn.innerHTML = `${icon} <span class="hide-mobile">${userName}</span>`;
+    profileBtn.innerHTML = `${icon} <span class="hide-mobile">${escapeHTML(userName)}</span>`;
     profileBtn.classList.remove("hidden");
     if (btnLogin) btnLogin.classList.add("hidden");
     document
       .querySelectorAll(".admin-only:not(.fab-btn)")
       .forEach((el) => el.classList.remove("hidden"));
   } else if (userUUID && userName) {
-    profileBtn.innerHTML = `<i class='fa-solid fa-user'></i> <span class="hide-mobile">${userName}</span>`;
+    profileBtn.innerHTML = `<i class='fa-solid fa-user'></i> <span class="hide-mobile">${escapeHTML(userName)}</span>`;
     profileBtn.classList.remove("hidden");
     if (btnLogin) btnLogin.classList.add("hidden");
     document
@@ -509,7 +1020,8 @@ function updateUserUI() {
   updateFABs();
 }
 
-function fetchAPI(action, payload, onSuccess, onError) {
+// silent = true: ไม่แสดง Toast เมื่อผิดพลาด (ใช้กับการเช็คเบื้องหลัง)
+function fetchAPI(action, payload, onSuccess, onError, silent) {
   fetch(apiURL, {
     method: "POST",
     body: JSON.stringify({ action: action, payload: payload }),
@@ -519,16 +1031,16 @@ function fetchAPI(action, payload, onSuccess, onError) {
       if (data.success) {
         onSuccess(data.data);
       } else {
-        showToast("แจ้งเตือน", data.message, "error");
+        if (!silent) showToast(t("toast_notice"), data.message, "error");
         if (onError) onError(data.message);
       }
     })
     .catch((err) => {
       console.error("System Error details:", err);
-      if (err.name === "TypeError" && err.message.includes("fetch")) {
+      if (!silent && err.name === "TypeError" && err.message.includes("fetch")) {
         showToast(
-          "เครือข่ายขัดข้อง",
-          "สัญญาณอินเทอร์เน็ตอาจไม่เสถียร ลองใหม่อีกครั้งนะคะ",
+          t("toast_network"),
+          t("toast_network_msg"),
           "warning",
         );
       }
@@ -573,24 +1085,38 @@ function closeModal(id) {
 function showToast(title, message, type = "success") {
   const container = document.getElementById("toast-container");
   if (!container) return;
+
+  // กัน Toast ซ้ำ: ถ้ามีข้อความเดียวกันแสดงอยู่แล้ว ไม่สร้างซ้ำ
+  const toastKey = `${type}|${title}|${message}`;
+  if (Array.from(container.children).some((el) => el.dataset.key === toastKey))
+    return;
+  // แสดงพร้อมกันได้ไม่เกิน 2 อัน ถ้าเต็มให้เอาอันเก่าสุดออก
+  while (container.children.length >= 2) container.firstElementChild.remove();
+
   const toast = document.createElement("div");
+  toast.dataset.key = toastKey;
   toast.className = `toast ${type}`;
   const icon =
     type === "success"
       ? '<i class="fa-solid fa-circle-check"></i>'
-      : '<i class="fa-solid fa-circle-xmark"></i>';
-  toast.innerHTML = `<div class="toast-icon">${icon}</div><div class="toast-body"><h4>${title}</h4><p>${message}</p></div>`;
+      : type === "info"
+        ? '<i class="fa-solid fa-circle-info"></i>'
+        : '<i class="fa-solid fa-circle-xmark"></i>';
+  toast.innerHTML = `<div class="toast-icon">${icon}</div><div class="toast-body"><h4>${escapeHTML(title)}</h4><p>${escapeHTML(message)}</p></div>`;
   container.appendChild(toast);
-  setTimeout(() => {
-    toast.style.animation = "slideInRight 0.3s reverse forwards";
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  setTimeout(
+    () => {
+      toast.style.animation = "slideInRight 0.3s reverse forwards";
+      setTimeout(() => toast.remove(), 300);
+    },
+    type === "info" ? 6000 : 3000,
+  );
 }
 
 let inputModalCallback = null;
 function openInputModal(title, defaultVal, callback) {
   document.getElementById("input-modal-title").innerHTML =
-    `<i class="fa-solid fa-pen-to-square"></i> ${title}`;
+    `<i class="fa-solid fa-pen-to-square"></i> ${escapeHTML(title)}`;
   const inputVal = document.getElementById("input-modal-value");
   if (inputVal) inputVal.value = defaultVal || "";
   inputModalCallback = callback;
@@ -627,7 +1153,7 @@ function getYTThumb(link) {
   const regExp =
     /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = link.match(regExp);
-  if (match && match[2].length === 11) videoId = match[2];
+  if (match && /^[\w-]{11}$/.test(match[2])) videoId = match[2];
   return videoId
     ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
     : "DeliaLogo.png";
@@ -700,7 +1226,7 @@ function loadEvents() {
     },
     () => {
       if (grid)
-        grid.innerHTML = `<p class="text-center text-muted" style="grid-column: 1 / -1;">Error Loading</p>`;
+        grid.innerHTML = `<p class="text-center text-muted" style="grid-column: 1 / -1;">${t("err_loading")}</p>`;
     },
   );
 }
@@ -712,7 +1238,7 @@ function renderCalendar() {
       currentLang === "th"
         ? monthNamesTh[currentMonth]
         : monthNamesEn[currentMonth];
-    const yearText = currentLang === "th" ? currentYear + 543 : currentYear;
+    const yearText = currentYear;
     display.innerText = `${monthText} ${yearText}`;
   }
 
@@ -738,7 +1264,7 @@ function renderCalendar() {
       cell.classList.add("admin-clickable");
       cell.onclick = () => {
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`;
-        document.getElementById("event-date").value = dateStr;
+        setPickerValue("event-date", dateStr);
         openModal("addEventModal");
       };
     }
@@ -768,7 +1294,7 @@ function renderCalendar() {
     dayEvents.forEach((e) => {
       const evt = document.createElement("div");
       evt.className = `day-event ${e.status === "Closed" ? "closed" : ""}`;
-      evt.innerHTML = `${e.name} ${e.status === "Closed" ? '<i class="fa-solid fa-lock"></i>' : ""}`;
+      evt.innerHTML = `${escapeHTML(e.name)} ${e.status === "Closed" ? '<i class="fa-solid fa-lock"></i>' : ""}`;
 
       // ปุ่มแสดงชื่องานขนาดเท่าเดิม และยังกดได้ปกติ
       evt.onclick = (event) => {
@@ -798,15 +1324,8 @@ function openEventIntro(event) {
   const d = new Date(event.date);
   document.getElementById("intro-title").innerText = event.name;
 
-  const monthText =
-    currentLang === "th"
-      ? monthNamesTh[d.getMonth()]
-      : monthNamesEn[d.getMonth()];
-  const yearText =
-    currentLang === "th" ? d.getFullYear() + 543 : d.getFullYear();
-  document.getElementById("intro-date").innerText =
-    `${d.getDate()} ${monthText} ${yearText}`;
-  document.getElementById("intro-loc").innerText = event.location;
+  document.getElementById("intro-date").innerText = formatLongDate(d);
+  document.getElementById("intro-loc").innerText = event.location || "-";
   document.getElementById("intro-time").innerText =
     `${formatTime(event.openTime)} - ${formatTime(event.closeTime)}`;
   document.getElementById("intro-det").innerText = event.details || "-";
@@ -839,12 +1358,12 @@ window.handleEventClick = function (event) {
     const btnGoToForm = document.getElementById("btn-go-to-form");
 
     if (hasSubmitted && !isAdminLoggedIn) {
-      btnGoToForm.innerText = "คุณได้กรอกแบบฟอร์มแล้วค่ะ";
+      btnGoToForm.innerHTML = `<span data-i18n="form_submitted">${t("form_submitted")}</span>`;
       btnGoToForm.disabled = true;
       btnGoToForm.style.background = "#b0bec5"; // เปลี่ยนเป็นสีเทา
       btnGoToForm.style.borderColor = "#b0bec5";
     } else {
-      btnGoToForm.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ไปหน้ากรอกแบบประเมิน`;
+      btnGoToForm.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span data-i18n="go_feedback_form">${t("go_feedback_form")}</span>`;
       btnGoToForm.disabled = false;
       btnGoToForm.style.background = ""; // รีเซ็ตสี
       btnGoToForm.style.borderColor = "";
@@ -863,13 +1382,13 @@ window.handleEventClick = function (event) {
 // 🌟 ฟังก์ชันเมื่อแอดมินกดปุ่ม "ประกาศจบงาน" (จากหน้าแรก)
 window.adminCloseEvent = function () {
   showCustomConfirm(
-    "ประกาศจบงาน",
-    "ระบบจะเปลี่ยนสถานะเป็น 'จบแล้ว' (Closed) และเปิดหน้าฟอร์มประเมินทันที ยืนยันหรือไม่?",
+    t("close_event_title"),
+    t("close_event_msg"),
     () => {
       fetchAPI("closeEvent", { id: activeEvent.id }, (res) => {
         currentEvents = res;
         activeEvent = currentEvents.find((e) => e.id === activeEvent.id);
-        showToast("สำเร็จ", "ประกาศจบงานเรียบร้อยค่ะ", "success");
+        showToast(t("toast_success"), t("close_event_done"), "success");
         closeModal("eventIntroModal");
         goToFeedbackForm();
       });
@@ -880,8 +1399,8 @@ window.adminCloseEvent = function () {
 // 🌟 ฟังก์ชันกดยืนยันการข้าม
 window.promptSkipFeedback = function () {
   showCustomConfirm(
-    "ยืนยันการข้าม",
-    "แน่ใจหรือไม่ว่าต้องการข้ามการประเมิน?",
+    t("confirm_skip_title"),
+    t("confirm_skip_msg"),
     () => {
       currentEventId = activeEvent.id;
       saveDontShowPreference();
@@ -909,16 +1428,12 @@ function enterSongList() {
   currentEventId = activeEvent.id;
 
   document.getElementById("view-event-title").innerText = activeEvent.name;
-  const statusEl = document.getElementById("view-event-status");
   const addBtn = document.getElementById("btn-add-song-main");
 
+  renderEventStatus();
   if (activeEvent.status === "Closed") {
-    statusEl.innerHTML =
-      '<span style="color:var(--danger)"><i class="fa-solid fa-lock"></i> Closed </span>';
     if (addBtn) addBtn.classList.add("hidden");
   } else {
-    statusEl.innerHTML =
-      '<span style="color:var(--success)"><i class="fa-solid fa-lock-open"></i> Open</span>';
     if (addBtn) addBtn.classList.remove("hidden");
   }
 
@@ -949,7 +1464,7 @@ function loadSongs() {
       filterSongs();
     },
     () => {
-      content.innerHTML = `<p class="text-center text-muted">Error Loading</p>`;
+      content.innerHTML = `<p class="text-center text-muted">${t("err_loading")}</p>`;
     },
   );
 }
@@ -1030,23 +1545,27 @@ window.quickVote = function (e, songId) {
   e.stopPropagation();
   // 🌟 ป้องกันไม่ให้โหวตเมื่องานจบแล้ว
   if (isEventEnded(activeEvent)) {
-    return showToast(
-      "แจ้งเตือน",
-      "งานถูกจัดไปแล้ว ไม่สามารถโหวตเพิ่มได้ค่ะ",
-      "warning",
-    );
+    return showToast(t("toast_notice"), t("event_over_no_vote"), "warning");
   }
 
   if (!userUUID) return openModal("welcomeModal");
 
   const s = currentSongs.find((x) => x.id === songId);
   if (s.creator === userUUID) {
-    return showToast("แจ้งเตือน", "ไม่สามารถโหวตเพลงของตนเองได้ค่ะ", "error");
+    return showToast(t("toast_notice"), t("cant_vote_own"), "error");
   }
 
-  const icon = e.currentTarget.querySelector("i");
-  const countSpan = e.currentTarget.querySelector(".vote-count");
+  const voteBtn = e.currentTarget;
+  const icon = voteBtn.querySelector("i");
+  const countSpan = voteBtn.querySelector(".vote-count");
   let currentVotes = parseInt(countSpan.innerText);
+  // เก็บสถานะเดิมไว้ เผื่อเซิร์ฟเวอร์ปฏิเสธ (เช่น ระบบหนาแน่น) จะได้ย้อนกลับให้ตรงความจริง
+  const prevState = {
+    iconClass: icon.className,
+    iconColor: icon.style.color,
+    countColor: countSpan.style.color,
+    count: countSpan.innerText,
+  };
 
   if (icon.classList.contains("fa-regular")) {
     icon.classList.remove("fa-regular");
@@ -1070,6 +1589,12 @@ window.quickVote = function (e, songId) {
     (res) => {
       currentSongs = res;
     },
+    () => {
+      icon.className = prevState.iconClass;
+      icon.style.color = prevState.iconColor;
+      countSpan.style.color = prevState.countColor;
+      countSpan.innerText = prevState.count;
+    },
   );
 };
 
@@ -1079,7 +1604,7 @@ function renderSongs(songs) {
   container.innerHTML = "";
 
   if (songs.length === 0) {
-    container.innerHTML = `<p class="text-center text-muted" style="padding: 40px 0;">ยังไม่มีเพลงในระบบค่ะ มาเสนอเพลงกันเถอะ! 🎵</p>`;
+    container.innerHTML = `<p class="text-center text-muted no-songs-msg" data-i18n="no_songs" style="padding: 40px 0;">${t("no_songs")}</p>`;
     return;
   }
   // 🌟 หาลำดับโหวตที่ไม่ซ้ำกัน 5 อันดับแรก (ไม่นับ 0 โหวต)
@@ -1129,9 +1654,9 @@ function renderSongs(songs) {
     } else if (s.start) {
       timeText = s.start;
     } else {
-      timeText = "ยังไม่ระบุเวลา";
+      timeText = t("time_unspecified");
     }
-    tagsHTML += `<span class="tag" style="background: #E8F5E9; color: #2E7D32; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${timeText}</span> `;
+    tagsHTML += `<span class="tag" style="background: #E8F5E9; color: #2E7D32; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${escapeHTML(timeText)}</span> `;
 
     if (s.isBreakdance === "Yes" || s.isBreakdance === true) {
       tagsHTML += `<span class="tag tag-bd" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80;"><i class="fa-solid fa-bolt"></i> Dance Break</span>`;
@@ -1153,11 +1678,11 @@ function renderSongs(songs) {
     card.innerHTML = `
       <img src="${getYTThumb(s.link)}" class="song-thumbnail" alt="thumbnail">
       <div class="song-info-main">
-        <div class="song-title">${rankHtml}${s.name}</div>
-        <div class="song-artist">${s.artist}</div>
+        <div class="song-title">${rankHtml}${escapeHTML(s.name)}</div>
+        <div class="song-artist">${escapeHTML(s.artist)}</div>
         <div class="song-tags">${tagsHTML}</div>
       </div>
-      <div class="song-vote-quick" onclick="quickVote(event, '${s.id}')">
+      <div class="song-vote-quick" onclick="quickVote(event, '${escapeHTML(s.id)}')">
         <i class="${voteIcon} vote-anim-icon" style="color: ${voteColor}; font-size: 1.5rem;"></i>
         <span class="vote-count" style="color: ${voteColor};">${s.votes}</span>
       </div>
@@ -1181,7 +1706,7 @@ function openSongDetail(id) {
   } else if (s.start) {
     timeText = s.start;
   } else {
-    timeText = "ยังไม่ระบุเวลา";
+    timeText = t("time_unspecified");
   }
   document.getElementById("det-time").innerText = timeText;
 
@@ -1189,15 +1714,16 @@ function openSongDetail(id) {
 
   let tagText = "";
   if (s.isBreakdance === "Yes" || s.isBreakdance === true) {
-    tagText = "มี Dance Break ⚡";
+    tagText = t("has_dance_break");
   } else {
-    tagText = "ไม่มี Dance Break";
+    tagText = t("no_dance_break");
   }
   document.getElementById("det-tag").innerText = tagText;
 
   const linkBtn = document.getElementById("det-link");
-  if (s.link) {
-    linkBtn.href = s.link;
+  const detailLink = safeUrl(s.link);
+  if (detailLink) {
+    linkBtn.href = detailLink;
     linkBtn.classList.remove("hidden");
   } else {
     linkBtn.classList.add("hidden");
@@ -1229,7 +1755,7 @@ function shareSong() {
   navigator.clipboard
     .writeText(url)
     .then(() => {
-      showToast("คัดลอกสำเร็จ", "คัดลอกลิงก์เรียบร้อยแล้วค่ะ", "success");
+      showToast(t("copied_title"), t("copied_msg"), "success");
     })
     .catch(() => {
       showCustomConfirm("Share Link", url, () => {});
@@ -1258,7 +1784,7 @@ function setGenderDropdown(id, val) {
     if (o.value === "Mix") o.remove();
   });
   if (val === "Mix" || val === "MixSong") {
-    sel.add(new Option(translations[currentLang].gender_mix || "Mix", "Mix"));
+    sel.add(new Option(t("gender_mix"), "Mix"));
     sel.value = "Mix";
   } else {
     sel.value = val;
@@ -1290,7 +1816,7 @@ async function processYoutubeLink(inputId, nameId, artistId, genderId) {
         (dbRes) => {
           setGenderDropdown(genderId, dbRes.gender);
           currentOrigin = dbRes.origin || "K-Pop";
-          showToast("สำเร็จ", `ตรวจสอบข้อมูลสำเร็จ`, "success");
+          showToast(t("toast_success"), t("verify_ok"), "success");
           if (btn) btn.disabled = false;
         },
         () => {
@@ -1325,8 +1851,8 @@ function checkQuotaAndOpenModal() {
     currentSongs.filter((s) => s.creator === userUUID).length >= maxQuota
   ) {
     return showToast(
-      "โควตาเต็ม",
-      `คุณขอเพลงครบโควตา ${maxQuota} เพลงแล้วค่ะ`,
+      t("quota_full"),
+      t("quota_full_msg", { n: maxQuota }),
       "error",
     );
   }
@@ -1354,7 +1880,7 @@ function preCheckAddSong() {
   const name = nameInput ? nameInput.value.trim() : "";
   const linkInput = document.getElementById("song-link");
   const link = linkInput ? linkInput.value.trim() : "";
-  if (!name) return showToast("แจ้งเตือน", "กรุณากรอกชื่อเพลงค่ะ", "error");
+  if (!name) return showToast(t("toast_notice"), t("enter_song_name"), "error");
 
   let dup = currentSongs.find(
     (s) =>
@@ -1365,9 +1891,9 @@ function preCheckAddSong() {
 
   if (dup) {
     if (dup.voters && dup.voters.includes(userUUID)) {
-      return showToast("แจ้งเตือน", "คุณได้โหวตเพลงนี้ไปแล้วค่ะ", "error");
+      return showToast(t("toast_notice"), t("already_voted"), "error");
     } else if (dup.creator === userUUID) {
-      return showToast("แจ้งเตือน", "คุณเป็นผู้เสนอเพลงนี้ค่ะ", "error");
+      return showToast(t("toast_notice"), t("you_are_creator"), "error");
     } else {
       // 🌟 เปิด Smart Duplicate Modal แทนการเพิ่มอัตโนมัติ
       openDuplicateModal(dup);
@@ -1418,11 +1944,7 @@ function executeDuplicateVote() {
       filterSongs();
       closeModal("duplicateSongModal");
       closeModal("addSongModal");
-      showToast(
-        "สำเร็จ",
-        "เพิ่มโหวตให้เพลงที่มีอยู่แล้วเรียบร้อยค่ะ! 💖",
-        "success",
-      );
+      showToast(t("toast_success"), t("vote_added"), "success");
     },
   );
 }
@@ -1442,7 +1964,7 @@ function executeAddSong() {
       currentSongs = res;
       filterSongs();
       closeModal("addSongModal");
-      showToast("สำเร็จ", "เพิ่มเพลงเรียบร้อยค่ะ", "success");
+      showToast(t("toast_success"), t("song_added"), "success");
       if (btn) btn.disabled = false;
 
       // 🌟 หากกำลังเปิดหน้า Playlist Manager อยู่ ให้เพิ่มเพลงใหม่ลงใน Pool ทันที
@@ -1503,7 +2025,7 @@ function openUserEditSong() {
 
 function executeEditSong() {
   const name = document.getElementById("edit-song-name").value.trim();
-  if (!name) return showToast("Error", "Name required", "error");
+  if (!name) return showToast(t("toast_error"), t("enter_song_name"), "error");
 
   const part = document.getElementById("edit-song-dance-part").value;
   let finalStart = "",
@@ -1542,7 +2064,7 @@ function executeEditSong() {
       currentSongs = res;
       filterSongs();
       closeModal("editSongModal");
-      showToast("Success", "อัปเดตข้อมูลสำเร็จ", "success");
+      showToast(t("toast_success"), t("song_updated"), "success");
       if (btn) btn.disabled = false;
     },
     () => {
@@ -1559,13 +2081,13 @@ function adminUpdateStatus(status) {
       currentSongs = res;
       filterSongs();
       closeModal("songDetailModal");
-      showToast("Success", "อัปเดตสถานะเรียบร้อย");
+      showToast(t("toast_success"), t("status_updated"));
     },
   );
 }
 
 function confirmDeleteSong() {
-  showCustomConfirm("ลบเพลง", "ต้องการลบเพลงนี้ออกจากระบบใช่หรือไม่?", () => {
+  showCustomConfirm(t("delete_song_title"), t("delete_song_msg"), () => {
     fetchAPI(
       "deleteSong",
       { eventId: activeEvent.id, songId: selectedSongId },
@@ -1573,7 +2095,7 @@ function confirmDeleteSong() {
         currentSongs = res;
         filterSongs();
         closeModal("songDetailModal");
-        showToast("สำเร็จ", "ลบเพลงเรียบร้อยค่ะ", "success");
+        showToast(t("toast_success"), t("song_deleted"), "success");
       },
     );
   });
@@ -1595,17 +2117,17 @@ function togglePoolSidebar() {
   if (isPoolOpen) {
     if (pool) pool.classList.remove("collapsed");
     if (workspace) workspace.classList.remove("pool-closed");
-    if (text) text.innerText = translations[currentLang].hide_pool;
+    if (text) text.innerText = t("hide_pool");
   } else {
     if (pool) pool.classList.add("collapsed");
     if (workspace) workspace.classList.add("pool-closed");
-    if (text) text.innerText = translations[currentLang].show_pool;
+    if (text) text.innerText = t("show_pool");
   }
 }
 
 function openPlaylistManager() {
   document.getElementById("playlist-event-title").innerText =
-    `${translations[currentLang].setlist_title}: ${activeEvent.name}`;
+    `${t("setlist_title")}: ${activeEvent.name}`;
   showView("playlist");
   document.getElementById("list-pool").innerHTML = "";
   document.getElementById("dynamic-board").innerHTML = "";
@@ -1618,47 +2140,246 @@ function openPlaylistManager() {
     isPoolOpen = false;
     if (pool) pool.classList.add("collapsed");
     if (workspace) workspace.classList.add("pool-closed");
-    if (textBtn) textBtn.innerText = translations[currentLang].show_pool;
+    if (textBtn) textBtn.innerText = t("show_pool");
   } else {
     isPoolOpen = true;
     if (pool) pool.classList.remove("collapsed");
     if (workspace) workspace.classList.remove("pool-closed");
-    if (textBtn) textBtn.innerText = translations[currentLang].hide_pool;
+    if (textBtn) textBtn.innerText = t("hide_pool");
   }
 
   fetchAPI(
     "getPlaylist",
     { eventId: activeEvent.id, date: activeEvent.date },
     (savedLists) => {
-      const categoryNames = [
-        ...new Set(savedLists.map((s) => s.listName)),
-      ].filter((n) => n !== "list-pool" && n !== "POOL" && n !== "กองกลาง");
-      if (categoryNames.length === 0 && savedLists.length === 0) {
-        currentSongs
-          .filter((s) => s.status !== "Played")
-          .sort((a, b) => b.votes - a.votes)
-          .forEach((s) => {
-            document
-              .getElementById("list-pool")
-              .appendChild(createPlaylistItem(s));
-          });
-      } else {
-        categoryNames.forEach((cat) => createCategoryBox(cat));
-        savedLists.forEach((s) => {
-          let target = document.querySelector(
-            `.drop-zone[data-category="${s.listName}"]`,
-          );
-          if (!target) target = document.getElementById("list-pool");
-          target.appendChild(createPlaylistItem(s));
-        });
+      const added = renderPlaylistBoard(savedLists);
+      if (savedLists.length > 0 && added > 0) {
+        showToast(t("toast_success"), t("merged_new", { n: added }), "info");
       }
-      initSortables();
+      // ถ้าวันที่นี้ยังไม่มีลิสต์ ลองดูว่าเคยบันทึกไว้ตอนวันที่อื่นหรือไม่
+      if (savedLists.length === 0) offerPlaylistRestoreIfAny();
     },
   );
 }
 
+// หา drop-zone จากชื่อหมวดหมู่ (เทียบตรง ๆ ไม่ใช้ selector จึงรองรับชื่อที่มีเครื่องหมายคำพูด)
+function findDropZone(name) {
+  return (
+    Array.from(document.querySelectorAll(".drop-zone")).find(
+      (z) => z.getAttribute("data-category") === name,
+    ) || null
+  );
+}
+
+// วาดกระดานจากรายการลิสต์ แล้วเติมเพลงที่ยังไม่อยู่ในลิสต์ใดเลย (เช่น มีคนขอเพลงหลังเซฟ) เข้ากองกลาง
+// ข้อมูลเพลง (ชื่อ ศิลปิน แท็ก) ใช้ค่าล่าสุดจากรายการเพลงเสมอ ไม่ใช้ค่าเก่าในชีต
+// คืนจำนวนเพลงที่เติมเข้ากองกลาง
+function renderPlaylistBoard(savedLists) {
+  const pool = document.getElementById("list-pool");
+  const board = document.getElementById("dynamic-board");
+  pool.innerHTML = "";
+  board.innerHTML = "";
+
+  const poolNames = ["list-pool", "POOL", "กองกลาง"];
+  const categoryNames = [
+    ...new Set(savedLists.map((s) => s.listName)),
+  ].filter((n) => !poolNames.includes(n));
+  categoryNames.forEach((cat) => createCategoryBox(cat));
+
+  savedLists.forEach((saved) => {
+    const latest = currentSongs.find((x) => x.id === saved.id);
+    const target = findDropZone(saved.listName) || pool;
+    target.appendChild(createPlaylistItem(latest || saved));
+  });
+
+  const placed = new Set(
+    Array.from(document.querySelectorAll(".drop-zone [data-id]")).map(
+      (el) => el.dataset.id,
+    ),
+  );
+  const missing = currentSongs
+    .filter((s) => s.status !== "Played" && !placed.has(s.id))
+    .sort((a, b) => b.votes - a.votes);
+  missing.forEach((s) => pool.appendChild(createPlaylistItem(s)));
+
+  initSortables();
+  return missing.length;
+}
+
+// รวบรวมลิสต์ทั้งกระดาน (รวมกองกลาง) ในรูปแบบที่ส่งไปเซิร์ฟเวอร์
+function collectPlaylistLists() {
+  const lists = [];
+  document.querySelectorAll(".drop-zone").forEach((zone) => {
+    const listName = zone.getAttribute("data-category");
+    Array.from(zone.children).forEach((el) => {
+      const s = currentSongs.find((song) => song.id === el.dataset.id);
+      if (s)
+        lists.push({
+          listName: listName,
+          id: s.id,
+          name: s.name,
+          artist: s.artist,
+          gender: s.gender,
+          // ส่งเป็น true/false จริง (ค่าในชีตเป็น "Yes"/"No" ซึ่ง "No" ก็นับเป็นจริงในเซิร์ฟเวอร์)
+          isBreakdance: s.isBreakdance === "Yes" || s.isBreakdance === true,
+          time: `${s.start}-${s.end}`,
+          link: s.link,
+        });
+    });
+  });
+  return lists;
+}
+
+// ---------- กู้คืนลิสต์ ----------
+let restoreCandidates = [];
+
+function offerPlaylistRestoreIfAny() {
+  const eventId = activeEvent.id;
+  fetchAPI(
+    "listPlaylists",
+    { eventId: eventId },
+    (list) => {
+      const orphan = (list || []).some(
+        (x) => x.kind === "main" && x.count > 0 && x.date !== activeEvent.date,
+      );
+      if (orphan && activeEvent.id === eventId && currentViewId === "playlist") {
+        showToast(t("toast_notice"), t("restore_found"), "info");
+      }
+    },
+    null,
+    true,
+  );
+}
+
+function openPlaylistRestoreModal() {
+  const box = document.getElementById("restore-list");
+  if (box)
+    box.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
+  openModal("playlistRestoreModal");
+  fetchAPI(
+    "listPlaylists",
+    { eventId: activeEvent.id },
+    (list) => {
+      restoreCandidates = list || [];
+      renderRestoreList();
+    },
+    (err) => {
+      if (box)
+        box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(err === "Invalid Action" ? t("need_deploy") : t("load_error"))}</p>`;
+    },
+  );
+}
+
+function renderRestoreList() {
+  const box = document.getElementById("restore-list");
+  if (!box) return;
+  if (restoreCandidates.length === 0) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t("restore_none"))}</p>`;
+    return;
+  }
+  box.innerHTML = restoreCandidates
+    .map((c, i) => {
+      let title;
+      if (c.kind === "backup")
+        title = t("restore_kind_backup", { label: c.label || c.date });
+      else if (c.date === activeEvent.date)
+        title = t("restore_kind_main_current");
+      else title = t("restore_kind_main_other", { date: c.date });
+      return `<div class="restore-item">
+        <div class="restore-info"><strong>${escapeHTML(title)}</strong><span class="text-muted">${escapeHTML(t("restore_count", { n: c.count }))}</span></div>
+        <button class="btn btn-outline btn-sm" onclick="loadPlaylistFromSheet(${i})">${escapeHTML(t("restore_load"))}</button>
+      </div>`;
+    })
+    .join("");
+}
+
+function loadPlaylistFromSheet(i) {
+  const cand = restoreCandidates[i];
+  if (!cand) return;
+  showCustomConfirm(t("restore_confirm_title"), t("restore_confirm_msg"), () => {
+    fetchAPI(
+      "getPlaylistBySheet",
+      { eventId: activeEvent.id, sheetName: cand.sheetName },
+      (rows) => {
+        closeModal("playlistRestoreModal");
+        renderPlaylistBoard(rows || []);
+        showToast(t("toast_success"), t("restore_done"), "info");
+      },
+    );
+  });
+}
+
+// ---------- สำรองลิสต์ ----------
+function nowStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}-${p(d.getMinutes())}`;
+}
+
+// บันทึกสำเนาสำรองเป็นชีตใหม่ ไม่ทับลิสต์หลัก
+function backupPlaylistCopy() {
+  const lists = collectPlaylistLists();
+  if (lists.length === 0)
+    return showToast(t("toast_notice"), t("backup_empty"), "error");
+  openInputModal(t("backup_label_title"), nowStamp(), (label) => {
+    fetchAPI(
+      "savePlaylistBackup",
+      { eventId: activeEvent.id, date: activeEvent.date, lists: lists, label: label },
+      (res) => {
+        showToast(
+          t("toast_success"),
+          t("backup_saved", { name: res && res.sheetName ? res.sheetName : label }),
+          "success",
+        );
+      },
+      (err) => {
+        if (err === "Invalid Action")
+          showToast(t("toast_notice"), t("need_deploy"), "error");
+      },
+    );
+  });
+}
+
+// ดาวน์โหลดลิสต์ปัจจุบันเป็นไฟล์ CSV (เปิดใน Excel/Sheets ได้ ภาษาไทยไม่เพี้ยน)
+function downloadPlaylistCSV() {
+  const lists = collectPlaylistLists();
+  if (lists.length === 0)
+    return showToast(t("toast_notice"), t("backup_empty"), "error");
+  const cell = (v) => {
+    let s = String(v ?? "");
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // กันถูกตีเป็นสูตรเมื่อเปิดใน Excel
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const rows = [
+    ["Category", "Order", "Song", "Artist", "Gender", "Breakdance", "Time", "Link"],
+  ];
+  lists.forEach((s, i) =>
+    rows.push([
+      s.listName,
+      i + 1,
+      s.name,
+      s.artist,
+      s.gender,
+      s.isBreakdance ? "Yes" : "No",
+      s.time,
+      s.link,
+    ]),
+  );
+  const csv = "\ufeff" + rows.map((row) => row.map(cell).join(",")).join("\r\n");
+  const safeName = (v) =>
+    String(v ?? "").replace(/[\\/:*?"<>|]+/g, "").trim().slice(0, 40) || "event";
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  a.download = `Delia-setlist-${safeName(activeEvent.name)}-${safeName(activeEvent.date)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  showToast(t("toast_success"), t("csv_done"), "success");
+}
+
 function addNewCategory() {
-  openInputModal("ชื่อหมวดหมู่", "K-Pop", (newTitle) => {
+  openInputModal(t("category_name"), "K-Pop", (newTitle) => {
     if (
       !newTitle ||
       newTitle.toLowerCase() === "pool" ||
@@ -1675,14 +2396,14 @@ function createCategoryBox(title) {
   const col = document.createElement("div");
   col.className = "list-col dynamic-category";
   col.innerHTML = `
-    <div class="list-col-header" title="กดค้าง 2 วินาทีเพื่อย้ายตำแหน่งหมวดหมู่">
-      <h3>${title} 
+    <div class="list-col-header" title="${t("category_drag_hint")}">
+      <h3>${escapeHTML(title)} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${safeId}')"></i> 
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${safeId}')"></i>
       </h3>
       <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('${safeId}')"><i class="fa-solid fa-shuffle"></i> M/F</button>
     </div>
-    <div id="${safeId}" class="drop-zone" data-category="${title}"></div>
+    <div id="${safeId}" class="drop-zone" data-category="${escapeHTML(title)}"></div>
   `;
   document.getElementById("dynamic-board").appendChild(col);
   initSortables();
@@ -1692,14 +2413,14 @@ function renameCategory(zoneId) {
   const zone = document.getElementById(zoneId);
   if (!zone) return;
   const oldTitle = zone.getAttribute("data-category");
-  openInputModal("เปลี่ยนชื่อหมวดหมู่", oldTitle, (newTitle) => {
+  openInputModal(t("category_rename"), oldTitle, (newTitle) => {
     if (
       newTitle &&
       newTitle.toLowerCase() !== "pool" &&
       newTitle !== "กองกลาง"
     ) {
       zone.setAttribute("data-category", newTitle);
-      zone.previousElementSibling.querySelector("h3").innerHTML = `${newTitle} 
+      zone.previousElementSibling.querySelector("h3").innerHTML = `${escapeHTML(newTitle)} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${zoneId}')"></i> 
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${zoneId}')"></i>`;
     }
@@ -1712,8 +2433,8 @@ function deleteCategory(zoneId) {
   const items = Array.from(zone.children);
   if (items.length > 0) {
     showCustomConfirm(
-      "ยืนยันการลบ",
-      "เพลงในหมวดนี้จะถูกย้ายกลับไปกองกลางทั้งหมด ยืนยันหรือไม่?",
+      t("confirm_delete"),
+      t("delete_cat_msg"),
       () => {
         const pool = document.getElementById("list-pool");
         items.forEach((el) => pool.appendChild(el));
@@ -1727,8 +2448,8 @@ function deleteCategory(zoneId) {
 
 function confirmImportFromVotes() {
   showCustomConfirm(
-    "ดึงข้อมูลใหม่",
-    "เพลงทั้งหมดจะถูกย้ายกลับไปกองกลาง ยืนยันหรือไม่?",
+    t("refetch_title"),
+    t("refetch_msg"),
     () => {
       const pool = document.getElementById("list-pool");
       document
@@ -1741,7 +2462,7 @@ function confirmImportFromVotes() {
         .forEach((s) => {
           pool.appendChild(createPlaylistItem(s));
         });
-      showToast("สำเร็จ", "ดึงข้อมูลเพลงกลับกองกลางเรียบร้อยค่ะ");
+      showToast(t("toast_success"), t("refetch_done"));
     },
   );
 }
@@ -1769,7 +2490,7 @@ function createPlaylistItem(song) {
       : song.origin === "J-Pop"
         ? "#E65100"
         : "#4A148C";
-  tags += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${song.origin || "K-Pop"}</span> `;
+  tags += `<span class="tag" style="background:${originColor}; color:${originTextColor}; font-weight:600;">${escapeHTML(song.origin || "K-Pop")}</span> `;
   if (div.dataset.gender === "M") tags += `<span class="tag tag-m">M</span>`;
   else if (div.dataset.gender === "F")
     tags += `<span class="tag tag-f">F</span>`;
@@ -1780,7 +2501,7 @@ function createPlaylistItem(song) {
     <div style="display:flex; align-items:center; overflow:hidden; gap: 8px;">
       <img src="${getYTThumb(song.link)}" style="width:40px; height:24px; object-fit:cover; border-radius:4px;">
       <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-        <strong>${song.name}</strong><br><span style="font-size:0.75rem; color:#888;">${song.artist}</span>
+        <strong>${escapeHTML(song.name)}</strong><br><span style="font-size:0.75rem; color:#888;">${escapeHTML(song.artist)}</span>
       </div>
     </div>
     <div style="display:flex; gap:3px;">${tags}</div>
@@ -1857,11 +2578,7 @@ function aiMagicSetlist() {
   const pool = document.getElementById("list-pool");
   const items = Array.from(pool.children);
   if (items.length < 3)
-    return showToast(
-      "แจ้งเตือน",
-      "ต้องการเพลงในกองกลางอย่างน้อย 3 เพลงค่ะ",
-      "error",
-    );
+    return showToast(t("toast_notice"), t("need_3_songs"), "error");
   const btn = document.getElementById("btn-ai-setlist");
   if (btn) btn.disabled = true;
   const songData = items.map((el) => ({
@@ -1882,7 +2599,7 @@ function aiMagicSetlist() {
         if (!sortedIds.includes(el.dataset.id)) pool.appendChild(el);
       });
       if (btn) btn.disabled = false;
-      showToast("สำเร็จ", "จัดเรียงคิวเพลงสลับชายหญิงเรียบร้อยค่ะ", "success");
+      showToast(t("toast_success"), t("ai_sorted"), "success");
     },
     () => {
       if (btn) btn.disabled = false;
@@ -1891,25 +2608,7 @@ function aiMagicSetlist() {
 }
 
 function savePlaylistData() {
-  const lists = [];
-  document.querySelectorAll(".drop-zone").forEach((zone) => {
-    const listName = zone.getAttribute("data-category");
-    const items = zone.children;
-    for (let i = 0; i < items.length; i++) {
-      const s = currentSongs.find((song) => song.id === items[i].dataset.id);
-      if (s)
-        lists.push({
-          listName: listName,
-          id: s.id,
-          name: s.name,
-          artist: s.artist,
-          gender: s.gender,
-          isBreakdance: s.isBreakdance,
-          time: `${s.start}-${s.end}`,
-          link: s.link,
-        });
-    }
-  });
+  const lists = collectPlaylistLists();
   const btnTop = document.getElementById("btn-save-playlist-top");
   const btnBot = document.getElementById("btn-save-playlist-bottom");
   if (btnTop) btnTop.disabled = true;
@@ -1920,7 +2619,7 @@ function savePlaylistData() {
     (res) => {
       if (btnTop) btnTop.disabled = false;
       if (btnBot) btnBot.disabled = false;
-      showToast("สำเร็จ", "บันทึกเพลย์ลิสต์เรียบร้อยค่ะ");
+      showToast(t("toast_success"), t("playlist_saved"));
     },
     () => {
       if (btnTop) btnTop.disabled = false;
@@ -1942,7 +2641,7 @@ function handleAddEvent() {
   };
 
   if (!p.date || !p.name)
-    return showToast("แจ้งเตือน", "กรุณากรอกข้อมูลให้ครบถ้วนค่ะ", "error");
+    return showToast(t("toast_notice"), t("msg_fill_required"), "error");
 
   const btn = document.getElementById("btn-event-submit");
   if (btn) btn.disabled = true;
@@ -1954,7 +2653,7 @@ function handleAddEvent() {
       currentEvents = res;
       renderCalendar();
       closeModal("addEventModal");
-      showToast("สำเร็จ", "สร้างกำหนดการเรียบร้อยค่ะ", "success");
+      showToast(t("toast_success"), t("event_created"), "success");
       if (btn) btn.disabled = false;
     },
     () => {
@@ -1963,14 +2662,98 @@ function handleAddEvent() {
   );
 }
 
+// ฟังก์ชันสำหรับเปิด Modal แก้ไขงานพร้อมดึงข้อมูลเดิมมาแสดงในฟอร์ม
+window.openEditEventModal = function () {
+  if (!activeEvent) return;
+  document.getElementById("edit-event-id").value = activeEvent.id;
+
+  // แปลงรูปแบบวันที่ให้อยู่ในฟอร์แมต YYYY-MM-DD เพื่อให้แสดงใน input type="date" ได้
+  try {
+    const d = new Date(activeEvent.date);
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(d - tzOffset).toISOString().split("T")[0];
+    setPickerValue("edit-event-date", localISOTime);
+  } catch (e) {
+    setPickerValue("edit-event-date", activeEvent.date);
+  }
+
+  document.getElementById("edit-event-name").value = activeEvent.name || "";
+  document.getElementById("edit-event-loc").value = activeEvent.location || "";
+
+  // แปลงรูปแบบเวลาสำหรับ input type="datetime-local"
+  const formatDateTime = (dtStr) => {
+    if (!dtStr || dtStr === "-") return "";
+    try {
+      const dt = new Date(dtStr);
+      if (isNaN(dt)) return "";
+      const tzOffset = dt.getTimezoneOffset() * 60000;
+      return new Date(dt - tzOffset).toISOString().slice(0, 16);
+    } catch (e) {
+      return "";
+    }
+  };
+
+  setPickerValue("edit-event-open", formatDateTime(activeEvent.openTime));
+  setPickerValue("edit-event-close", formatDateTime(activeEvent.closeTime));
+  document.getElementById("edit-event-det").value = activeEvent.details || "";
+  document.getElementById("edit-event-quota").value = activeEvent.quota || 3;
+
+  openModal("editEventModal");
+};
+
+// ฟังก์ชันสำหรับส่งข้อมูลการแก้ไขงาน
+window.handleEditEvent = function () {
+  const p = {
+    id: document.getElementById("edit-event-id").value,
+    date: document.getElementById("edit-event-date").value,
+    name: document.getElementById("edit-event-name").value,
+    location: document.getElementById("edit-event-loc").value,
+    openTime: document.getElementById("edit-event-open").value,
+    closeTime: document.getElementById("edit-event-close").value,
+    details: document.getElementById("edit-event-det").value,
+    quota: document.getElementById("edit-event-quota").value,
+  };
+
+  if (!p.date || !p.name) {
+    return showToast(t("toast_notice"), t("msg_fill_date_name"), "error");
+  }
+
+  const btn = document.getElementById("btn-event-edit-submit");
+  if (btn) btn.disabled = true;
+
+  fetchAPI(
+    "editEvent",
+    p,
+    (res) => {
+      currentEvents = res;
+      activeEvent = currentEvents.find((e) => e.id === p.id);
+      renderCalendar();
+      renderUpcomingEvent();
+      closeModal("editEventModal");
+      showToast(t("toast_success"), t("event_updated"), "success");
+
+      // อัปเดตชื่องานที่หน้าแสดงรายการเพลง (หากเปิดอยู่)
+      if (currentViewId === "songs") {
+        document.getElementById("view-event-title").innerText =
+          activeEvent.name;
+      }
+
+      if (btn) btn.disabled = false;
+    },
+    () => {
+      if (btn) btn.disabled = false;
+    },
+  );
+};
+
 function confirmDeleteEvent() {
   const id = document.getElementById("edit-event-id").value;
-  showCustomConfirm("ลบกำหนดการ", "คุณต้องการลบงานนี้ใช่หรือไม่?", () => {
+  showCustomConfirm(t("delete_event_title"), t("delete_event_msg"), () => {
     fetchAPI("deleteEvent", { id: id }, (res) => {
       currentEvents = res;
       renderCalendar();
       closeModal("editEventModal");
-      showToast("สำเร็จ", "ลบกำหนดการเรียบร้อยค่ะ", "success");
+      showToast(t("toast_success"), t("event_deleted"), "success");
     });
   });
 }
@@ -1996,27 +2779,18 @@ function renderUpcomingEvent() {
   if (upcomingEvents.length > 0) {
     const nextEv = upcomingEvents[0];
     const d = new Date(nextEv.date);
-    const monthText =
-      currentLang === "th"
-        ? monthNamesTh[d.getMonth()]
-        : monthNamesEn[d.getMonth()];
-    const yearText =
-      currentLang === "th" ? d.getFullYear() + 543 : d.getFullYear();
-    const dateStr = `${d.getDate()} ${monthText} ${yearText}`;
-
-    let badgeText =
-      currentLang === "th" ? "งานถัดไปที่กำลังจะมาถึง" : "Upcoming Event";
-    let actionText =
-      currentLang === "th" ? "ดูรายละเอียด / ขอเพลง" : "View Details";
+    const dateStr = formatLongDate(d);
+    const badgeText = t("upcoming_badge");
+    const actionText = t("upcoming_action");
 
     container.innerHTML = `
-      <div class="upcoming-card" onclick="openEventIntroUpcoming('${nextEv.id}')">
+      <div class="upcoming-card" onclick="openEventIntroUpcoming('${escapeHTML(nextEv.id)}')">
         <div class="upcoming-info">
           <div style="font-size: 0.75rem; font-weight: bold; background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 12px; display: inline-block; margin-bottom: 8px;">
             <i class="fa-solid fa-star"></i> ${badgeText}
           </div>
-          <h3>${nextEv.name}</h3>
-          <p><i class="fa-regular fa-calendar"></i> ${dateStr} &nbsp;|&nbsp; <i class="fa-solid fa-location-dot"></i> ${nextEv.location}</p>
+          <h3>${escapeHTML(nextEv.name)}</h3>
+          <p><i class="fa-regular fa-calendar"></i> ${dateStr} &nbsp;|&nbsp; <i class="fa-solid fa-location-dot"></i> ${escapeHTML(nextEv.location || "-")}</p>
         </div>
         <div class="upcoming-action">
           ${actionText} <i class="fa-solid fa-chevron-right"></i>
@@ -2098,7 +2872,7 @@ function handleFeedbackSubmit(e) {
 
   const btnSubmit = document.getElementById("btnSubmitFeedback");
   const originalText = btnSubmit.innerHTML;
-  btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่ง...`;
+  btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t("msg_sending")}`;
   btnSubmit.disabled = true;
 
   const feedbackData = {
@@ -2106,7 +2880,7 @@ function handleFeedbackSubmit(e) {
     ratings: currentRatings,
     uuid: userUUID, // 🌟 เพิ่มบรรทัดนี้
     username: userName || "ผู้ใช้งานทั่วไป", // 🌟 เพิ่มบรรทัดนี้
-    timestamp: new Date().toLocaleString("th-TH"), // 🌟 เพิ่มบรรทัดนี้
+    timestamp: new Date().toLocaleString("en-GB"), // 🌟 เพิ่มบรรทัดนี้
     comments: {
       songList: document.getElementById("fbSongListComment").value,
       place: document.getElementById("fbPlaceComment").value,
@@ -2124,13 +2898,7 @@ function handleFeedbackSubmit(e) {
       );
     }
 
-    showToast(
-      "สำเร็จ",
-      currentLang === "th"
-        ? "ส่งความคิดเห็นเรียบร้อยแล้วค่ะ ขอบคุณนะคะ! 💖"
-        : "Thank you for your feedback!",
-      "success",
-    );
+    showToast(t("toast_success"), t("feedback_thanks"), "success");
     closeFeedbackModal();
     btnSubmit.innerHTML = originalText;
     btnSubmit.disabled = false;
@@ -2140,11 +2908,7 @@ function handleFeedbackSubmit(e) {
 function openAdminFeedbackDashboard() {
   const targetEventId = activeEvent ? activeEvent.id : currentEventId;
   if (!targetEventId) {
-    return showToast(
-      "แจ้งเตือน",
-      "ไม่พบข้อมูลงาน กรุณาเลือกงานก่อนค่ะ",
-      "warning",
-    );
+    return showToast(t("toast_notice"), t("event_not_found"), "warning");
   }
 
   // 🌟 ใช้ระบบเปิด Modal หลักของเว็บเพื่อให้แสดงผลถูกต้อง (.active)
@@ -2162,7 +2926,7 @@ function openAdminFeedbackDashboard() {
     },
     (err) => {
       if (container)
-        container.innerHTML = `<p class="text-center text-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+        container.innerHTML = `<p class="text-center text-danger">${t("load_error")}</p>`;
     },
   );
 }
@@ -2229,19 +2993,18 @@ function renderDashboardData(data) {
       container.innerHTML += `
         <div class="feedback-item-card" style="background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
           <div style="font-weight: bold; color: var(--primary); margin-bottom: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 5px;">
-            <i class="fa-solid fa-user"></i> ${item.username} 
-            <span style="font-size: 0.75rem; color: #aaa; float: right; font-weight: normal;">${item.timestamp}</span>
+            <i class="fa-solid fa-user"></i> ${escapeHTML(item.username)} 
+            <span style="font-size: 0.75rem; color: #aaa; float: right; font-weight: normal;">${escapeHTML(item.timestamp)}</span>
           </div>
-          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>1. Song List:</strong> <span style="color: #555;">${item.songList}</span></div>
-          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>2. Place:</strong> <span style="color: #555;">${item.place}</span></div>
-          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>3. Website:</strong> <span style="color: #555;">${item.website}</span></div>
-          <div style="font-size: 0.9rem;"><strong>4. Additional:</strong> <span style="color: #555;">${item.additional}</span></div>
+          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>1. Song List:</strong> <span style="color: #555;">${escapeHTML(item.songList)}</span></div>
+          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>2. Place:</strong> <span style="color: #555;">${escapeHTML(item.place)}</span></div>
+          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>3. Website:</strong> <span style="color: #555;">${escapeHTML(item.website)}</span></div>
+          <div style="font-size: 0.9rem;"><strong>4. Additional:</strong> <span style="color: #555;">${escapeHTML(item.additional)}</span></div>
         </div>
       `;
     });
   } else {
-    container.innerHTML =
-      '<p class="text-center text-muted" style="padding: 20px 0;">ยังไม่มีผู้ทำแบบประเมินค่ะ</p>';
+    container.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${t("no_feedback")}</p>`;
   }
 }
 
@@ -2249,20 +3012,8 @@ function toggleLanguage() {
   const newLang = currentLang === "th" ? "en" : "th";
   setLanguage(newLang);
 
-  // อัปเดตข้อความบนปุ่มสลับภาษาใน Navbar
-  const langTextEl = document.getElementById("current-lang-text");
-  if (langTextEl) {
-    langTextEl.innerText = newLang.toUpperCase();
-  }
-
-  // แสดง Toast แจ้งเตือนการเปลี่ยนภาษาเบาๆ
-  showToast(
-    newLang === "th" ? "เปลี่ยนภาษา" : "Language Changed",
-    newLang === "th"
-      ? "เปลี่ยนเป็นภาษาไทยเรียบร้อยค่ะ 🇹🇭"
-      : "Switched to English successfully 🇬🇧",
-    "success",
-  );
+  // แสดง Toast แจ้งเตือนการเปลี่ยนภาษาเบาๆ (ปุ่มภาษาบน Navbar อัปเดตใน setLanguage แล้ว)
+  showToast(t("lang_changed_title"), t("lang_changed_msg"), "success");
 }
 
 let currentQuickFilter = "all";
@@ -2289,10 +3040,27 @@ function setActivityTab(tab) {
 
 let globalMemberMap = {};
 
+// ตั้งหัวข้อ Leaderboard ให้ตรงโหมด (รายงาน/รวมทุกงาน) และตรงภาษา
+function setLeaderboardTitles(isGlobal) {
+  document
+    .querySelectorAll("#leaderboardModal h2")
+    .forEach(
+      (h) => (h.innerText = t(isGlobal ? "lb_global_title" : "leaderboard_title")),
+    );
+  document
+    .querySelectorAll("#leaderboardModal .lb-sub")
+    .forEach(
+      (p) => (p.innerText = t(isGlobal ? "lb_global_sub" : "leaderboard_sub")),
+    );
+}
+
 function openLeaderboardModal() {
   const tbody = document.getElementById("leaderboard-tbody");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูลอันดับ...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> ${t("lb_loading")}</td></tr>`;
+  setLeaderboardTitles(false);
+  const myRankLoading = document.getElementById("my-rank-footer");
+  if (myRankLoading) myRankLoading.innerText = t("lb_loading_me");
 
   openModal("leaderboardModal");
 
@@ -2380,10 +3148,10 @@ function processAndRenderLeaderboard() {
   let top5 = leaderboardData.slice(0, 5);
 
   if (top5.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">ยังไม่มีข้อมูลการขอเพลงในขณะนี้</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">${t("lb_empty")}</td></tr>`;
     document.getElementById("my-rank-footer").innerHTML = isAdminLoggedIn
-      ? "👑 <strong>แอดมินไม่นับนะจ๊ะ</strong> (มาคุมงานเฉยๆ)"
-      : "ยังไม่มีอันดับของคุณในขณะนี้";
+      ? t("lb_admin_note1")
+      : t("lb_no_rank");
     return;
   }
 
@@ -2419,7 +3187,7 @@ function processAndRenderLeaderboard() {
 
     tr.innerHTML = `
       <td style="padding: 10px 8px; font-weight: bold;">${rankBadge}</td>
-      <td style="padding: 10px 8px; font-weight: 600; color: var(--dark);">${displayName} ${isMe ? "(คุณ ✨)" : ""}</td>
+      <td style="padding: 10px 8px; font-weight: 600; color: var(--dark);">${escapeHTML(displayName)} ${isMe ? t("lb_you") : ""}</td>
       <td style="padding: 10px 8px; text-align: center;">${user.requestedCount}</td>
       <td style="padding: 10px 8px; text-align: center;">${user.votedCount}</td>
       <td style="padding: 10px 8px; text-align: center; font-weight: bold; color: var(--primary);">${totalScore}</td>
@@ -2431,7 +3199,7 @@ function processAndRenderLeaderboard() {
   const myRankFooter = document.getElementById("my-rank-footer");
   if (myRankFooter) {
     if (isAdminLoggedIn) {
-      myRankFooter.innerHTML = `👑 <strong>แอดมินไม่นับนะจ๊ะ</strong> (ยินดีต้อนรับผู้ดูแลระบบสุดน่ารัก)`;
+      myRankFooter.innerHTML = t("lb_admin_note2");
     } else {
       let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
       let myIndex = leaderboardData.findIndex(
@@ -2446,9 +3214,13 @@ function processAndRenderLeaderboard() {
           myData.receivedVotes * 3 +
           myData.requestedCount * 2 +
           myData.votedCount;
-        myRankFooter.innerHTML = `🎯 อันดับปัจจุบันของคุณ: <strong>#${myRank}</strong> (${myData.username} - คะแนนรวม: ${myScore} แต้ม)`;
+        myRankFooter.innerHTML = t("lb_my_rank", {
+          rank: myRank,
+          name: escapeHTML(myData.username),
+          score: myScore,
+        });
       } else {
-        myRankFooter.innerHTML = `💡 คุณยังไม่มีรายชื่อใน Leaderboard ลองขอเพลงหรือกดโหวตเพิ่มเลย!`;
+        myRankFooter.innerHTML = t("lb_not_listed");
       }
     }
   }
@@ -2456,16 +3228,10 @@ function processAndRenderLeaderboard() {
 function openGlobalLeaderboardModal() {
   const tbody = document.getElementById("leaderboard-tbody");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดอันดับภาพรวม...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> ${t("lb_global_loading")}</td></tr>`;
 
-  // เปลี่ยนหัวข้อ Modal ชั่วคราวให้รู้ว่าเป็นอันดับรวม
-  const modalTitle = document.querySelector("#leaderboardModal h2");
-  if (modalTitle) modalTitle.innerText = "Global Top 5 Active Requesters";
-
-  const modalSub = document.querySelector("#leaderboardModal p");
-  if (modalSub)
-    modalSub.innerText =
-      "ตารางอันดับผู้ที่มีส่วนร่วมสูงสุดทุกอีเวนต์ตลอดกาล 🌟";
+  // เปลี่ยนหัวข้อ Modal ให้รู้ว่าเป็นอันดับรวม
+  setLeaderboardTitles(true);
 
   openModal("leaderboardModal");
 
@@ -2476,7 +3242,7 @@ function openGlobalLeaderboardModal() {
       processAndRenderGlobalLeaderboard(res.songs, res.members);
     },
     () => {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">${t("lb_load_fail")}</td></tr>`;
     },
   );
 }
@@ -2565,7 +3331,7 @@ function processAndRenderGlobalLeaderboard(songs, memberMap) {
     let tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="padding: 10px 8px; font-weight: bold;">${rankBadge}</td>
-      <td style="padding: 10px 8px; font-weight: 600;">${user.username} ${isMe ? "(คุณ ✨)" : ""}</td>
+      <td style="padding: 10px 8px; font-weight: 600;">${escapeHTML(user.username)} ${isMe ? t("lb_you") : ""}</td>
       <td style="padding: 10px 8px; text-align: center;">${user.requestedCount}</td>
       <td style="padding: 10px 8px; text-align: center;">${user.votedCount}</td>
       <td style="padding: 10px 8px; text-align: center; font-weight: bold; color: var(--primary);">${totalScore}</td>
