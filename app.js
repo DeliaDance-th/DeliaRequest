@@ -172,6 +172,32 @@ const translations = {
     lb_not_listed:
       "💡 คุณยังไม่มีรายชื่อใน Leaderboard ลองขอเพลงหรือกดโหวตเพิ่มเลย!",
 
+    // จัดลิสต์อัตโนมัติ / สุ่ม / อันดับของฉัน
+    btn_pl_auto: "จัดลิสต์อัตโนมัติ",
+    shuffle_pool: "สุ่มทั้งหมด",
+    pool_shuffled: "สุ่มลำดับเพลงในกองกลางแล้วค่ะ",
+    shuffle_need_2: "ต้องมีเพลงในกองกลางอย่างน้อย 2 เพลงค่ะ",
+    auto_title: "จัดลิสต์อัตโนมัติ",
+    auto_hint:
+      "พิมพ์ชื่อลิสต์ที่ต้องการ แล้วระบบจะสร้างลิสต์และดึงเพลงที่เหมาะสมมาใส่ให้เอง",
+    auto_names_label: "ชื่อลิสต์ที่ต้องการ (คั่นด้วยเว้นวรรคหรือ ,)",
+    auto_add: "เพิ่มเร็ว:",
+    auto_max_label: "จำนวนเพลงสูงสุดต่อลิสต์ (เว้นว่าง = แบ่งเท่า ๆ กัน)",
+    auto_alt: "สลับชาย/หญิงในแต่ละลิสต์",
+    auto_rules:
+      "• Kpop / Tpop / Jpop = เพลงตามประเภท\n• BreakDance = เพลงที่ติ๊กว่ามี Dance Break\n• MixSong = เพลงของวงผสม\n• เลขท้ายชื่อ (Kpop1 Kpop2) = แบ่งเพลงประเภทเดียวกันให้เท่า ๆ กัน เรียงตามโหวต\n• เพลงที่ไม่เข้าลิสต์ใดจะอยู่ในกองกลาง",
+    auto_run: "จัดลิสต์เลย",
+    auto_need_names: "กรุณาพิมพ์ชื่อลิสต์อย่างน้อย 1 ลิสต์ค่ะ",
+    auto_confirm_title: "จัดลิสต์ใหม่ทั้งกระดาน?",
+    auto_confirm_msg:
+      "ลิสต์ที่จัดไว้บนกระดานตอนนี้จะถูกแทนที่ (ยังไม่บันทึกจนกว่าจะกดเซฟ ทำสำเนาสำรองไว้ก่อนได้)",
+    auto_done: "จัดลิสต์เรียบร้อย: {summary} · เหลือในกองกลาง {left} เพลง",
+    auto_unknown:
+      "ไม่รู้จักประเภทของ {names} จึงใส่เพลงที่เหลือให้ (ตั้งชื่อ Kpop/Tpop/Jpop/BreakDance/MixSong เพื่อเลือกประเภท)",
+    lb_congrats: "🎉 ยินดีด้วย! คุณติด Top 3 {medal}",
+    lb_gap: "อีก {n} แต้มจะแซงอันดับ #{rank}",
+    lb_login_to_rank: "เข้าสู่ระบบเพื่อดูอันดับของคุณ",
+
     // กู้คืน / สำรองลิสต์
     btn_pl_restore: "กู้คืนลิสต์",
     btn_pl_backup: "สำรองลิสต์",
@@ -417,6 +443,32 @@ const translations = {
       "🎯 Your current rank: <strong>#{rank}</strong> ({name} - Total score: {score} pts)",
     lb_not_listed:
       "💡 You're not on the leaderboard yet. Try requesting or voting for a song!",
+
+    // Auto setlist / shuffle / my rank
+    btn_pl_auto: "Auto-arrange",
+    shuffle_pool: "Shuffle all",
+    pool_shuffled: "Pool songs shuffled.",
+    shuffle_need_2: "You need at least 2 songs in the pool.",
+    auto_title: "Auto-arrange setlist",
+    auto_hint:
+      "Type the lists you need and the system will create them and fill each one with matching songs.",
+    auto_names_label: "Lists you need (separated by spaces or commas)",
+    auto_add: "Quick add:",
+    auto_max_label: "Max songs per list (blank = split evenly)",
+    auto_alt: "Alternate boy/girl groups in each list",
+    auto_rules:
+      "• Kpop / Tpop / Jpop = songs of that origin\n• BreakDance = songs flagged with a Dance Break\n• MixSong = mixed-gender groups\n• A number suffix (Kpop1 Kpop2) = songs of the same type are split evenly, by votes\n• Songs that fit no list stay in the pool",
+    auto_run: "Arrange now",
+    auto_need_names: "Please type at least one list name.",
+    auto_confirm_title: "Rebuild the whole board?",
+    auto_confirm_msg:
+      "The lists currently on the board will be replaced (nothing is saved until you press Save; you can make a backup copy first).",
+    auto_done: "Done: {summary} · {left} left in the pool",
+    auto_unknown:
+      "Didn't recognise the type of {names}, so they get the leftover songs (name lists Kpop/Tpop/Jpop/BreakDance/MixSong to pick a type).",
+    lb_congrats: "🎉 Congratulations! You're in the Top 3 {medal}",
+    lb_gap: "{n} more points to pass #{rank}",
+    lb_login_to_rank: "Log in to see your rank",
 
     // Restore / backup
     btn_pl_restore: "Restore",
@@ -1052,8 +1104,15 @@ function updateUserUI() {
   updateFABs();
 }
 
+// เซิร์ฟเวอร์ตอบ "ระบบคนใช้งานหนาแน่น" เมื่อรอคิวล็อกไม่ทัน (ยังไม่ได้ทำอะไรกับข้อมูลเลย จึงลองใหม่ได้อย่างปลอดภัย)
+function isServerBusy(message) {
+  return /หนาแน่น/.test(String(message || ""));
+}
+
 // silent = true: ไม่แสดง Toast เมื่อผิดพลาด (ใช้กับการเช็คเบื้องหลัง)
-function fetchAPI(action, payload, onSuccess, onError, silent) {
+// attempt: ใช้ภายใน นับจำนวนครั้งที่ลองใหม่เมื่อระบบหนาแน่น
+function fetchAPI(action, payload, onSuccess, onError, silent, attempt) {
+  attempt = attempt || 0;
   fetch(apiURL, {
     method: "POST",
     body: JSON.stringify({
@@ -1066,6 +1125,12 @@ function fetchAPI(action, payload, onSuccess, onError, silent) {
     .then((data) => {
       if (data.success) {
         onSuccess(data.data);
+      } else if (isServerBusy(data.message) && attempt < 3) {
+        // ลองใหม่เงียบ ๆ โดยรอแบบสุ่ม (กันทุกคนลองพร้อมกันอีกรอบ)
+        setTimeout(
+          () => fetchAPI(action, payload, onSuccess, onError, silent, attempt + 1),
+          1200 + Math.random() * 1800 + attempt * 1000,
+        );
       } else {
         if (!silent) showToast(t("toast_notice"), data.message, "error");
         if (onError) onError(data.message);
@@ -2210,7 +2275,7 @@ function findDropZone(name) {
 // วาดกระดานจากรายการลิสต์ แล้วเติมเพลงที่ยังไม่อยู่ในลิสต์ใดเลย (เช่น มีคนขอเพลงหลังเซฟ) เข้ากองกลาง
 // ข้อมูลเพลง (ชื่อ ศิลปิน แท็ก) ใช้ค่าล่าสุดจากรายการเพลงเสมอ ไม่ใช้ค่าเก่าในชีต
 // คืนจำนวนเพลงที่เติมเข้ากองกลาง
-function renderPlaylistBoard(savedLists) {
+function renderPlaylistBoard(savedLists, categoryOrder) {
   const pool = document.getElementById("list-pool");
   const board = document.getElementById("dynamic-board");
   pool.innerHTML = "";
@@ -2218,7 +2283,10 @@ function renderPlaylistBoard(savedLists) {
 
   const poolNames = ["list-pool", "POOL", "กองกลาง"];
   const categoryNames = [
-    ...new Set(savedLists.map((s) => s.listName)),
+    ...new Set([
+      ...(categoryOrder || []),
+      ...savedLists.map((s) => s.listName),
+    ]),
   ].filter((n) => !poolNames.includes(n));
   categoryNames.forEach((cat) => createCategoryBox(cat));
 
@@ -2614,37 +2682,184 @@ function randomizeAlternate(containerId) {
   }
 }
 
-function aiMagicSetlist() {
+// ==========================================
+// สุ่มเพลงทั้งหมดในกองกลาง (ทำในเครื่อง ไม่ต้องรอเซิร์ฟเวอร์)
+// ==========================================
+function shufflePool() {
   const pool = document.getElementById("list-pool");
   const items = Array.from(pool.children);
-  if (items.length < 3)
-    return showToast(t("toast_notice"), t("need_3_songs"), "error");
-  const btn = document.getElementById("btn-ai-setlist");
-  if (btn) btn.disabled = true;
-  const songData = items.map((el) => ({
-    id: el.dataset.id,
-    gender: el.dataset.gender,
-    isBreakdance: el.dataset.bd === "true",
-  }));
-  fetchAPI(
-    "aiMagicSetlist",
-    { songs: songData },
-    (sortedIds) => {
-      pool.innerHTML = "";
-      sortedIds.forEach((id) => {
-        const matchedEl = items.find((el) => el.dataset.id === id);
-        if (matchedEl) pool.appendChild(matchedEl);
-      });
-      items.forEach((el) => {
-        if (!sortedIds.includes(el.dataset.id)) pool.appendChild(el);
-      });
-      if (btn) btn.disabled = false;
-      showToast(t("toast_success"), t("ai_sorted"), "success");
-    },
-    () => {
-      if (btn) btn.disabled = false;
-    },
+  if (items.length < 2)
+    return showToast(t("toast_notice"), t("shuffle_need_2"), "error");
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  items.forEach((el) => pool.appendChild(el));
+  showToast(t("toast_success"), t("pool_shuffled"), "success");
+}
+
+// ==========================================
+// จัดลิสต์อัตโนมัติ: แอดมินพิมพ์ชื่อลิสต์ (เช่น Kpop1 Kpop2 Tpop1 BreakDance MixSong)
+// ระบบสร้างลิสต์และดึงเพลงที่ตรงประเภทมาใส่ให้
+// ==========================================
+const AUTO_RESERVED_NAMES = ["pool", "list-pool", "กองกลาง"];
+
+// เดาประเภทลิสต์จากชื่อ: kpop / tpop / jpop / bd (Dance Break) / mix (วงผสม) / other
+function detectAutoType(name) {
+  const key = String(name).toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (/^(break|bd|dancebreak)/.test(key)) return "bd";
+  if (/^mix/.test(key)) return "mix";
+  if (/^kpop/.test(key)) return "kpop";
+  if (/^tpop/.test(key)) return "tpop";
+  if (/^jpop/.test(key)) return "jpop";
+  return "other";
+}
+
+// "Kpop1, Kpop2 Tpop 1 BreakDance" -> [{name, type}] (ตัวเลขที่แยกอยู่จะต่อกับชื่อก่อนหน้า, ตัดชื่อซ้ำ)
+function parseSetlistNames(text) {
+  const out = [];
+  const seen = new Set();
+  String(text || "")
+    .split(/[\s,;，、]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .forEach((tok) => {
+      if (/^\d+$/.test(tok) && out.length && !/\d$/.test(out[out.length - 1].name)) {
+        const prev = out.pop();
+        seen.delete(prev.name.toLowerCase());
+        tok = prev.name + tok;
+      }
+      const key = tok.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ name: tok, type: detectAutoType(tok) });
+    });
+  return out;
+}
+
+function autoSongOrigin(s) {
+  const o = String(s.origin || "K-Pop").toLowerCase().replace(/[^a-z]/g, "");
+  return o === "tpop" ? "tpop" : o === "jpop" ? "jpop" : o === "kpop" ? "kpop" : o;
+}
+
+// เรียงในลิสต์ให้สลับ ชาย → หญิง → อื่น ๆ (ลำดับในแต่ละกลุ่มคงตามเดิม คือโหวตมาก→น้อย)
+function interleaveGenders(list) {
+  const buckets = { M: [], F: [], O: [] };
+  list.forEach((s) => (buckets[s.gender === "M" ? "M" : s.gender === "F" ? "F" : "O"]).push(s));
+  const order = [buckets.M, buckets.F, buckets.O];
+  const out = [];
+  let i = 0;
+  while (out.length < list.length) {
+    const b = order[i % 3];
+    if (b.length) out.push(b.shift());
+    i++;
+  }
+  return out;
+}
+
+// ตัวคิดหลัก (ฟังก์ชันล้วน ไม่แตะหน้าเว็บ)
+//   ลำดับความสำคัญ: BreakDance > Mix (เพศวงผสม) > ประเภท Kpop/Tpop/Jpop > ลิสต์ชื่ออื่น (รับเพลงที่เหลือ)
+//   ลิสต์ประเภทเดียวกันแบ่งเพลงสลับกันไปทีละเพลง (เรียงตามโหวต) จึงได้จำนวนเท่า ๆ กัน
+//   คืน { lists: [{name, type, songs}], leftover: [...] }
+function buildAutoSetlist(specs, songs, opts) {
+  opts = opts || {};
+  const maxPer = parseInt(opts.maxPerList, 10) > 0 ? parseInt(opts.maxPerList, 10) : Infinity;
+  const alternate = opts.alternate !== false;
+  const isBD = (s) => s.isBreakdance === "Yes" || s.isBreakdance === true;
+  const isMixGender = (s) => /^mix/i.test(String(s.gender || ""));
+
+  const eligible = songs
+    .filter((s) => s.status !== "Played")
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => (b.s.votes || 0) - (a.s.votes || 0) || a.i - b.i)
+    .map((x) => x.s);
+
+  const taken = new Set();
+  const lists = specs.map((sp) => ({ name: sp.name, type: sp.type, songs: [] }));
+
+  function deal(type, pick) {
+    const targets = lists.filter((l) => l.type === type);
+    if (!targets.length) return;
+    let turn = 0;
+    for (const s of eligible) {
+      if (taken.has(s.id) || !pick(s)) continue;
+      let tries = 0;
+      while (tries < targets.length && targets[turn % targets.length].songs.length >= maxPer) {
+        turn++;
+        tries++;
+      }
+      if (tries >= targets.length) break; // ทุกลิสต์เต็มแล้ว
+      targets[turn % targets.length].songs.push(s);
+      taken.add(s.id);
+      turn++;
+    }
+  }
+
+  deal("bd", isBD);
+  deal("mix", isMixGender);
+  deal("kpop", (s) => autoSongOrigin(s) === "kpop");
+  deal("tpop", (s) => autoSongOrigin(s) === "tpop");
+  deal("jpop", (s) => autoSongOrigin(s) === "jpop");
+  deal("other", () => true);
+
+  if (alternate) lists.forEach((l) => (l.songs = interleaveGenders(l.songs)));
+  return { lists, leftover: eligible.filter((s) => !taken.has(s.id)) };
+}
+
+function openAutoSetlistModal() {
+  openModal("autoSetlistModal");
+  setTimeout(() => {
+    const el = document.getElementById("auto-names");
+    if (el) el.focus();
+  }, 100);
+}
+
+// ปุ่มลัดเพิ่มชื่อลิสต์ พร้อมเลขลำดับถัดไปให้
+function addAutoChip(type) {
+  const input = document.getElementById("auto-names");
+  if (!input) return;
+  const base = { kpop: "Kpop", tpop: "Tpop", jpop: "Jpop", bd: "BreakDance", mix: "MixSong" }[type];
+  const used = parseSetlistNames(input.value).filter((x) => x.type === type).length;
+  const name = type === "bd" || type === "mix" ? (used ? base + (used + 1) : base) : base + (used + 1);
+  input.value = (input.value.trim() + " " + name).trim();
+  input.focus();
+}
+
+function runAutoSetlist() {
+  const all = parseSetlistNames(document.getElementById("auto-names").value);
+  const specs = all.filter((x) => !AUTO_RESERVED_NAMES.includes(x.name.toLowerCase()));
+  if (specs.length === 0)
+    return showToast(t("toast_notice"), t("auto_need_names"), "error");
+  if (currentSongs.length === 0)
+    return showToast(t("toast_notice"), t("no_songs"), "error");
+
+  const apply = () => {
+    const res = buildAutoSetlist(specs, currentSongs, {
+      maxPerList: document.getElementById("auto-max").value,
+      alternate: document.getElementById("auto-alternate").checked,
+    });
+    const rows = [];
+    res.lists.forEach((l) => l.songs.forEach((s) => rows.push(Object.assign({}, s, { listName: l.name }))));
+    closeModal("autoSetlistModal");
+    renderPlaylistBoard(rows, specs.map((x) => x.name)); // เพลงที่เหลือถูกเติมเข้ากองกลางให้เอง
+    showToast(
+      t("toast_success"),
+      t("auto_done", {
+        summary: res.lists.map((l) => `${l.name} ${l.songs.length}`).join(" · "),
+        left: res.leftover.length,
+      }),
+      "info",
+    );
+    const unknown = specs.filter((x) => x.type === "other").map((x) => x.name);
+    if (unknown.length)
+      showToast(t("toast_notice"), t("auto_unknown", { names: unknown.join(", ") }), "info");
+  };
+
+  const hasArranged = Array.from(document.querySelectorAll(".drop-zone")).some(
+    (z) => z.id !== "list-pool" && z.children.length > 0,
   );
+  if (hasArranged) showCustomConfirm(t("auto_confirm_title"), t("auto_confirm_msg"), apply);
+  else apply();
 }
 
 function savePlaylistData() {
@@ -3094,13 +3309,108 @@ function setLeaderboardTitles(isGlobal) {
     );
 }
 
+function lbScore(u) {
+  return u.receivedVotes * 3 + u.requestedCount * 2 + u.votedCount;
+}
+
+// ล้างสถานะท้ายตาราง (ข้อความรอโหลด + เอฟเฟกต์ฉลองรอบก่อน)
+function resetLeaderboardFooter() {
+  const footer = document.getElementById("my-rank-footer");
+  if (footer) {
+    footer.classList.remove("my-rank-top3");
+    footer.innerText = t("lb_loading_me");
+  }
+  const layer = document.getElementById("lb-confetti");
+  if (layer) layer.innerHTML = "";
+  const trophy = document.getElementById("lb-trophy");
+  if (trophy) trophy.classList.remove("celebrate");
+}
+
+// แสดงอันดับปัจจุบันของผู้ใช้ท้ายตาราง (ใช้ทั้ง Leaderboard ของงานและของภาพรวม)
+// leaderboardData ต้องเรียงตามคะแนนแล้ว และกรองแอดมินออกแล้ว
+function renderMyRank(leaderboardData) {
+  const footer = document.getElementById("my-rank-footer");
+  if (!footer) return;
+  footer.classList.remove("my-rank-top3");
+
+  if (isAdminLoggedIn) {
+    footer.innerHTML = t("lb_admin_note2");
+    return;
+  }
+  if (!userUUID) {
+    footer.innerText = t("lb_login_to_rank");
+    return;
+  }
+
+  let idx = leaderboardData.findIndex((u) => isMyLeaderboardId(u.id));
+  if (idx === -1 && userName) {
+    idx = leaderboardData.findIndex(
+      (u) => u.username.toLowerCase() === userName.toLowerCase(),
+    );
+  }
+  if (idx === -1) {
+    footer.innerHTML = t("lb_not_listed");
+    return;
+  }
+
+  const me = leaderboardData[idx];
+  const rank = idx + 1;
+  const score = lbScore(me);
+  let html = t("lb_my_rank", {
+    rank: rank,
+    name: escapeHTML(me.username),
+    score: score,
+  });
+  if (idx > 0) {
+    const need = lbScore(leaderboardData[idx - 1]) - score + 1; // ต้องได้เกินคนข้างหน้า
+    html += `<div class="my-rank-gap">${escapeHTML(t("lb_gap", { n: need, rank: idx }))}</div>`;
+  }
+  if (rank <= 3) {
+    const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉";
+    html = `<div class="my-rank-congrats">${escapeHTML(t("lb_congrats", { medal: medal }))}</div>` + html;
+    footer.classList.add("my-rank-top3");
+    celebrateTop3();
+  }
+  footer.innerHTML = html;
+}
+
+// อนิเมชันแสดงความยินดีเล็ก ๆ (คอนเฟตติ + ถ้วยเด้ง) ปิดเองถ้าผู้ใช้ตั้งค่าลดการเคลื่อนไหว
+function celebrateTop3() {
+  const reduce =
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) return;
+  const layer = document.getElementById("lb-confetti");
+  if (layer) {
+    layer.innerHTML = "";
+    const pieces = ["🎉", "✨", "🏆", "⭐", "💖", "🎊"];
+    for (let i = 0; i < 26; i++) {
+      const el = document.createElement("span");
+      el.className = "confetti-piece";
+      el.textContent = pieces[i % pieces.length];
+      el.style.left = Math.random() * 100 + "%";
+      el.style.animationDelay = Math.random() * 0.6 + "s";
+      el.style.animationDuration = 1.8 + Math.random() * 1.4 + "s";
+      el.style.fontSize = 14 + Math.random() * 14 + "px";
+      layer.appendChild(el);
+    }
+    setTimeout(() => {
+      layer.innerHTML = "";
+    }, 4200);
+  }
+  const trophy = document.getElementById("lb-trophy");
+  if (trophy) {
+    trophy.classList.remove("celebrate");
+    void trophy.offsetWidth; // ให้เริ่มอนิเมชันใหม่ได้ทุกครั้งที่เปิด
+    trophy.classList.add("celebrate");
+  }
+}
+
 function openLeaderboardModal() {
   const tbody = document.getElementById("leaderboard-tbody");
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> ${t("lb_loading")}</td></tr>`;
   setLeaderboardTitles(false);
-  const myRankLoading = document.getElementById("my-rank-footer");
-  if (myRankLoading) myRankLoading.innerText = t("lb_loading_me");
+  resetLeaderboardFooter();
 
   openModal("leaderboardModal");
 
@@ -3235,35 +3545,8 @@ function processAndRenderLeaderboard() {
     tbody.appendChild(tr);
   });
 
-  // แสดงลำดับของผู้ใช้งานปัจจุบันที่ด้านล่าง Modal
-  const myRankFooter = document.getElementById("my-rank-footer");
-  if (myRankFooter) {
-    if (isAdminLoggedIn) {
-      myRankFooter.innerHTML = t("lb_admin_note2");
-    } else {
-      let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
-      let myIndex = leaderboardData.findIndex(
-        (u) =>
-          isMyLeaderboardId(u.id) ||
-          u.username.toLowerCase() === userName.toLowerCase(),
-      );
-      if (myIndex !== -1) {
-        let myRank = myIndex + 1;
-        let myData = leaderboardData[myIndex];
-        let myScore =
-          myData.receivedVotes * 3 +
-          myData.requestedCount * 2 +
-          myData.votedCount;
-        myRankFooter.innerHTML = t("lb_my_rank", {
-          rank: myRank,
-          name: escapeHTML(myData.username),
-          score: myScore,
-        });
-      } else {
-        myRankFooter.innerHTML = t("lb_not_listed");
-      }
-    }
-  }
+  // แสดงลำดับของผู้ใช้งานปัจจุบันที่ด้านล่าง Modal (+ ฉลองถ้าติด Top 3)
+  renderMyRank(leaderboardData);
 }
 function openGlobalLeaderboardModal() {
   const tbody = document.getElementById("leaderboard-tbody");
@@ -3272,6 +3555,7 @@ function openGlobalLeaderboardModal() {
 
   // เปลี่ยนหัวข้อ Modal ให้รู้ว่าเป็นอันดับรวม
   setLeaderboardTitles(true);
+  resetLeaderboardFooter();
 
   openModal("leaderboardModal");
 
@@ -3354,6 +3638,12 @@ function processAndRenderGlobalLeaderboard(songs, memberMap) {
   let top5 = leaderboardData.slice(0, 5);
   tbody.innerHTML = "";
 
+  if (top5.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: 20px;">${t("lb_empty")}</td></tr>`;
+    renderMyRank(leaderboardData);
+    return;
+  }
+
   top5.forEach((user, index) => {
     let rankBadge =
       index === 0
@@ -3378,4 +3668,6 @@ function processAndRenderGlobalLeaderboard(songs, memberMap) {
     `;
     tbody.appendChild(tr);
   });
+
+  renderMyRank(leaderboardData);
 }

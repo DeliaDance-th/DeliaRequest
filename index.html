@@ -356,11 +356,12 @@
                 <span data-i18n="shuffle_mf">สุ่ม (M/F)</span>
               </button>
               <button
-                class="btn btn-outline btn-full btn-sm btn-magic"
-                id="btn-ai-setlist"
-                onclick="aiMagicSetlist()"
+                class="btn btn-outline btn-full btn-sm"
+                id="btn-shuffle-pool"
+                onclick="shufflePool()"
               >
-                <i class="fa-solid fa-wand-magic-sparkles"></i> AI
+                <i class="fa-solid fa-dice"></i>
+                <span data-i18n="shuffle_pool">สุ่มทั้งหมด</span>
               </button>
             </div>
           </div>
@@ -377,6 +378,14 @@
               <span id="toggle-sidebar-text">ซ่อนกองกลาง</span>
             </button>
             <div style="flex: 1"></div>
+            <button
+              class="btn btn-primary btn-sm"
+              id="btn-pl-auto"
+              onclick="openAutoSetlistModal()"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span data-i18n="btn_pl_auto">จัดลิสต์อัตโนมัติ</span>
+            </button>
             <button
               class="btn btn-outline btn-sm"
               id="btn-pl-restore"
@@ -1477,6 +1486,69 @@
       </button>
     </div>
 
+    <!-- จัดลิสต์อัตโนมัติ -->
+    <div class="modal-overlay" id="autoSetlistModal">
+      <div class="modal-content" style="max-width: 520px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('autoSetlistModal')"
+        ></i>
+        <h2 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span data-i18n="auto_title">จัดลิสต์อัตโนมัติ</span>
+        </h2>
+        <p
+          class="text-muted"
+          style="font-size: 0.85rem; margin-bottom: 15px"
+          data-i18n="auto_hint"
+        >
+          พิมพ์ชื่อลิสต์ที่ต้องการ แล้วระบบจะสร้างลิสต์และดึงเพลงที่เหมาะสมมาใส่ให้เอง
+        </p>
+        <div class="form-group">
+          <label data-i18n="auto_names_label"
+            >ชื่อลิสต์ที่ต้องการ (คั่นด้วยเว้นวรรคหรือ ,)</label
+          >
+          <input
+            type="text"
+            id="auto-names"
+            class="form-control"
+            placeholder="Kpop1 Kpop2 Tpop1 Tpop2 BreakDance MixSong"
+            autocomplete="off"
+            onkeypress="if (event.key === 'Enter') runAutoSetlist();"
+          />
+          <div class="auto-chips">
+            <span class="text-muted" style="font-size: 0.8rem" data-i18n="auto_add"
+              >เพิ่มเร็ว:</span
+            >
+            <button type="button" class="auto-chip" onclick="addAutoChip('kpop')">K-Pop</button>
+            <button type="button" class="auto-chip" onclick="addAutoChip('tpop')">T-Pop</button>
+            <button type="button" class="auto-chip" onclick="addAutoChip('jpop')">J-Pop</button>
+            <button type="button" class="auto-chip" onclick="addAutoChip('bd')">BreakDance</button>
+            <button type="button" class="auto-chip" onclick="addAutoChip('mix')">MixSong</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="auto_max_label"
+            >จำนวนเพลงสูงสุดต่อลิสต์ (เว้นว่าง = แบ่งเท่า ๆ กัน)</label
+          >
+          <input type="number" id="auto-max" class="form-control" min="1" />
+        </div>
+        <label class="checkbox-container"
+          ><input type="checkbox" id="auto-alternate" checked />
+          <span data-i18n="auto_alt">สลับชาย/หญิงในแต่ละลิสต์</span></label
+        >
+        <div id="auto-rules" data-i18n="auto_rules"></div>
+        <button
+          class="btn btn-primary btn-full"
+          onclick="runAutoSetlist()"
+          style="margin-top: 15px"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span data-i18n="auto_run">จัดลิสต์เลย</span>
+        </button>
+      </div>
+    </div>
+
     <!-- กู้คืนลิสต์เพลง -->
     <div class="modal-overlay" id="playlistRestoreModal">
       <div class="modal-content" style="max-width: 520px">
@@ -1497,66 +1569,6 @@
           ลิสต์จะยังไม่ถูกบันทึกทับจนกว่าคุณจะกดเซฟ
         </p>
         <div id="restore-list"></div>
-      </div>
-    </div>
-
-    <!-- Leaderboard Modal -->
-    <div class="modal-overlay" id="leaderboardModal">
-      <div class="modal-content text-center" style="max-width: 500px">
-        <i
-          class="modal-close fa-solid fa-xmark"
-          onclick="closeModal('leaderboardModal')"
-        ></i>
-        <div style="font-size: 2.5rem; color: #f39c12; margin-bottom: 10px">
-          <i class="fa-solid fa-trophy"></i>
-        </div>
-        <h2 style="margin-top: 0; color: var(--dark)">
-          Top 5 Active Requesters
-        </h2>
-        <p
-          class="text-muted lb-sub"
-          style="font-size: 0.85rem; margin-bottom: 15px"
-        >
-          ตารางอันดับผู้ใช้งานที่มีส่วนร่วมสูงสุดในงานนี้ 🌟
-        </p>
-
-        <div class="leaderboard-table-wrapper" style="overflow-x: auto">
-          <table
-            style="
-              width: 100%;
-              border-collapse: collapse;
-              text-align: left;
-              font-size: 0.9rem;
-            "
-          >
-            <thead>
-              <tr
-                style="
-                  border-bottom: 2px solid var(--primary-light);
-                  color: var(--dark);
-                "
-              >
-                <th style="padding: 8px">#</th>
-                <th style="padding: 8px" data-i18n="lb_col_user">ผู้ใช้งาน</th>
-                <th style="padding: 8px; text-align: center" data-i18n="lb_col_req">
-                  ขอเพลง
-                </th>
-                <th style="padding: 8px; text-align: center" data-i18n="lb_col_vote">
-                  โหวต
-                </th>
-                <th
-                  style="padding: 8px; text-align: center"
-                  data-i18n="lb_col_received"
-                >
-                  โหวตรวมที่ได้รับ
-                </th>
-              </tr>
-            </thead>
-            <tbody id="leaderboard-tbody">
-              <!-- ข้อมูลอันดับจะถูกสร้างผ่าน JS -->
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
 
@@ -1659,7 +1671,9 @@
           class="modal-close fa-solid fa-xmark"
           onclick="closeModal('leaderboardModal')"
         ></i>
+        <div id="lb-confetti" class="confetti-layer"></div>
         <div
+          id="lb-trophy"
           style="
             font-size: 2.5rem;
             color: #f39c12;
