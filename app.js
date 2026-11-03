@@ -720,6 +720,30 @@ let userName = localStorage.getItem("delia_username") || "";
 let isAdminLoggedIn = localStorage.getItem("delia_role") === "Admin";
 let isDevLoggedIn = localStorage.getItem("delia_role") === "Developer";
 let pendingEmail = "";
+let userPid = localStorage.getItem("delia_pid") || ""; // รหัสย่อแทนตัวตน (เมื่อเซิร์ฟเวอร์ซ่อนอีเมล)
+
+// เพลงนี้เป็นของฉันไหม / ฉันโหวตแล้วไหม
+// เซิร์ฟเวอร์โหมด HARDENED จะบอกมาเองใน s.mine / s.voted (ไม่ส่งอีเมลมา) โหมดเดิมเทียบกับ uuid
+function isMine(s) {
+  if (s.mine !== undefined) return !!s.mine;
+  return !!userUUID && s.creator === userUUID;
+}
+function hasVoted(s) {
+  if (s.voted !== undefined) return !!s.voted;
+  return !!(userUUID && s.voters && s.voters.includes(userUUID));
+}
+// ใช้ระบุแถวของตัวเองใน Leaderboard (รหัสย่อ หรืออีเมลในโหมดเดิม)
+function isMyLeaderboardId(id) {
+  const key = userUUID ? userUUID.trim().toLowerCase() : "";
+  return (!!userPid && id === userPid) || (!!key && id === key);
+}
+// แอดมิน/ผู้พัฒนาต่ออายุเซสชันด้วยโทเคน ผู้ใช้ทั่วไปใช้ auto_login เดิม
+function authResumePayload() {
+  const role = localStorage.getItem("delia_role");
+  if ((role === "Admin" || role === "Developer") && localStorage.getItem("delia_token"))
+    return { action: "admin_resume" };
+  return { action: "auto_login", clientUuid: userUUID };
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   initDatePickers();
@@ -729,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sessionStorage.getItem("delia_active_session")) {
       fetchAPI(
         "auth",
-        { action: "auto_login", clientUuid: userUUID },
+        authResumePayload(),
         (res) => {
           saveLoginSession(res);
         },
@@ -862,6 +886,11 @@ function saveLoginSession(res) {
   localStorage.setItem("delia_uuid", userUUID);
   localStorage.setItem("delia_username", userName);
   localStorage.setItem("delia_role", res.role);
+  if (res.token) localStorage.setItem("delia_token", res.token);
+  else localStorage.removeItem("delia_token");
+  userPid = res.pid || "";
+  if (userPid) localStorage.setItem("delia_pid", userPid);
+  else localStorage.removeItem("delia_pid");
   sessionStorage.setItem("delia_active_session", "true");
 
   closeModal("welcomeModal");
@@ -893,7 +922,7 @@ function executeUnlock() {
 
   fetchAPI(
     "auth",
-    { action: "auto_login", clientUuid: userUUID },
+    authResumePayload(),
     (res) => {
       saveLoginSession(res);
       loadEvents();
@@ -924,6 +953,9 @@ function executeLogout() {
   localStorage.removeItem("delia_uuid");
   localStorage.removeItem("delia_username");
   localStorage.removeItem("delia_role");
+  localStorage.removeItem("delia_token");
+  localStorage.removeItem("delia_pid");
+  userPid = "";
   sessionStorage.removeItem("delia_active_session");
 
   userUUID = "";
@@ -1024,7 +1056,11 @@ function updateUserUI() {
 function fetchAPI(action, payload, onSuccess, onError, silent) {
   fetch(apiURL, {
     method: "POST",
-    body: JSON.stringify({ action: action, payload: payload }),
+    body: JSON.stringify({
+      action: action,
+      payload: payload,
+      token: localStorage.getItem("delia_token") || "",
+    }),
   })
     .then((res) => res.json())
     .then((data) => {
@@ -1458,7 +1494,7 @@ function loadSongs() {
   content.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
   fetchAPI(
     "getSongs",
-    { eventId: activeEvent.id },
+    { eventId: activeEvent.id, uuid: userUUID },
     (res) => {
       currentSongs = res;
       filterSongs();
@@ -1533,9 +1569,9 @@ function filterSongs() {
 
   // 3. กรองด้วย Activity Tabs (เพลงของฉัน / ที่ฉันโหวต)
   if (currentActivityTab === "mine") {
-    filtered = filtered.filter((s) => s.creator === userUUID);
+    filtered = filtered.filter((s) => isMine(s));
   } else if (currentActivityTab === "voted") {
-    filtered = filtered.filter((s) => s.voters && s.voters.includes(userUUID));
+    filtered = filtered.filter((s) => hasVoted(s));
   }
 
   renderSongs(filtered);
@@ -1551,7 +1587,7 @@ window.quickVote = function (e, songId) {
   if (!userUUID) return openModal("welcomeModal");
 
   const s = currentSongs.find((x) => x.id === songId);
-  if (s.creator === userUUID) {
+  if (isMine(s)) {
     return showToast(t("toast_notice"), t("cant_vote_own"), "error");
   }
 
@@ -1665,11 +1701,11 @@ function renderSongs(songs) {
     let voteIcon = "fa-regular fa-heart";
     let voteColor = "var(--text-muted)";
 
-    if (userUUID && s.voters && s.voters.includes(userUUID)) {
+    if (userUUID && hasVoted(s)) {
       voteIcon = "fa-solid fa-heart";
       voteColor = "var(--primary)";
     }
-    if (userUUID && s.creator === userUUID) {
+    if (userUUID && isMine(s)) {
       voteIcon = "fa-solid fa-star";
       voteColor = "#F39C12";
     }
@@ -1730,7 +1766,7 @@ function openSongDetail(id) {
   }
 
   const editMySongBtn = document.getElementById("btn-edit-mysong");
-  if (isAdminLoggedIn || (userUUID && s.creator === userUUID)) {
+  if (isAdminLoggedIn || (userUUID && isMine(s))) {
     if (editMySongBtn) editMySongBtn.classList.remove("hidden");
   } else {
     if (editMySongBtn) editMySongBtn.classList.add("hidden");
@@ -1848,7 +1884,7 @@ function checkQuotaAndOpenModal() {
 
   if (
     !isAdminLoggedIn &&
-    currentSongs.filter((s) => s.creator === userUUID).length >= maxQuota
+    currentSongs.filter((s) => isMine(s)).length >= maxQuota
   ) {
     return showToast(
       t("quota_full"),
@@ -1890,9 +1926,9 @@ function preCheckAddSong() {
   );
 
   if (dup) {
-    if (dup.voters && dup.voters.includes(userUUID)) {
+    if (hasVoted(dup)) {
       return showToast(t("toast_notice"), t("already_voted"), "error");
-    } else if (dup.creator === userUUID) {
+    } else if (isMine(dup)) {
       return showToast(t("toast_notice"), t("you_are_creator"), "error");
     } else {
       // 🌟 เปิด Smart Duplicate Modal แทนการเพิ่มอัตโนมัติ
@@ -2076,7 +2112,7 @@ function executeEditSong() {
 function adminUpdateStatus(status) {
   fetchAPI(
     "updateSongStatus",
-    { eventId: activeEvent.id, songId: selectedSongId, status: status },
+    { eventId: activeEvent.id, songId: selectedSongId, status: status, uuid: userUUID },
     (res) => {
       currentSongs = res;
       filterSongs();
@@ -2090,7 +2126,7 @@ function confirmDeleteSong() {
   showCustomConfirm(t("delete_song_title"), t("delete_song_msg"), () => {
     fetchAPI(
       "deleteSong",
-      { eventId: activeEvent.id, songId: selectedSongId },
+      { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID },
       (res) => {
         currentSongs = res;
         filterSongs();
@@ -2240,7 +2276,11 @@ function offerPlaylistRestoreIfAny() {
     { eventId: eventId },
     (list) => {
       const orphan = (list || []).some(
-        (x) => x.kind === "main" && x.count > 0 && x.date !== activeEvent.date,
+        (x) =>
+          x.kind === "main" &&
+          x.count > 0 &&
+          x.date !== "" &&
+          x.date !== activeEvent.date,
       );
       if (orphan && activeEvent.id === eventId && currentViewId === "playlist") {
         showToast(t("toast_notice"), t("restore_found"), "info");
@@ -2282,7 +2322,7 @@ function renderRestoreList() {
       let title;
       if (c.kind === "backup")
         title = t("restore_kind_backup", { label: c.label || c.date });
-      else if (c.date === activeEvent.date)
+      else if (!c.date || c.date === activeEvent.date)
         title = t("restore_kind_main_current");
       else title = t("restore_kind_main_other", { date: c.date });
       return `<div class="restore-item">
@@ -3169,7 +3209,7 @@ function processAndRenderLeaderboard() {
 
     let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
     let isMe =
-      user.id === currentEmailKey ||
+      isMyLeaderboardId(user.id) ||
       user.username.toLowerCase() === userName.toLowerCase();
     let totalScore =
       user.receivedVotes * 3 + user.requestedCount * 2 + user.votedCount;
@@ -3204,7 +3244,7 @@ function processAndRenderLeaderboard() {
       let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
       let myIndex = leaderboardData.findIndex(
         (u) =>
-          u.id === currentEmailKey ||
+          isMyLeaderboardId(u.id) ||
           u.username.toLowerCase() === userName.toLowerCase(),
       );
       if (myIndex !== -1) {
@@ -3326,7 +3366,7 @@ function processAndRenderGlobalLeaderboard(songs, memberMap) {
     let totalScore =
       user.receivedVotes * 3 + user.requestedCount * 2 + user.votedCount;
     let currentEmailKey = userUUID ? userUUID.trim().toLowerCase() : "";
-    let isMe = user.id === currentEmailKey;
+    let isMe = isMyLeaderboardId(user.id);
 
     let tr = document.createElement("tr");
     tr.innerHTML = `
