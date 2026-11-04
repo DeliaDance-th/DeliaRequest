@@ -1815,14 +1815,14 @@ function renderDiscoverCards() {
   discover.lastSet = 0;
   discover.half = 0;
 
-  discover.animate = songs.length >= 4 && !discoverReducedMotion();
-  if (!discover.animate) return;
-
-  // ซ้ำการ์ดให้ 1 ชุดกว้างอย่างน้อยเท่าแถบ แล้วทำซ้ำอีกชุดเพื่อให้วนต่อเนื่องไม่มีช่องว่าง
+  // วิ่งวนเฉพาะเมื่อการ์ด "ไม่ซ้ำ" ล้นแถบจริง (เกินกว่าความกว้างแถบอย่างน้อย 1 ใบ)
+  // ถ้าการ์ดมีน้อยจนแสดงครบในแถบเดียว จะไม่วิ่งและไม่ทำซ้ำการ์ด เพราะจะดูเหมือนเพลงซ้ำกันเต็มแถบ
   const first = track.querySelector(".discover-set");
   const w = first.offsetWidth;
-  const need = w > 0 ? Math.max(1, Math.ceil(track.clientWidth / w)) : 1;
-  first.innerHTML = one.repeat(need);
+  discover.animate = songs.length >= 4 && !discoverReducedMotion() && w >= track.clientWidth + 200;
+  if (!discover.animate) return;
+
+  // ทำซ้ำอีกชุดไว้ต่อท้ายเพื่อให้วนต่อเนื่องไม่มีช่องว่าง (ชุดนี้จะโผล่มาตอนวนรอบเท่านั้น)
   const copy = first.cloneNode(true);
   copy.setAttribute("aria-hidden", "true");
   copy.querySelectorAll("a, button").forEach((el) => el.setAttribute("tabindex", "-1"));
@@ -1872,7 +1872,15 @@ function refreshDiscover() {
   bindDiscoverEvents();
   if (discover.eventId !== activeEvent.id) {
     discover.eventId = activeEvent.id;
+    // เพลงชื่อ+ศิลปินเดียวกัน (มีคนขอซ้ำ) แสดงแค่ใบเดียว
+    const seen = new Set();
     discover.ids = discoverShuffle(discoverCandidates())
+      .filter((s) => {
+        const k = (String(s.name) + "|" + String(s.artist)).toLowerCase().replace(/\s+/g, "");
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
       .slice(0, DISCOVER_MAX)
       .map((s) => s.id);
     renderDiscoverCards();
@@ -2320,6 +2328,8 @@ const SONG_FORM = {
     gender: "edit-song-gender", origin: "edit-song-origin", note: "edit-song-detect-note", btn: "btn-song-edit-submit",
   },
 };
+// นับรอบการค้นหาจากลิงก์ ใช้ทิ้งคำตอบเก่าที่มาช้ากว่า (เช่น วางลิงก์ใหม่ทับขณะลิงก์เดิมยังโหลดอยู่)
+const linkSeq = { add: 0, edit: 0 };
 const detectState = {
   add: { touched: false, key: "", res: null, resT: "", resA: "" },
   edit: { touched: false, key: "", res: null, resT: "", resA: "" },
@@ -2359,6 +2369,9 @@ function setDetectNote(prefix, kind, html) {
 }
 
 function resetSongForm(prefix, gender, origin) {
+  linkSeq[prefix]++; // คำตอบที่ยังค้างอยู่จากการเปิดฟอร์มรอบก่อนต้องไม่มาเติมฟอร์มใหม่
+  const submitBtn = document.getElementById(SONG_FORM[prefix].btn);
+  if (submitBtn) submitBtn.disabled = false;
   detectState[prefix] = { touched: false, key: "", res: null, resT: "", resA: "" };
   setGenderDropdown(SONG_FORM[prefix].gender, gender || "Mix");
   setOriginSelect(SONG_FORM[prefix].origin, origin || "K-Pop");
@@ -2453,10 +2466,13 @@ async function processYoutubeLink(prefix) {
   if (!/youtu/i.test(url)) return;
 
   const btn = document.getElementById(f.btn);
+  const seq = ++linkSeq[prefix];
+  const stale = () => seq !== linkSeq[prefix];
   if (btn) btn.disabled = true;
   setDetectNote(prefix, "detect-info", escapeHTML(t("detect_checking")));
   try {
     const info = await fetchVideoInfo(url);
+    if (stale()) return; // มีลิงก์ใหม่ (หรือเปิดฟอร์มใหม่) แล้ว ทิ้งคำตอบนี้
     if (!info) {
       setDetectNote(prefix, "detect-warn", escapeHTML(t("detect_info_failed")));
       return;
@@ -2469,7 +2485,7 @@ async function processYoutubeLink(prefix) {
     }
     await runDetection(prefix, info.title, info.author);
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn && !stale()) btn.disabled = false;
   }
 }
 
