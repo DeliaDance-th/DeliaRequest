@@ -863,6 +863,25 @@ let isDevLoggedIn = localStorage.getItem("delia_role") === "Developer";
 let pendingEmail = "";
 let userPid = localStorage.getItem("delia_pid") || ""; // รหัสย่อแทนตัวตน (เมื่อเซิร์ฟเวอร์ซ่อนอีเมล)
 
+// เพลงที่ช่อง ID ในชีตว่าง (ข้อมูลเก่า) จะมี id ซ้ำกันเป็น "" ทำให้กดเพลงไหนก็ได้เพลงแรกที่ id ว่าง
+// ให้รหัสชั่วคราวที่ไม่ซ้ำ (ผูกกับเนื้อหาเพลง ไม่ผูกกับลำดับ) เซิร์ฟเวอร์รุ่นใหม่จะเติม id จริงให้ในชีตเอง
+function fixSongIds(list) {
+  if (!Array.isArray(list)) return list;
+  const used = new Set(list.map((s) => s && s.id).filter(Boolean));
+  list.forEach((s) => {
+    if (!s || s.id) return;
+    const base = [s.name, s.artist, s.link, s.creator].join("|");
+    let h = 5381;
+    for (let i = 0; i < base.length; i++) h = ((h << 5) + h + base.charCodeAt(i)) | 0;
+    let id = "noid-" + (h >>> 0).toString(36);
+    let n = 1;
+    while (used.has(id)) id = "noid-" + (h >>> 0).toString(36) + "-" + n++;
+    used.add(id);
+    s.id = id;
+  });
+  return list;
+}
+
 // เพลงนี้เป็นของฉันไหม / ฉันโหวตแล้วไหม
 // เซิร์ฟเวอร์โหมด HARDENED จะบอกมาเองใน s.mine / s.voted (ไม่ส่งอีเมลมา) โหมดเดิมเทียบกับ uuid
 function isMine(s) {
@@ -1651,7 +1670,7 @@ function loadSongs() {
     "getSongs",
     { eventId: activeEvent.id, uuid: userUUID },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
       filterSongs();
     },
     () => {
@@ -2072,7 +2091,7 @@ window.discoverVote = function (e, songId) {
     "voteSong",
     { eventId: activeEvent.id, songId: songId, uuid: userUUID },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
       filterSongs();
     },
     () => btns.forEach((b) => setDiscoverVoted(b, false)),
@@ -2125,7 +2144,7 @@ window.quickVote = function (e, songId) {
     "voteSong",
     { eventId: activeEvent.id, songId: songId, uuid: userUUID },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
     },
     () => {
       icon.className = prevState.iconClass;
@@ -2841,7 +2860,7 @@ function executeDuplicateVote() {
     "voteSong",
     { eventId: activeEvent.id, songId: duplicateSongTarget.id, uuid: userUUID },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
       filterSongs();
       closeModal("duplicateSongModal");
       closeModal("addSongModal");
@@ -2864,7 +2883,7 @@ function executeAddSong() {
       isAdmin: isAdminLoggedIn,
     },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
       filterSongs();
       closeModal("addSongModal");
       showToast(t("toast_success"), t("song_added"), "success");
@@ -2969,7 +2988,7 @@ function sendEditSong(updatedData) {
       isAdmin: isAdminLoggedIn,
     },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
       filterSongs();
       closeModal("editSongModal");
       showToast(t("toast_success"), t("song_updated"), "success");
@@ -2987,7 +3006,7 @@ function adminUpdateStatus(status) {
     "updateSongStatus",
     { eventId: activeEvent.id, songId: selectedSongId, status: status, uuid: userUUID },
     (res) => {
-      currentSongs = res;
+      currentSongs = fixSongIds(res);
       filterSongs();
       closeModal("songDetailModal");
       showToast(t("toast_success"), t("status_updated"));
@@ -3001,7 +3020,7 @@ function confirmDeleteSong() {
       "deleteSong",
       { eventId: activeEvent.id, songId: selectedSongId, uuid: userUUID },
       (res) => {
-        currentSongs = res;
+        currentSongs = fixSongIds(res);
         filterSongs();
         closeModal("songDetailModal");
         showToast(t("toast_success"), t("song_deleted"), "success");
