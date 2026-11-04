@@ -198,6 +198,9 @@ const translations = {
     artist_prompt: "ชื่อศิลปิน/วง (พิมพ์ชื่อภาษาอังกฤษ ตามด้วยชื่อภาษาอื่นได้)",
     artist_saved: "บันทึก \"{name}\" ({gender} / {origin}) เข้าฐานข้อมูลแล้ว",
     artist_updated: "อัปเดต \"{name}\" ({gender} / {origin}) ในฐานข้อมูลแล้ว",
+    discover_title: "เพลงที่เพื่อน ๆ ขอไว้ · ลากดูได้ กดหัวใจเพื่อโหวต",
+    discover_vote: "โหวต",
+    discover_voted: "โหวตแล้ว",
     gender_conflict_title: "เพศไม่ตรงกับฐานข้อมูล",
     gender_conflict_msg: "ฐานข้อมูลระบุว่า \"{name}\" เป็น {db} แต่คุณเลือก {chosen} ต้องการบันทึกตามที่เลือกใช่ไหม",
     type_conflict_msg: "ฐานข้อมูลระบุว่า \"{name}\" เป็นประเภท {db} แต่คุณเลือก {chosen} ต้องการบันทึกตามที่เลือกใช่ไหม",
@@ -508,6 +511,9 @@ const translations = {
     artist_prompt: "Artist / group name (English name, optionally followed by other-language names)",
     artist_saved: "Saved \"{name}\" ({gender} / {origin}) to the database",
     artist_updated: "Updated \"{name}\" ({gender} / {origin}) in the database",
+    discover_title: "Songs your friends requested · drag to browse, tap the heart to vote",
+    discover_vote: "Vote",
+    discover_voted: "Voted",
     gender_conflict_title: "Differs from the database",
     gender_conflict_msg: "The database lists \"{name}\" as {db}, but you chose {chosen}. Save with your choice anyway?",
     type_conflict_msg: "The database lists \"{name}\" as type {db}, but you chose {chosen}. Save with your choice anyway?",
@@ -1637,6 +1643,7 @@ function goBackToCalendar() {
 }
 
 function loadSongs() {
+  discover.eventId = null; // เข้าหน้ารายการเพลงทุกครั้งให้สุ่มชุดการ์ดใหม่
   const content = document.getElementById("song-list-content");
   if (!content) return;
   content.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
@@ -1723,7 +1730,346 @@ function filterSongs() {
   }
 
   renderSongs(filtered);
+  refreshDiscover();
 }
+
+// ==========================================
+// แถบการ์ดเพลงสุ่มวิ่งอัตโนมัติ (ไม่แสดงจำนวนโหวต)
+// ==========================================
+const discover = {
+  eventId: null, // งานที่สร้างชุดการ์ดไว้แล้ว (สุ่มครั้งเดียวต่องาน ไม่สุ่มใหม่ทุกครั้งที่ข้อมูลรีเฟรช)
+  ids: [],
+  raf: 0,
+  pos: 0, // ตำแหน่งเลื่อน (ทศนิยมได้ เพราะ scrollLeft ปัดเศษ)
+  lastSet: 0,
+  half: 0, // ความกว้างของ 1 ชุด (ใช้วนต่อเนื่อง)
+  animate: false,
+  resumeAt: 0,
+  hover: false,
+  drag: null,
+  moved: false,
+  lastT: 0,
+  bound: false,
+};
+const DISCOVER_MAX = 24;
+const DISCOVER_SPEED = 38; // พิกเซล/วินาที
+const DISCOVER_RESUME_MS = 2000;
+
+function discoverReducedMotion() {
+  return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+
+function discoverShuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// เพลงที่ผู้ใช้โหวตได้จริง: ยังไม่เล่น ไม่ใช่ของตัวเอง และยังไม่ได้โหวต
+function discoverCandidates() {
+  return currentSongs.filter(
+    (s) => s.status !== "Played" && s.status !== "AdminOnly" && !isMine(s) && !hasVoted(s),
+  );
+}
+
+function discoverCardHTML(s, dup) {
+  const link = safeUrl(s.link);
+  const img = `<img src="${escapeHTML(getYTThumb(s.link))}" alt="" draggable="false" loading="lazy">`;
+  const thumb = link
+    ? `<a class="discover-thumb" href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer" draggable="false"${dup ? ' tabindex="-1"' : ""}>${img}</a>`
+    : `<div class="discover-thumb">${img}</div>`;
+  const voted = hasVoted(s);
+  return `<div class="discover-card" data-id="${escapeHTML(s.id)}">
+    ${thumb}
+    <div class="discover-title">${escapeHTML(s.name)}</div>
+    <div class="discover-artist">${escapeHTML(s.artist)}</div>
+    <button type="button" class="discover-vote${voted ? " voted" : ""}"${dup ? ' tabindex="-1"' : ""} onclick="discoverVote(event, '${escapeHTML(s.id)}')">
+      <i class="${voted ? "fa-solid" : "fa-regular"} fa-heart"></i>
+      <span>${escapeHTML(t(voted ? "discover_voted" : "discover_vote"))}</span>
+    </button>
+  </div>`;
+}
+
+function renderDiscoverCards() {
+  const track = document.getElementById("discover-track");
+  const strip = document.getElementById("discover-strip");
+  if (!track || !strip) return;
+  const songs = discover.ids
+    .map((id) => currentSongs.find((s) => s.id === id))
+    .filter((s) => s && s.status !== "Played" && s.status !== "AdminOnly");
+  if (songs.length === 0) {
+    strip.classList.add("hidden");
+    track.innerHTML = "";
+    discover.animate = false;
+    return;
+  }
+  strip.classList.remove("hidden");
+
+  const one = songs.map((s) => discoverCardHTML(s, false)).join("");
+  track.innerHTML = `<div class="discover-set">${one}</div>`;
+  track.scrollLeft = 0;
+  discover.pos = 0;
+  discover.lastSet = 0;
+  discover.half = 0;
+
+  discover.animate = songs.length >= 4 && !discoverReducedMotion();
+  if (!discover.animate) return;
+
+  // ซ้ำการ์ดให้ 1 ชุดกว้างอย่างน้อยเท่าแถบ แล้วทำซ้ำอีกชุดเพื่อให้วนต่อเนื่องไม่มีช่องว่าง
+  const first = track.querySelector(".discover-set");
+  const w = first.offsetWidth;
+  const need = w > 0 ? Math.max(1, Math.ceil(track.clientWidth / w)) : 1;
+  first.innerHTML = one.repeat(need);
+  const copy = first.cloneNode(true);
+  copy.setAttribute("aria-hidden", "true");
+  copy.querySelectorAll("a, button").forEach((el) => el.setAttribute("tabindex", "-1"));
+  track.appendChild(copy);
+  discover.half = copy.offsetLeft - first.offsetLeft;
+  if (discover.half <= 0) discover.animate = false;
+}
+
+function updateDiscoverStates() {
+  const track = document.getElementById("discover-track");
+  if (!track) return;
+  let removed = false;
+  track.querySelectorAll(".discover-card").forEach((card) => {
+    const s = currentSongs.find((x) => x.id === card.dataset.id);
+    if (!s || s.status === "Played" || s.status === "AdminOnly") {
+      card.remove();
+      removed = true;
+      return;
+    }
+    const voted = hasVoted(s);
+    const btn = card.querySelector(".discover-vote");
+    if (btn && btn.classList.contains("voted") !== voted) setDiscoverVoted(btn, voted);
+  });
+  if (removed) {
+    discover.ids = discover.ids.filter((id) => currentSongs.some((s) => s.id === id && s.status !== "Played"));
+    renderDiscoverCards();
+    startDiscoverLoop();
+  }
+}
+
+function setDiscoverVoted(btn, voted) {
+  btn.classList.toggle("voted", voted);
+  const icon = btn.querySelector("i");
+  if (icon) icon.className = (voted ? "fa-solid" : "fa-regular") + " fa-heart";
+  const label = btn.querySelector("span");
+  if (label) label.textContent = t(voted ? "discover_voted" : "discover_vote");
+}
+
+// เรียกทุกครั้งที่รายการเพลงเปลี่ยน: สร้างชุดการ์ดครั้งแรกของงานนี้ หลังจากนั้นแค่อัปเดตสถานะปุ่ม
+function refreshDiscover() {
+  const strip = document.getElementById("discover-strip");
+  if (!strip || !activeEvent) return;
+  if (activeEvent.status === "Closed" || isEventEnded(activeEvent)) {
+    strip.classList.add("hidden");
+    return;
+  }
+  bindDiscoverEvents();
+  if (discover.eventId !== activeEvent.id) {
+    discover.eventId = activeEvent.id;
+    discover.ids = discoverShuffle(discoverCandidates())
+      .slice(0, DISCOVER_MAX)
+      .map((s) => s.id);
+    renderDiscoverCards();
+  } else {
+    updateDiscoverStates();
+  }
+  startDiscoverLoop();
+}
+
+function startDiscoverLoop() {
+  if (discover.raf || !discover.animate) return;
+  discover.lastT = 0;
+  discover.raf = requestAnimationFrame(discoverTick);
+}
+
+function discoverTick(now) {
+  discover.raf = 0;
+  const track = document.getElementById("discover-track");
+  // ซ่อนอยู่ (ออกจากหน้ารายการเพลง) ให้หยุดลูป เริ่มใหม่ตอนเข้ามาอีกครั้ง
+  if (!track || !track.offsetParent || !discover.animate) return;
+  const dt = discover.lastT ? Math.min(0.1, (now - discover.lastT) / 1000) : 0;
+  discover.lastT = now;
+
+  const busy = discover.hover || discover.drag || document.hidden || now < discover.resumeAt;
+  if (!busy && discover.half > 0) {
+    discover.pos += DISCOVER_SPEED * dt;
+    if (discover.pos >= discover.half) discover.pos -= discover.half;
+    discover.lastSet = discover.pos;
+    track.scrollLeft = discover.pos;
+  } else if (discover.half > 0) {
+    // ผู้ใช้กำลังเลื่อนเอง: วนรอบให้ต่อเนื่องทั้งสองทิศ
+    let sl = track.scrollLeft;
+    if (sl >= discover.half) sl -= discover.half;
+    else if (sl <= 0 && discover.drag) sl += discover.half;
+    if (sl !== track.scrollLeft) {
+      track.scrollLeft = sl;
+    }
+    discover.pos = track.scrollLeft;
+    discover.lastSet = discover.pos;
+  }
+  discover.raf = requestAnimationFrame(discoverTick);
+}
+
+function bindDiscoverEvents() {
+  if (discover.bound) return;
+  const track = document.getElementById("discover-track");
+  const strip = document.getElementById("discover-strip");
+  if (!track || !strip) return;
+  discover.bound = true;
+
+  const pause = () => {
+    discover.resumeAt = performance.now() + DISCOVER_RESUME_MS;
+  };
+
+  strip.addEventListener("mouseenter", () => (discover.hover = true));
+  strip.addEventListener("mouseleave", () => {
+    discover.hover = false;
+    pause();
+  });
+  strip.addEventListener("focusin", () => (discover.hover = true));
+  strip.addEventListener("focusout", () => {
+    discover.hover = false;
+    pause();
+  });
+
+  // เลื่อนด้วยนิ้ว/ล้อเมาส์/คีย์บอร์ด: ถ้า scrollLeft ไม่ตรงกับที่โค้ดตั้งเอง แปลว่าผู้ใช้เลื่อน ให้หยุดชั่วคราว
+  track.addEventListener(
+    "scroll",
+    () => {
+      if (Math.abs(track.scrollLeft - discover.lastSet) > 1.5) {
+        discover.pos = track.scrollLeft;
+        discover.lastSet = track.scrollLeft;
+        pause();
+        if (discover.half > 0) {
+          if (track.scrollLeft >= discover.half) {
+            track.scrollLeft -= discover.half;
+          } else if (track.scrollLeft <= 0) {
+            track.scrollLeft += discover.half;
+          }
+          discover.pos = track.scrollLeft;
+          discover.lastSet = track.scrollLeft;
+        }
+      }
+    },
+    { passive: true },
+  );
+  track.addEventListener("touchstart", pause, { passive: true });
+  track.addEventListener("touchend", pause, { passive: true });
+
+  // ลากด้วยเมาส์ (นิ้วใช้การเลื่อนของเบราว์เซอร์เอง)
+  track.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    discover.drag = { x: e.clientX, left: track.scrollLeft, id: e.pointerId, active: false };
+    discover.moved = false;
+  });
+  track.addEventListener("pointermove", (e) => {
+    const d = discover.drag;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x;
+    if (!d.active && Math.abs(dx) > 5) {
+      d.active = true;
+      discover.moved = true;
+      track.classList.add("dragging");
+      try {
+        track.setPointerCapture(e.pointerId);
+      } catch (err) {}
+    }
+    if (d.active) {
+      let target = d.left - dx;
+      if (discover.half > 0) {
+        // วนรอบระหว่างลาก
+        while (target < 0) {
+          target += discover.half;
+          d.left += discover.half;
+        }
+        while (target >= discover.half) {
+          target -= discover.half;
+          d.left -= discover.half;
+        }
+      }
+      track.scrollLeft = target;
+      discover.pos = track.scrollLeft;
+      discover.lastSet = discover.pos;
+    }
+  });
+  const endDrag = (e) => {
+    const d = discover.drag;
+    if (!d || (e && e.pointerId !== undefined && e.pointerId !== d.id)) return;
+    discover.drag = null;
+    track.classList.remove("dragging");
+    try {
+      track.releasePointerCapture(d.id);
+    } catch (err) {}
+    pause();
+    startDiscoverLoop();
+  };
+  track.addEventListener("pointerup", endDrag);
+  track.addEventListener("pointercancel", endDrag);
+  // หลังลากเสร็จ อย่าให้ถือว่าเป็นการคลิกปุ่ม/ลิงก์
+  track.addEventListener(
+    "click",
+    (e) => {
+      if (discover.moved) {
+        e.preventDefault();
+        e.stopPropagation();
+        discover.moved = false;
+      }
+    },
+    true,
+  );
+  track.addEventListener("dragstart", (e) => e.preventDefault());
+
+  let rt = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => {
+      if (discover.eventId !== null && document.getElementById("discover-strip") && !document.getElementById("discover-strip").classList.contains("hidden")) {
+        renderDiscoverCards();
+        startDiscoverLoop();
+      }
+    }, 250);
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      discover.lastT = 0;
+      startDiscoverLoop();
+    }
+  });
+}
+
+// โหวตจากแถบการ์ด: โหวตได้อย่างเดียว (ไม่ยกเลิก) และไม่แสดงจำนวนโหวต
+window.discoverVote = function (e, songId) {
+  e.stopPropagation();
+  if (isEventEnded(activeEvent)) {
+    return showToast(t("toast_notice"), t("event_over_no_vote"), "warning");
+  }
+  if (!userUUID) return openModal("welcomeModal");
+  const s = currentSongs.find((x) => x.id === songId);
+  if (!s) return;
+  if (isMine(s)) return showToast(t("toast_notice"), t("cant_vote_own"), "error");
+  // ปุ่มที่ถูกกดไปแล้ว (ยังรอเซิร์ฟเวอร์ตอบ) ก็ห้ามกดซ้ำ ไม่งั้นเซิร์ฟเวอร์จะสลับเป็นยกเลิกโหวต
+  const clicked = e.currentTarget;
+  if (hasVoted(s) || (clicked && clicked.classList && clicked.classList.contains("voted"))) return;
+
+  const track = document.getElementById("discover-track");
+  const btns = track ? Array.from(track.querySelectorAll(`.discover-card[data-id="${CSS.escape(songId)}"] .discover-vote`)) : [];
+  btns.forEach((b) => setDiscoverVoted(b, true));
+  fetchAPI(
+    "voteSong",
+    { eventId: activeEvent.id, songId: songId, uuid: userUUID },
+    (res) => {
+      currentSongs = res;
+      filterSongs();
+    },
+    () => btns.forEach((b) => setDiscoverVoted(b, false)),
+  );
+};
 
 window.quickVote = function (e, songId) {
   e.stopPropagation();
