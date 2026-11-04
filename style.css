@@ -1918,3 +1918,200 @@ input.form-control.flatpickr-input[readonly] {
   padding: 10px 12px;
   margin-top: 12px;
 }
+
+/* =========================================
+   ย่อ/ขยายกล่องลิสต์ (เหมือนพัดหน้าต่าง)
+========================================= */
+.dynamic-category {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transition: grid-template-rows 0.28s ease;
+}
+.dynamic-category .drop-zone {
+  min-height: 200px;
+  transition:
+    min-height 0.28s ease,
+    padding 0.28s ease;
+}
+.dynamic-category .list-col-header {
+  position: relative;
+  padding-left: 46px;
+  padding-right: 46px;
+}
+.dynamic-category.collapsed {
+  grid-template-rows: auto 0fr;
+  align-self: flex-start;
+}
+.dynamic-category.collapsed .drop-zone {
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+.dynamic-category.collapsed .list-col-header {
+  margin-bottom: 0;
+  border-bottom-color: transparent;
+  border-radius: var(--radius-md);
+}
+.dynamic-category.collapsed .list-col-header h3 {
+  margin-bottom: 0;
+}
+.dynamic-category.collapsed .list-col-header .btn {
+  display: none;
+}
+.list-toggle {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.list-toggle:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.list-toggle i {
+  transition: transform 0.28s ease;
+}
+.dynamic-category.collapsed .list-toggle i {
+  transform: rotate(-90deg);
+}
+.list-count {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+/* ระหว่างลากเพลง ลิสต์ที่ย่ออยู่จะโผล่เป็นแถบให้วางได้ */
+body.pl-dragging .dynamic-category.collapsed {
+  grid-template-rows: auto auto;
+}
+body.pl-dragging .dynamic-category.collapsed .drop-zone {
+  min-height: 52px;
+  max-height: 52px;
+  padding: 6px 10px;
+  margin: 0 10px 10px;
+  position: relative;
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius-sm);
+  background: #fff7fa;
+}
+body.pl-dragging .dynamic-category.collapsed .drop-zone::before {
+  content: attr(data-drop-hint);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 2;
+}
+body.pl-dragging .dynamic-category.collapsed .drop-zone .playlist-item {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dynamic-category,
+  .dynamic-category .drop-zone,
+  .list-toggle i {
+    transition: none;
+  }
+}
+
+/* =========================================
+   ตรวจเพศ/ประเภทเพลง
+========================================= */
+.song-type-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.song-type-row .form-group {
+  flex: 1;
+  min-width: 140px;
+}
+.detect-note {
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.detect-note.hidden {
+  display: none;
+}
+.detect-note.detect-ok {
+  background: #e8f8f0;
+  color: #1e8e5a;
+  border: 1px solid #b8e6cf;
+}
+.detect-note.detect-warn {
+  background: #fff4e0;
+  color: #b9770e;
+  border: 1px solid #f5d9a8;
+}
+.detect-note.detect-info {
+  background: #eef4ff;
+  color: #3b5fa8;
+  border: 1px solid #cddcf7;
+}
+#type-fix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.fix-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  cursor: pointer;
+}
+.fix-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}
+.fix-info .text-muted {
+  font-size: 0.78rem;
+}
+.fix-change {
+  font-size: 0.8rem;
+  color: var(--dark);
+}
+.fix-change s {
+  color: var(--text-muted);
+}
+.song-type-row .form-group:first-child {
+  flex: 1.7;
+}
+.song-type-row select.form-control {
+  font-size: 0.9rem;
+  padding-left: 8px;
+  padding-right: 4px;
+}

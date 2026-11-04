@@ -215,6 +215,14 @@
             <i class="fa-solid fa-chart-pie"></i>
             <span data-i18n="btn_view_feedback_admin">ดู Feedback งานนี้</span>
           </button>
+          <button
+            class="btn btn-outline hidden admin-only"
+            onclick="openTypeFixModal()"
+            style="border-color: #6c5ce7; color: #6c5ce7"
+          >
+            <i class="fa-solid fa-user-check"></i>
+            <span data-i18n="btn_type_fix">ตรวจประเภทเพลง</span>
+          </button>
         </div>
       </div>
 
@@ -385,6 +393,15 @@
             >
               <i class="fa-solid fa-wand-magic-sparkles"></i>
               <span data-i18n="btn_pl_auto">จัดลิสต์อัตโนมัติ</span>
+            </button>
+            <button
+              class="btn btn-outline btn-sm"
+              id="btn-pl-collapse-all"
+              onclick="toggleAllCategories()"
+              disabled
+            >
+              <i class="fa-solid fa-angles-up"></i>
+              <span>ย่อทุกลิสต์</span>
             </button>
             <button
               class="btn btn-outline btn-sm"
@@ -760,20 +777,42 @@
           <label
             ><span data-i18n="song_name">ชื่อเพลง</span>
             <span style="color: var(--primary)">*</span></label
-          ><input type="text" id="song-name" class="form-control" />
+          ><input type="text" id="song-name" class="form-control" onblur="autoDetectFromText('add')" />
         </div>
         <div class="form-group">
           <label data-i18n="artist">ศิลปิน/ชื่อช่อง</label
-          ><input type="text" id="song-artist" class="form-control" />
+          ><input type="text" id="song-artist" class="form-control" onblur="autoDetectFromText('add')" />
         </div>
 
-        <div class="form-group hidden">
-          <select id="song-gender" class="form-control">
-            <option value="M">M</option>
-            <option value="F">F</option>
-            <option value="Mix">Mix</option>
-          </select>
+        <div class="song-type-row">
+          <div class="form-group">
+            <label data-i18n="gender">เพศของศิลปิน</label>
+            <select id="song-gender" class="form-control" onchange="markDetectTouched('add')">
+              <option value="M" data-i18n="gender_m">ศิลปินชาย (Boy Group)</option>
+              <option value="F" data-i18n="gender_f">ศิลปินหญิง (Girl Group)</option>
+              <option value="Mix" data-i18n="gender_mix">รวม/ผสม (Mix)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="origin_label">ประเภท</label>
+            <select id="song-origin" class="form-control" onchange="markDetectTouched('add')">
+              <option value="K-Pop">K-Pop</option>
+              <option value="T-Pop">T-Pop</option>
+              <option value="J-Pop">J-Pop</option>
+              <option value="C-Pop">C-Pop</option>
+            </select>
+          </div>
         </div>
+        <div id="song-detect-note" class="detect-note hidden"></div>
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          style="margin-bottom: 10px"
+          onclick="redetectSong('add')"
+        >
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span data-i18n="detect_btn">ตรวจประเภทอัตโนมัติ</span>
+        </button>
 
         <div class="form-group">
           <label data-i18n="dance_part">ท่อนที่ใช้เต้น</label>
@@ -864,31 +903,79 @@
           <label data-i18n="artist">ศิลปิน/ชื่อช่อง</label
           ><input type="text" id="edit-song-artist" class="form-control" />
         </div>
-        <div class="form-group">
-          <label data-i18n="gender">เพศของศิลปิน</label>
-          <select id="edit-song-gender" class="form-control">
-            <option value="M" data-i18n="gender_m">
-              ศิลปินชาย (Boy Group)
-            </option>
-            <option value="F" data-i18n="gender_f">
-              ศิลปินหญิง (Girl Group)
-            </option>
-          </select>
+        <div class="song-type-row">
+          <div class="form-group">
+            <label data-i18n="gender">เพศของศิลปิน</label>
+            <select id="edit-song-gender" class="form-control" onchange="markDetectTouched('edit')">
+              <option value="M" data-i18n="gender_m">ศิลปินชาย (Boy Group)</option>
+              <option value="F" data-i18n="gender_f">ศิลปินหญิง (Girl Group)</option>
+              <option value="Mix" data-i18n="gender_mix">รวม/ผสม (Mix)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="origin_label">ประเภท</label>
+            <select id="edit-song-origin" class="form-control" onchange="markDetectTouched('edit')">
+              <option value="K-Pop">K-Pop</option>
+              <option value="T-Pop">T-Pop</option>
+              <option value="J-Pop">J-Pop</option>
+              <option value="C-Pop">C-Pop</option>
+            </select>
+          </div>
         </div>
+        <div id="edit-song-detect-note" class="detect-note hidden"></div>
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          style="margin-bottom: 10px"
+          onclick="redetectSong('edit')"
+        >
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span data-i18n="detect_btn">ตรวจประเภทอัตโนมัติ</span>
+        </button>
         <label class="checkbox-container"
           ><input type="checkbox" id="edit-song-breakdance" />
           <span data-i18n="has_breakdance"
             >เพลงนี้มี Breakdance ใช่มั้ย?</span
           ></label
         >
-        <div style="display: flex; gap: 10px; margin-top: 15px">
+        <div class="form-group" style="margin-top: 15px">
+          <label data-i18n="dance_part">ท่อนที่ใช้เต้น</label>
+          <select
+            id="edit-song-dance-part"
+            class="form-control"
+            onchange="toggleTimeInputs('edit')"
+          >
+            <option value="Hook 1">Hook 1</option>
+            <option value="Hook 2">Hook 2</option>
+            <option value="Dance Break">Dance Break</option>
+            <option value="Custom" data-i18n="opt_custom">
+              อื่นๆ (กำหนดเวลาเอง)
+            </option>
+          </select>
+        </div>
+        <div
+          id="edit-song-time-inputs"
+          style="display: none; gap: 10px; margin-bottom: 10px"
+        >
           <div class="form-group" style="flex: 1">
             <label data-i18n="start_time">เริ่ม (นาที:วินาที)</label
-            ><input type="text" id="edit-song-start" class="form-control" />
+            ><input
+              type="text"
+              id="edit-song-start"
+              class="form-control"
+              placeholder="เช่น 1:30"
+              data-i18n-ph="ex_time"
+            />
           </div>
           <div class="form-group" style="flex: 1">
             <label data-i18n="end_time">จบ (นาที:วินาที)</label
-            ><input type="text" id="edit-song-end" class="form-control" />
+            ><input
+              type="text"
+              id="edit-song-end"
+              class="form-control"
+              placeholder="เช่น 2:05"
+              data-i18n-ph="ex_time_end"
+            />
           </div>
         </div>
         <button
@@ -1001,6 +1088,14 @@
               <span data-i18n="btn_delete">ลบ</span>
             </button>
           </div>
+          <button
+            class="btn btn-outline btn-full btn-sm"
+            style="margin-top: 8px"
+            onclick="saveArtistToDB()"
+          >
+            <i class="fa-solid fa-database"></i>
+            <span data-i18n="btn_save_artist">บันทึกศิลปินนี้เข้าฐานข้อมูล</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1484,6 +1579,46 @@
       >
         Test AI
       </button>
+    </div>
+
+    <!-- ตรวจเพศ/ประเภทเพลงด้วยฐานข้อมูล (แอดมิน) -->
+    <div class="modal-overlay" id="typeFixModal">
+      <div class="modal-content" style="max-width: 560px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('typeFixModal')"
+        ></i>
+        <h2 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-user-check"></i>
+          <span data-i18n="type_fix_title">ตรวจเพศ/ประเภทเพลงด้วยฐานข้อมูล</span>
+        </h2>
+        <p
+          class="text-muted"
+          style="font-size: 0.85rem; margin-bottom: 12px"
+          data-i18n="type_fix_hint"
+        >
+          ระบบเทียบเพลงของงานนี้กับฐานข้อมูลศิลปิน
+        </p>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px">
+          <button class="btn btn-outline btn-sm" onclick="toggleAllTypeFixes(true)">
+            <span data-i18n="type_fix_all">เลือกทั้งหมด</span>
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="toggleAllTypeFixes(false)">
+            <span data-i18n="type_fix_clear">ไม่เลือกเลย</span>
+          </button>
+        </div>
+        <div id="type-fix-list"></div>
+        <button
+          class="btn btn-primary btn-full"
+          id="btn-type-fix-apply"
+          onclick="applyTypeFixes()"
+          style="margin-top: 15px"
+          disabled
+        >
+          <i class="fa-solid fa-check"></i>
+          <span>ใช้ที่เลือก</span>
+        </button>
+      </div>
     </div>
 
     <!-- จัดลิสต์อัตโนมัติ -->

@@ -172,6 +172,44 @@ const translations = {
     lb_not_listed:
       "💡 คุณยังไม่มีรายชื่อใน Leaderboard ลองขอเพลงหรือกดโหวตเพิ่มเลย!",
 
+    // ตรวจเพศ/ประเภทเพลงจากฐานข้อมูล
+    origin_label: "ประเภท",
+    detect_btn: "ตรวจประเภทอัตโนมัติ",
+    detect_checking: "กำลังตรวจสอบจากฐานข้อมูล...",
+    detect_found: "ตรวจพบในฐานข้อมูล: {name}",
+    detect_found_plain: "ตรวจพบจากฐานข้อมูล",
+    detect_ambiguous: "พบหลายศิลปินในชื่อเดียวกัน โปรดตรวจสอบ",
+    detect_origin_only:
+      "ทราบแค่ประเภท ({origin}) แต่ไม่ทราบว่าเป็นวงชาย/หญิง กรุณาเลือกเพศเอง",
+    detect_unknown: "ไม่พบศิลปินนี้ในฐานข้อมูล กรุณาเลือกเพศและประเภทเอง",
+    detect_info_failed:
+      "ดึงชื่อเพลงจากลิงก์ไม่ได้ กรุณากรอกชื่อเพลงและศิลปินเอง แล้วกดปุ่มตรวจประเภท",
+    detect_touched: "เลือกโดยคุณ (ระบบจะไม่เขียนทับ)",
+    btn_type_fix: "ตรวจประเภทเพลง",
+    type_fix_title: "ตรวจเพศ/ประเภทเพลงด้วยฐานข้อมูล",
+    type_fix_hint:
+      "ระบบเทียบเพลงของงานนี้กับฐานข้อมูลศิลปิน เลือกรายการที่ต้องการแก้ แล้วกดใช้ (ยังไม่แก้อะไรจนกว่าคุณจะกด)",
+    type_fix_none: "ไม่พบรายการที่ต้องแก้ 👍",
+    type_fix_apply: "ใช้ที่เลือก",
+    type_fix_all: "เลือกทั้งหมด",
+    type_fix_clear: "ไม่เลือกเลย",
+    type_fix_applied: "แก้เพศ/ประเภทแล้ว {n} เพลง",
+    btn_save_artist: "บันทึกศิลปินนี้เข้าฐานข้อมูล",
+    artist_prompt: "ชื่อศิลปิน/วง (พิมพ์ชื่อภาษาอังกฤษ ตามด้วยชื่อภาษาอื่นได้)",
+    artist_saved: "บันทึก \"{name}\" ({gender} / {origin}) เข้าฐานข้อมูลแล้ว",
+    artist_updated: "อัปเดต \"{name}\" ({gender} / {origin}) ในฐานข้อมูลแล้ว",
+    gender_conflict_title: "เพศไม่ตรงกับฐานข้อมูล",
+    gender_conflict_msg: "ฐานข้อมูลระบุว่า \"{name}\" เป็น {db} แต่คุณเลือก {chosen} ต้องการบันทึกตามที่เลือกใช่ไหม",
+    type_conflict_msg: "ฐานข้อมูลระบุว่า \"{name}\" เป็นประเภท {db} แต่คุณเลือก {chosen} ต้องการบันทึกตามที่เลือกใช่ไหม",
+    learn_title: "บันทึกศิลปินเข้าฐานข้อมูล?",
+    learn_msg: "ฐานข้อมูลยังไม่รู้จัก หรือข้อมูลต่างจากที่คุณเลือก ({gender} / {origin}) ต้องการบันทึกศิลปินนี้เพื่อให้ระบบจำไว้ไหม",
+
+    // ย่อ/ขยายลิสต์
+    collapse_all: "ย่อทุกลิสต์",
+    expand_all: "ขยายทุกลิสต์",
+    toggle_list: "ย่อ/ขยายลิสต์นี้",
+    drop_here: "วางเพลงที่นี่",
+
     // จัดลิสต์อัตโนมัติ / สุ่ม / อันดับของฉัน
     btn_pl_auto: "จัดลิสต์อัตโนมัติ",
     shuffle_pool: "สุ่มทั้งหมด",
@@ -444,6 +482,44 @@ const translations = {
     lb_not_listed:
       "💡 You're not on the leaderboard yet. Try requesting or voting for a song!",
 
+    // Song gender / origin detection
+    origin_label: "Type",
+    detect_btn: "Auto-detect type",
+    detect_checking: "Checking the artist database...",
+    detect_found: "Found in database: {name}",
+    detect_found_plain: "Detected from the database",
+    detect_ambiguous: "Several artists match, please double-check",
+    detect_origin_only:
+      "Only the type ({origin}) is known, not whether it is a boy or girl group. Please pick the gender.",
+    detect_unknown: "Artist not found in the database. Please choose gender and type yourself.",
+    detect_info_failed:
+      "Couldn't read the song info from the link. Type the song and artist yourself, then press Auto-detect.",
+    detect_touched: "Chosen by you (won't be overwritten)",
+    btn_type_fix: "Check song types",
+    type_fix_title: "Check song gender/type against the database",
+    type_fix_hint:
+      "Songs of this event are compared with the artist database. Tick the ones to fix, then apply (nothing changes until you do).",
+    type_fix_none: "Nothing to fix 👍",
+    type_fix_apply: "Apply selected",
+    type_fix_all: "Select all",
+    type_fix_clear: "Select none",
+    type_fix_applied: "Fixed gender/type of {n} song(s)",
+    btn_save_artist: "Save this artist to the database",
+    artist_prompt: "Artist / group name (English name, optionally followed by other-language names)",
+    artist_saved: "Saved \"{name}\" ({gender} / {origin}) to the database",
+    artist_updated: "Updated \"{name}\" ({gender} / {origin}) in the database",
+    gender_conflict_title: "Differs from the database",
+    gender_conflict_msg: "The database lists \"{name}\" as {db}, but you chose {chosen}. Save with your choice anyway?",
+    type_conflict_msg: "The database lists \"{name}\" as type {db}, but you chose {chosen}. Save with your choice anyway?",
+    learn_title: "Save artist to the database?",
+    learn_msg: "The database doesn't know this artist, or differs from your choice ({gender} / {origin}). Save it so the system remembers?",
+
+    // Collapse / expand lists
+    collapse_all: "Collapse all",
+    expand_all: "Expand all",
+    toggle_list: "Collapse / expand this list",
+    drop_here: "Drop song here",
+
     // Auto setlist / shuffle / my rank
     btn_pl_auto: "Auto-arrange",
     shuffle_pool: "Shuffle all",
@@ -661,6 +737,13 @@ function refreshDynamicTexts() {
   document
     .querySelectorAll(".dynamic-category .list-col-header")
     .forEach((h) => (h.title = t("category_drag_hint")));
+  document
+    .querySelectorAll(".dynamic-category .list-toggle")
+    .forEach((b) => (b.title = t("toggle_list")));
+  document
+    .querySelectorAll(".dynamic-category .drop-zone")
+    .forEach((z) => z.setAttribute("data-drop-hint", t("drop_here")));
+  updateCollapseAllButton();
 
   // วาดรายการเพลงใหม่ (ข้อความ "ยังไม่ระบุเวลา" ฯลฯ)
   if (currentSongs.length > 0 && currentViewId === "songs") filterSongs();
@@ -1878,67 +1961,423 @@ window.toggleTimeInputs = function (mode) {
   }
 };
 
+// ==========================================
+// ตรวจเพศ/ประเภทของเพลงจากฐานข้อมูลศิลปิน (ฟอร์มขอเพลง / แก้เพลง)
+// ==========================================
+const SONG_FORM = {
+  add: {
+    link: "song-link", name: "song-name", artist: "song-artist",
+    gender: "song-gender", origin: "song-origin", note: "song-detect-note", btn: "btn-song-submit",
+  },
+  edit: {
+    link: "edit-song-link", name: "edit-song-name", artist: "edit-song-artist",
+    gender: "edit-song-gender", origin: "edit-song-origin", note: "edit-song-detect-note", btn: "btn-song-edit-submit",
+  },
+};
+const detectState = {
+  add: { touched: false, key: "", res: null, resT: "", resA: "" },
+  edit: { touched: false, key: "", res: null, resT: "", resA: "" },
+};
+
 function setGenderDropdown(id, val) {
   const sel = document.getElementById(id);
   if (!sel) return;
-  Array.from(sel.options).forEach((o) => {
-    if (o.value === "Mix") o.remove();
-  });
-  if (val === "Mix" || val === "MixSong") {
-    sel.add(new Option(t("gender_mix"), "Mix"));
-    sel.value = "Mix";
+  sel.value = ["M", "F", "Mix"].includes(val) ? val : "Mix";
+}
+
+// ตั้งค่าช่องประเภท (ถ้าเป็นค่าที่ไม่มีในรายการ เช่น C-Pop ที่ผู้ใช้เคยเลือก จะเพิ่มตัวเลือกให้)
+function setOriginSelect(id, value) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const v = String(value || "K-Pop");
+  if (!Array.from(sel.options).some((o) => o.value === v)) sel.add(new Option(v, v));
+  sel.value = v;
+  currentOrigin = v;
+}
+
+function getOrigin(prefix) {
+  const sel = document.getElementById(SONG_FORM[prefix].origin);
+  return sel && sel.value ? sel.value : "K-Pop";
+}
+
+function setDetectNote(prefix, kind, html) {
+  const el = document.getElementById(SONG_FORM[prefix].note);
+  if (!el) return;
+  if (!kind) {
+    el.classList.add("hidden");
+    el.innerHTML = "";
+    return;
+  }
+  el.className = "detect-note " + kind; // detect-ok | detect-warn | detect-info
+  el.innerHTML = html;
+}
+
+function resetSongForm(prefix, gender, origin) {
+  detectState[prefix] = { touched: false, key: "", res: null, resT: "", resA: "" };
+  setGenderDropdown(SONG_FORM[prefix].gender, gender || "Mix");
+  setOriginSelect(SONG_FORM[prefix].origin, origin || "K-Pop");
+  setDetectNote(prefix, "");
+}
+
+// ผู้ใช้เลือกเพศ/ประเภทเอง: เลิกเขียนทับอัตโนมัติ
+function markDetectTouched(prefix) {
+  detectState[prefix].touched = true;
+  currentOrigin = getOrigin(prefix);
+  setDetectNote(prefix, "detect-info", escapeHTML(t("detect_touched")));
+}
+
+function genderLabel(g) {
+  return t(g === "M" ? "gender_m" : g === "F" ? "gender_f" : "gender_mix");
+}
+
+// แสดงผลที่ระบบตรวจพบลงในฟอร์ม (เซิร์ฟเวอร์รุ่นเก่าไม่มี genderKnown จึงถือว่ารู้เหมือนเดิม)
+function applyDetection(prefix, res) {
+  const f = SONG_FORM[prefix];
+  detectState[prefix].res = res;
+  const genderKnown = res.genderKnown !== undefined ? res.genderKnown : true;
+  const originKnown = res.originKnown !== undefined ? res.originKnown : true;
+  if (genderKnown) setGenderDropdown(f.gender, res.gender);
+  if (originKnown) setOriginSelect(f.origin, res.origin);
+  currentOrigin = getOrigin(prefix);
+
+  if (genderKnown) {
+    // เซิร์ฟเวอร์รุ่นเก่าไม่บอกชื่อที่จับคู่ได้ จึงใช้ข้อความกลาง ๆ
+    let text = (res.matched ? t("detect_found", { name: res.matched }) : t("detect_found_plain")) +
+      " · " + genderLabel(res.gender) + " · " + res.origin;
+    if (res.ambiguous) text += " — " + t("detect_ambiguous");
+    setDetectNote(prefix, res.ambiguous ? "detect-warn" : "detect-ok", escapeHTML(text));
+  } else if (originKnown) {
+    setDetectNote(prefix, "detect-warn", escapeHTML(t("detect_origin_only", { origin: res.origin })));
   } else {
-    sel.value = val;
+    setDetectNote(prefix, "detect-warn", escapeHTML(t("detect_unknown")));
   }
 }
 
-async function processYoutubeLink(inputId, nameId, artistId, genderId) {
-  const inputEl = document.getElementById(inputId);
-  if (!inputEl) return;
-  const url = inputEl.value;
-  if (!url.includes("youtu")) return;
-
-  const btnId =
-    inputId === "song-link" ? "btn-song-submit" : "btn-song-edit-submit";
-  const btn = document.getElementById(btnId);
-  if (btn) btn.disabled = true;
-
-  try {
-    const res = await fetch(
-      `https://noembed.com/embed?dataType=json&url=${url}`,
+// ถามเซิร์ฟเวอร์ว่าชื่อเพลง+ศิลปินนี้เป็นของใคร แล้วเติมลงฟอร์ม
+function runDetection(prefix, title, author) {
+  const key = title + "|" + author;
+  detectState[prefix].key = key;
+  setDetectNote(prefix, "detect-info", escapeHTML(t("detect_checking")));
+  return new Promise((resolve) => {
+    fetchAPI(
+      "aiProcess",
+      { title: title, author: author },
+      (res) => {
+        if (detectState[prefix].key === key) {
+          detectState[prefix].resT = title;
+          detectState[prefix].resA = author;
+          applyDetection(prefix, res);
+        }
+        resolve(res);
+      },
+      (err) => {
+        const msg = err === "NETWORK_ERROR" ? t("toast_network_msg") : err;
+        setDetectNote(prefix, "detect-warn", escapeHTML(msg));
+        resolve(null);
+      },
+      true,
     );
-    const data = await res.json();
-    if (data && data.title) {
-      document.getElementById(nameId).value = data.title;
-      document.getElementById(artistId).value = data.author_name;
-      fetchAPI(
-        "aiProcess",
-        { title: data.title, author: data.author_name },
-        (dbRes) => {
-          setGenderDropdown(genderId, dbRes.gender);
-          currentOrigin = dbRes.origin || "K-Pop";
-          showToast(t("toast_success"), t("verify_ok"), "success");
-          if (btn) btn.disabled = false;
-        },
-        () => {
-          if (btn) btn.disabled = false;
-        },
-      );
+  });
+}
+
+// ดึงชื่อเพลง/ช่องจากลิงก์ YouTube: oEmbed ของ YouTube ก่อน (รองรับ Shorts และเร็วกว่า) แล้วค่อย noembed
+async function fetchVideoInfo(url) {
+  const enc = encodeURIComponent(url);
+  const sources = [
+    `https://www.youtube.com/oembed?format=json&url=${enc}`,
+    `https://noembed.com/embed?dataType=json&url=${enc}`,
+  ];
+  for (const src of sources) {
+    try {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 6000);
+      const res = await fetch(src, { signal: ctl.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.title) return { title: data.title, author: data.author_name || "" };
+    } catch (e) {}
+  }
+  return null;
+}
+
+async function processYoutubeLink(prefix) {
+  const f = SONG_FORM[prefix];
+  const url = (document.getElementById(f.link).value || "").trim();
+  if (!/youtu/i.test(url)) return;
+
+  const btn = document.getElementById(f.btn);
+  if (btn) btn.disabled = true;
+  setDetectNote(prefix, "detect-info", escapeHTML(t("detect_checking")));
+  try {
+    const info = await fetchVideoInfo(url);
+    if (!info) {
+      setDetectNote(prefix, "detect-warn", escapeHTML(t("detect_info_failed")));
+      return;
     }
-  } catch (e) {
+    document.getElementById(f.name).value = info.title;
+    document.getElementById(f.artist).value = info.author;
+    if (detectState[prefix].touched) {
+      setDetectNote(prefix, "detect-info", escapeHTML(t("detect_touched")));
+      return;
+    }
+    await runDetection(prefix, info.title, info.author);
+  } finally {
     if (btn) btn.disabled = false;
   }
 }
 
 function autoFillYoutube() {
-  processYoutubeLink("song-link", "song-name", "song-artist", "song-gender");
+  processYoutubeLink("add");
 }
 function autoFillYoutubeEdit() {
-  processYoutubeLink(
-    "edit-song-link",
-    "edit-song-name",
-    "edit-song-artist",
-    "edit-song-gender",
+  processYoutubeLink("edit");
+}
+
+// พิมพ์ชื่อเพลง/ศิลปินเอง (ไม่มีลิงก์) ก็ตรวจให้ได้ ถ้ายังไม่ได้เลือกเพศ/ประเภทเอง
+function autoDetectFromText(prefix) {
+  const f = SONG_FORM[prefix];
+  const name = (document.getElementById(f.name).value || "").trim();
+  const artist = (document.getElementById(f.artist).value || "").trim();
+  if (!name || detectState[prefix].touched) return;
+  if (detectState[prefix].key === name + "|" + artist) return;
+  runDetection(prefix, name, artist);
+}
+
+// ปุ่ม "ตรวจประเภทอัตโนมัติ": ตรวจใหม่จากชื่อ/ศิลปินที่กรอกอยู่ (ยอมเขียนทับสิ่งที่เลือกไว้)
+function redetectSong(prefix) {
+  const f = SONG_FORM[prefix];
+  const name = (document.getElementById(f.name).value || "").trim();
+  const artist = (document.getElementById(f.artist).value || "").trim();
+  if (!name && !artist)
+    return showToast(t("toast_notice"), t("enter_song_name"), "error");
+  detectState[prefix].touched = false;
+  detectState[prefix].key = "";
+  runDetection(prefix, name, artist);
+}
+
+// ==========================================
+// เรียนรู้จากสิ่งที่ผู้ใช้เลือก: เตือนเมื่อขัดกับฐานข้อมูล + ให้แอดมินบันทึกศิลปินเข้าฐานข้อมูล
+// ==========================================
+// ผลตรวจล่าสุดใช้ได้เฉพาะเมื่อยังตรงกับชื่อเพลง/ศิลปินที่อยู่ในฟอร์มตอนนี้
+function currentDetection(prefix) {
+  const st = detectState[prefix];
+  const f = SONG_FORM[prefix];
+  if (!st || !st.res) return null;
+  const name = (document.getElementById(f.name).value || "").trim();
+  const artist = (document.getElementById(f.artist).value || "").trim();
+  return String(st.resT || "").trim() === name && String(st.resA || "").trim() === artist ? st.res : null;
+}
+
+// คืนข้อความเตือนถ้าสิ่งที่เลือกขัดกับสิ่งที่ฐานข้อมูลรู้แน่ชัด (ไม่เตือนเมื่อไม่แน่ใจ/คลุมเครือ)
+function findDetectionConflict(prefix, chosenGender, chosenOrigin) {
+  const res = currentDetection(prefix);
+  if (!res || res.ambiguous || !res.matched) return null;
+  if (res.genderKnown && res.gender && chosenGender !== res.gender) {
+    return t("gender_conflict_msg", {
+      name: res.matched,
+      db: genderLabel(res.gender),
+      chosen: genderLabel(chosenGender),
+    });
+  }
+  if (res.originKnown && res.origin && chosenOrigin !== res.origin) {
+    return t("type_conflict_msg", { name: res.matched, db: res.origin, chosen: chosenOrigin });
+  }
+  return null;
+}
+
+function confirmDetectionConflict(prefix, data, proceed) {
+  const msg = findDetectionConflict(prefix, data.gender, data.origin);
+  if (!msg) return proceed();
+  showCustomConfirm(t("gender_conflict_title"), msg, proceed);
+}
+
+// หลังแอดมินบันทึกเพลงสำเร็จ: ถ้าฐานข้อมูลไม่รู้จักศิลปินนี้ (หรือต่างจากที่เลือก) ให้เสนอบันทึก
+function shouldOfferLearn(res, gender, origin) {
+  if (!isAdminLoggedIn) return false;
+  if (!res) return false;
+  if (res.ambiguous) return false;
+  if (!res.genderKnown) return gender === "M" || gender === "F";
+  return (res.gender && res.gender !== gender) || (res.originKnown && res.origin && res.origin !== origin);
+}
+
+function offerLearnArtist(prefix, data, res) {
+  if (!shouldOfferLearn(res, data.gender, data.origin)) return;
+  setTimeout(() => {
+    showCustomConfirm(
+      t("learn_title"),
+      t("learn_msg", { gender: genderLabel(data.gender), origin: data.origin }),
+      () => {
+        const guess = guessArtistName({ name: data.name, artist: data.artist });
+        openInputModal(t("artist_prompt"), guess, (value) => {
+          const parts = splitArtistNames(value);
+          if (!parts.name) return;
+          fetchAPI(
+            "addArtistToDB",
+            { name: parts.name, gender: data.gender, origin: data.origin, aliases: parts.aliases },
+            (r) => {
+              showToast(
+                t("toast_success"),
+                t(r && r.status === "updated" ? "artist_updated" : "artist_saved", {
+                  name: r && r.artist ? r.artist : parts.name,
+                  gender: genderLabel(data.gender),
+                  origin: data.origin,
+                }),
+                "success",
+              );
+            },
+            (err) => {
+              if (err === "Invalid Action") showToast(t("toast_notice"), t("need_deploy"), "error");
+            },
+          );
+        });
+      },
+    );
+  }, 400);
+}
+
+// ==========================================
+// เครื่องมือแอดมิน: ฐานข้อมูลศิลปิน
+// ==========================================
+// เดาชื่อวงจากชื่อเพลง: "[MV] Hearts2Hearts 하츠투하츠 'STYLE' MV" -> "Hearts2Hearts 하츠투하츠"
+function guessArtistName(s) {
+  const title = String(s.name || "").replace(/^\s*[\[【][^\]】]*[\]】]\s*/, "");
+  const lead = title.split(/\s[-–—]\s|[(\[「'"‘“]/)[0].trim();
+  const channel = String(s.artist || "").replace(/\s*-\s*Topic$/i, "").trim();
+  return lead.length >= 2 && lead.length <= 40 ? lead : channel;
+}
+
+// แยก "ชื่ออังกฤษ + ชื่อภาษาอื่น" เป็นชื่อหลัก + ชื่อเรียกอื่น
+function splitArtistNames(text) {
+  const str = String(text || "").trim();
+  const idx = str.search(/[^\x00-\x7F]/);
+  if (idx > 0) return { name: str.slice(0, idx).trim(), aliases: str.slice(idx).trim() };
+  return { name: str, aliases: "" };
+}
+
+function saveArtistToDB() {
+  const s = currentSongs.find((song) => song.id === selectedSongId);
+  if (!s) return;
+  // ช่องถามชื่ออยู่ใต้หน้าต่างรายละเอียดเพลง (z-index เท่ากัน) จึงต้องปิดหน้าต่างรายละเอียดก่อน
+  closeModal("songDetailModal");
+  openInputModal(t("artist_prompt"), guessArtistName(s), (value) => {
+    const parts = splitArtistNames(value);
+    if (!parts.name) return;
+    fetchAPI(
+      "addArtistToDB",
+      { name: parts.name, gender: s.gender, origin: s.origin, aliases: parts.aliases },
+      (res) => {
+        showToast(
+          t("toast_success"),
+          t(res && res.status === "updated" ? "artist_updated" : "artist_saved", {
+            name: res && res.artist ? res.artist : parts.name,
+            gender: genderLabel(s.gender),
+            origin: s.origin,
+          }),
+          "success",
+        );
+      },
+      (err) => {
+        if (err === "Invalid Action") showToast(t("toast_notice"), t("need_deploy"), "error");
+      },
+    );
+  });
+}
+
+let typeFixes = [];
+
+function openTypeFixModal() {
+  const box = document.getElementById("type-fix-list");
+  if (box)
+    box.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
+  const applyBtn = document.getElementById("btn-type-fix-apply");
+  if (applyBtn) applyBtn.disabled = true;
+  openModal("typeFixModal");
+  fetchAPI(
+    "suggestSongFixes",
+    { eventId: activeEvent.id },
+    (list) => {
+      typeFixes = list || [];
+      renderTypeFixes();
+    },
+    (err) => {
+      if (box)
+        box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(err === "Invalid Action" ? t("need_deploy") : t("load_error"))}</p>`;
+    },
+  );
+}
+
+function renderTypeFixes() {
+  const box = document.getElementById("type-fix-list");
+  const applyBtn = document.getElementById("btn-type-fix-apply");
+  if (!box) return;
+  if (typeFixes.length === 0) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t("type_fix_none"))}</p>`;
+    if (applyBtn) applyBtn.disabled = true;
+    return;
+  }
+  box.innerHTML = typeFixes
+    .map((f, i) => {
+      const changes = [];
+      if (f.suggestGender)
+        changes.push(`${escapeHTML(t("gender"))}: <s>${escapeHTML(genderLabel(f.gender))}</s> → <b>${escapeHTML(genderLabel(f.suggestGender))}</b>`);
+      if (f.suggestOrigin)
+        changes.push(`${escapeHTML(t("origin_label"))}: <s>${escapeHTML(f.origin)}</s> → <b>${escapeHTML(f.suggestOrigin)}</b>`);
+      return `<label class="fix-row">
+        <input type="checkbox" class="fix-check" data-i="${i}" checked onchange="updateTypeFixButton()" />
+        <div class="fix-info">
+          <strong>${escapeHTML(f.name)}</strong>
+          <span class="text-muted">${escapeHTML(f.artist)} · ${escapeHTML(t("detect_found", { name: f.matched || "" }))}</span>
+          <div class="fix-change">${changes.join(" · ")}</div>
+        </div>
+      </label>`;
+    })
+    .join("");
+  updateTypeFixButton();
+}
+
+function selectedTypeFixes() {
+  return Array.from(document.querySelectorAll("#type-fix-list .fix-check:checked")).map(
+    (c) => typeFixes[parseInt(c.dataset.i, 10)],
+  );
+}
+
+function updateTypeFixButton() {
+  const n = selectedTypeFixes().length;
+  const btn = document.getElementById("btn-type-fix-apply");
+  if (btn) {
+    btn.disabled = n === 0;
+    const label = btn.querySelector("span");
+    if (label) label.innerText = `${t("type_fix_apply")} (${n})`;
+  }
+}
+
+function toggleAllTypeFixes(checked) {
+  document.querySelectorAll("#type-fix-list .fix-check").forEach((c) => (c.checked = checked));
+  updateTypeFixButton();
+}
+
+function applyTypeFixes() {
+  const fixes = selectedTypeFixes().map((f) => {
+    const out = { id: f.id };
+    if (f.suggestGender) out.gender = f.suggestGender;
+    if (f.suggestOrigin) out.origin = f.suggestOrigin;
+    return out;
+  });
+  if (fixes.length === 0) return;
+  const btn = document.getElementById("btn-type-fix-apply");
+  if (btn) btn.disabled = true;
+  fetchAPI(
+    "applySongFixes",
+    { eventId: activeEvent.id, fixes: fixes },
+    (res) => {
+      closeModal("typeFixModal");
+      showToast(t("toast_success"), t("type_fix_applied", { n: res.applied }), "success");
+      loadSongs();
+    },
+    () => {
+      if (btn) btn.disabled = false;
+    },
   );
 }
 
@@ -1969,8 +2408,7 @@ function checkQuotaAndOpenModal() {
   document.getElementById("song-dance-part").value = "Hook 1";
   toggleTimeInputs("add");
 
-  setGenderDropdown("song-gender", "M");
-  currentOrigin = "K-Pop";
+  resetSongForm("add");
   openModal("addSongModal");
 }
 
@@ -2021,9 +2459,9 @@ function preCheckAddSong() {
     end: finalEnd,
     isBreakdance: document.getElementById("song-breakdance").checked,
     gender: document.getElementById("song-gender").value,
-    origin: currentOrigin,
+    origin: getOrigin("add"),
   };
-  executeAddSong();
+  confirmDetectionConflict("add", pendingSongData, executeAddSong);
 }
 
 function openDuplicateModal(dupSong) {
@@ -2053,6 +2491,8 @@ function executeDuplicateVote() {
 function executeAddSong() {
   const btn = document.getElementById("btn-song-submit");
   if (btn) btn.disabled = true;
+  const learnData = pendingSongData;
+  const learnRes = currentDetection("add");
   fetchAPI(
     "addSong",
     {
@@ -2067,6 +2507,7 @@ function executeAddSong() {
       closeModal("addSongModal");
       showToast(t("toast_success"), t("song_added"), "success");
       if (btn) btn.disabled = false;
+      offerLearnArtist("add", learnData, learnRes);
 
       // 🌟 หากกำลังเปิดหน้า Playlist Manager อยู่ ให้เพิ่มเพลงใหม่ลงใน Pool ทันที
       if (currentViewId === "playlist") {
@@ -2118,8 +2559,7 @@ function openUserEditSong() {
 
   document.getElementById("edit-song-breakdance").checked =
     s.isBreakdance === "Yes" || s.isBreakdance === true;
-  currentOrigin = s.origin;
-  setGenderDropdown("edit-song-gender", s.gender);
+  resetSongForm("edit", s.gender, s.origin);
   closeModal("songDetailModal");
   openModal("editSongModal");
 }
@@ -2147,11 +2587,16 @@ function executeEditSong() {
     end: finalEnd,
     isBreakdance: document.getElementById("edit-song-breakdance").checked,
     gender: document.getElementById("edit-song-gender").value,
-    origin: currentOrigin,
+    origin: getOrigin("edit"),
   };
 
+  confirmDetectionConflict("edit", updatedData, () => sendEditSong(updatedData));
+}
+
+function sendEditSong(updatedData) {
   const btn = document.getElementById("btn-song-edit-submit");
   if (btn) btn.disabled = true;
+  const learnRes = currentDetection("edit");
   fetchAPI(
     "editSong",
     {
@@ -2167,6 +2612,7 @@ function executeEditSong() {
       closeModal("editSongModal");
       showToast(t("toast_success"), t("song_updated"), "success");
       if (btn) btn.disabled = false;
+      offerLearnArtist("edit", updatedData, learnRes);
     },
     () => {
       if (btn) btn.disabled = false;
@@ -2306,6 +2752,8 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
     .sort((a, b) => b.votes - a.votes);
   missing.forEach((s) => pool.appendChild(createPlaylistItem(s)));
 
+  updateListCounts();
+  updateCollapseAllButton();
   initSortables();
   return missing.length;
 }
@@ -2499,21 +2947,105 @@ function addNewCategory() {
   });
 }
 
+// ==========================================
+// ย่อ/ขยายกล่องลิสต์ (เหมือนพัดหน้าต่าง) + จำสถานะแยกตามงาน
+// ==========================================
+function collapseStorageKey() {
+  return "delia_pl_collapsed_" + (activeEvent ? activeEvent.id : "");
+}
+
+function loadCollapsedNames() {
+  try {
+    const v = JSON.parse(localStorage.getItem(collapseStorageKey()) || "[]");
+    return Array.isArray(v) ? v : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// บันทึกชื่อลิสต์ที่ถูกย่ออยู่ตอนนี้ (อ่านจากหน้าจอจริง)
+function saveCollapsedState() {
+  const names = Array.from(
+    document.querySelectorAll(".dynamic-category.collapsed .drop-zone"),
+  ).map((z) => z.getAttribute("data-category"));
+  try {
+    if (names.length) localStorage.setItem(collapseStorageKey(), JSON.stringify(names));
+    else localStorage.removeItem(collapseStorageKey());
+  } catch (e) {}
+}
+
+function clearCollapsedState() {
+  try {
+    localStorage.removeItem(collapseStorageKey());
+  } catch (e) {}
+}
+
+function setCategoryCollapsed(col, collapsed) {
+  col.classList.toggle("collapsed", collapsed);
+  const btn = col.querySelector(".list-toggle");
+  if (btn) btn.setAttribute("aria-expanded", String(!collapsed));
+}
+
+function toggleCategory(zoneId) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  const col = zone.parentElement;
+  setCategoryCollapsed(col, !col.classList.contains("collapsed"));
+  saveCollapsedState();
+  updateCollapseAllButton();
+}
+
+// ปุ่มเดียวสลับ: ถ้ามีลิสต์ที่ยังขยายอยู่ = ย่อทั้งหมด ไม่งั้น = ขยายทั้งหมด
+function toggleAllCategories() {
+  const cols = Array.from(document.querySelectorAll(".dynamic-category"));
+  if (!cols.length) return;
+  const collapse = cols.some((c) => !c.classList.contains("collapsed"));
+  cols.forEach((c) => setCategoryCollapsed(c, collapse));
+  saveCollapsedState();
+  updateCollapseAllButton();
+}
+
+function updateCollapseAllButton() {
+  const btn = document.getElementById("btn-pl-collapse-all");
+  if (!btn) return;
+  const cols = Array.from(document.querySelectorAll(".dynamic-category"));
+  const allCollapsed = cols.length > 0 && cols.every((c) => c.classList.contains("collapsed"));
+  btn.disabled = cols.length === 0;
+  const icon = btn.querySelector("i");
+  if (icon) icon.className = allCollapsed ? "fa-solid fa-angles-down" : "fa-solid fa-angles-up";
+  const label = btn.querySelector("span");
+  if (label) label.innerText = t(allCollapsed ? "expand_all" : "collapse_all");
+}
+
+// ตัวเลขจำนวนเพลงบนหัวกล่อง (เห็นได้แม้ย่ออยู่)
+function updateListCounts() {
+  document.querySelectorAll(".dynamic-category").forEach((col) => {
+    const zone = col.querySelector(".drop-zone");
+    const badge = col.querySelector(".list-count");
+    if (zone && badge) badge.innerText = zone.querySelectorAll(".playlist-item").length;
+  });
+}
+
 function createCategoryBox(title) {
   const safeId = "cat-" + Date.now() + Math.floor(Math.random() * 1000);
   const col = document.createElement("div");
   col.className = "list-col dynamic-category";
+  const startCollapsed = loadCollapsedNames().includes(title);
+  if (startCollapsed) col.classList.add("collapsed");
   col.innerHTML = `
     <div class="list-col-header" title="${t("category_drag_hint")}">
+      <button type="button" class="list-toggle" aria-expanded="${!startCollapsed}" title="${escapeHTML(t("toggle_list"))}" onclick="toggleCategory('${safeId}')"><i class="fa-solid fa-chevron-down"></i></button>
+      <span class="list-count">0</span>
       <h3>${escapeHTML(title)} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${safeId}')"></i> 
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${safeId}')"></i>
       </h3>
       <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('${safeId}')"><i class="fa-solid fa-shuffle"></i> M/F</button>
     </div>
-    <div id="${safeId}" class="drop-zone" data-category="${escapeHTML(title)}"></div>
+    <div id="${safeId}" class="drop-zone" data-category="${escapeHTML(title)}" data-drop-hint="${escapeHTML(t("drop_here"))}"></div>
   `;
   document.getElementById("dynamic-board").appendChild(col);
+  updateCollapseAllButton();
   initSortables();
 }
 
@@ -2528,11 +3060,18 @@ function renameCategory(zoneId) {
       newTitle !== "กองกลาง"
     ) {
       zone.setAttribute("data-category", newTitle);
+      saveCollapsedState();
       zone.previousElementSibling.querySelector("h3").innerHTML = `${escapeHTML(newTitle)} 
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${zoneId}')"></i> 
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${zoneId}')"></i>`;
     }
   });
+}
+
+function removeCategoryBox(zone) {
+  zone.parentElement.remove();
+  saveCollapsedState();
+  updateCollapseAllButton();
 }
 
 function deleteCategory(zoneId) {
@@ -2546,11 +3085,11 @@ function deleteCategory(zoneId) {
       () => {
         const pool = document.getElementById("list-pool");
         items.forEach((el) => pool.appendChild(el));
-        zone.parentElement.remove();
+        removeCategoryBox(zone);
       },
     );
   } else {
-    zone.parentElement.remove();
+    removeCategoryBox(zone);
   }
 }
 
@@ -2570,6 +3109,7 @@ function confirmImportFromVotes() {
         .forEach((s) => {
           pool.appendChild(createPlaylistItem(s));
         });
+      updateListCounts();
       showToast(t("toast_success"), t("refetch_done"));
     },
   );
@@ -2638,6 +3178,14 @@ function initSortables() {
         ghostClass: "sortable-ghost",
         delay: 150,
         delayOnTouchOnly: true,
+        // ระหว่างลาก ลิสต์ที่ย่ออยู่จะโผล่เป็นแถบ "วางที่นี่" ให้ลากเพลงใส่ได้
+        onStart: () => document.body.classList.add("pl-dragging"),
+        onEnd: () => {
+          document.body.classList.remove("pl-dragging");
+          updateListCounts();
+        },
+        onAdd: updateListCounts,
+        onRemove: updateListCounts,
       }),
     );
   });
@@ -2841,6 +3389,7 @@ function runAutoSetlist() {
     const rows = [];
     res.lists.forEach((l) => l.songs.forEach((s) => rows.push(Object.assign({}, s, { listName: l.name }))));
     closeModal("autoSetlistModal");
+    clearCollapsedState();
     renderPlaylistBoard(rows, specs.map((x) => x.name)); // เพลงที่เหลือถูกเติมเข้ากองกลางให้เอง
     showToast(
       t("toast_success"),
@@ -3206,8 +3755,7 @@ function openAdminAddSongModal() {
   if (dpSel) dpSel.value = "Hook 1";
 
   toggleTimeInputs("add");
-  setGenderDropdown("song-gender", "M");
-  currentOrigin = "K-Pop";
+  resetSongForm("add");
 
   openModal("addSongModal");
 }
