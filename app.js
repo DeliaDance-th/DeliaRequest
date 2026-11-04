@@ -198,6 +198,22 @@ const translations = {
     artist_prompt: "ชื่อศิลปิน/วง (พิมพ์ชื่อภาษาอังกฤษ ตามด้วยชื่อภาษาอื่นได้)",
     artist_saved: "บันทึก \"{name}\" ({gender} / {origin}) เข้าฐานข้อมูลแล้ว",
     artist_updated: "อัปเดต \"{name}\" ({gender} / {origin}) ในฐานข้อมูลแล้ว",
+    time_invalid: "รูปแบบเวลาไม่ถูกต้อง พิมพ์เป็น นาที:วินาที เช่น 1:42",
+    time_order: "เวลาจบต้องมากกว่าเวลาเริ่ม",
+    quota_left: "ขอเพลงได้อีก {left}/{max}",
+    quota_none: "โควตาเต็ม {max}/{max}",
+    dup_by_video: "เพลงนี้มีคนขอไว้แล้ว",
+    btn_dup_merge: "รวมเพลงซ้ำ",
+    dup_tool_title: "รวมเพลงซ้ำ",
+    dup_tool_hint: "เพลงที่เป็นวิดีโอเดียวกัน (แม้ลิงก์คนละรูปแบบ) หรือชื่อเหมือนกัน เลือกเพลงที่จะเก็บไว้ในแต่ละกลุ่ม โหวตของเพลงที่ถูกรวมจะย้ายมาให้ แล้วลบแถวที่ซ้ำ",
+    dup_tool_none: "ไม่พบเพลงซ้ำ",
+    dup_tool_apply: "รวมที่เลือก",
+    dup_group: "กลุ่มที่ {n}",
+    dup_merge_confirm_title: "รวมเพลงซ้ำ?",
+    dup_merge_confirm_msg: "จะรวม {groups} กลุ่ม และลบแถวที่ซ้ำ {rows} แถว (ย้อนกลับไม่ได้) ลิสต์ที่จัดไว้จะชี้มาที่เพลงที่เก็บไว้ให้",
+    dup_merged: "รวมเพลงซ้ำแล้ว {n} กลุ่ม",
+    tie_badge: "เสมอ ×{n}",
+    tie_tip: "คะแนนเท่ากับอีก {m} เพลง เรียงตามใครขอก่อน",
     discover_title: "เพลงที่เพื่อน ๆ ขอไว้ · ลากดูได้ กดหัวใจเพื่อโหวต",
     discover_vote: "โหวต",
     discover_voted: "โหวตแล้ว",
@@ -511,6 +527,22 @@ const translations = {
     artist_prompt: "Artist / group name (English name, optionally followed by other-language names)",
     artist_saved: "Saved \"{name}\" ({gender} / {origin}) to the database",
     artist_updated: "Updated \"{name}\" ({gender} / {origin}) in the database",
+    time_invalid: "Invalid time. Use minutes:seconds, e.g. 1:42",
+    time_order: "End time must be after the start time",
+    quota_left: "{left}/{max} requests left",
+    quota_none: "Quota full {max}/{max}",
+    dup_by_video: "This song was already requested",
+    btn_dup_merge: "Merge duplicates",
+    dup_tool_title: "Merge duplicate songs",
+    dup_tool_hint: "Songs with the same video (even with different link formats) or the same title. Pick the one to keep in each group; votes from merged songs move over and the duplicate rows are deleted.",
+    dup_tool_none: "No duplicates found",
+    dup_tool_apply: "Merge selected",
+    dup_group: "Group {n}",
+    dup_merge_confirm_title: "Merge duplicates?",
+    dup_merge_confirm_msg: "This merges {groups} group(s) and deletes {rows} duplicate row(s) (cannot be undone). Saved setlists will point to the kept song.",
+    dup_merged: "Merged {n} group(s)",
+    tie_badge: "Tie ×{n}",
+    tie_tip: "Same votes as {m} other song(s) — ordered by who requested first",
     discover_title: "Songs your friends requested · drag to browse, tap the heart to vote",
     discover_vote: "Vote",
     discover_voted: "Voted",
@@ -880,6 +912,147 @@ function fixSongIds(list) {
     s.id = id;
   });
   return list;
+}
+
+// ==========================================
+// รหัสวิดีโอ YouTube / เวลา นาที:วินาที / โควตา / ป้ายคะแนนเสมอ
+// ==========================================
+// ดึงรหัสวิดีโอจากลิงก์ทุกรูปแบบ (ตรงกับฝั่งเซิร์ฟเวอร์) รหัสแยกตัวพิมพ์เล็ก/ใหญ่
+function ytVideoId(url) {
+  const u = String(url == null ? "" : url).trim();
+  if (!u || !/youtu/i.test(u)) return "";
+  let m = u.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:shorts\/|embed\/|live\/|v\/))([\w-]{11})(?![\w-])/i);
+  if (!m) m = u.match(/[?&]v=([\w-]{11})(?![\w-])/);
+  return m ? m[1] : "";
+}
+
+function normSongName(s) {
+  return String(s == null ? "" : s).toLowerCase().replace(/\s/g, "");
+}
+
+// เพลงในงานนี้ที่ซ้ำกับลิงก์/ชื่อที่ให้มา (ลิงก์เดียวกัน วิดีโอเดียวกัน หรือชื่อเหมือนกัน) ไม่นับเพลง exceptId
+function findDuplicateSong(link, name, exceptId) {
+  const vid = ytVideoId(link);
+  const l = String(link || "").toLowerCase().trim();
+  const n = normSongName(name);
+  return (
+    currentSongs.find(
+      (s) =>
+        s.id !== exceptId &&
+        ((l && String(s.link || "").toLowerCase().trim() === l) ||
+          (vid && ytVideoId(s.link) === vid) ||
+          (n && normSongName(s.name) === n)),
+    ) || null
+  );
+}
+
+// เพลงซ้ำ: โหวตแล้ว -> แจ้ง / เพลงของตัวเอง -> แจ้ง / ไม่งั้นเปิดหน้าต่างให้โหวตเพลงที่มีอยู่แทน
+function handleDuplicateSong(dup) {
+  if (hasVoted(dup)) {
+    showToast(t("toast_notice"), t("already_voted"), "error");
+  } else if (isMine(dup)) {
+    showToast(t("toast_notice"), t("you_are_creator"), "error");
+  } else {
+    openDuplicateModal(dup);
+  }
+}
+
+// "1.42" "1:42" "142" "๑:๔๒" -> "01:42"; ว่าง -> ""; รูปแบบผิด -> null (ตรงกับฝั่งเซิร์ฟเวอร์)
+function normalizeClock(raw) {
+  let s = String(raw == null ? "" : raw).trim();
+  if (!s) return "";
+  s = s.replace(/[\u0E50-\u0E59]/g, (c) => String(c.charCodeAt(0) - 0x0e50));
+  s = s.replace(/[\s.,;:\uFF1A]+/g, ":").replace(/^:+|:+$/g, "");
+  let parts;
+  if (/^\d+$/.test(s)) {
+    if (s.length < 3 || s.length > 5) return null; // เลข 1-2 หลักกำกวม ไม่เดาให้
+    parts = [s.slice(0, -2), s.slice(-2)];
+  } else {
+    parts = s.split(":");
+  }
+  if (parts.length < 2 || parts.length > 3) return null;
+  if (!parts.every((p) => /^\d{1,3}$/.test(p))) return null;
+  const sec = parseInt(parts[parts.length - 1], 10);
+  let min = parseInt(parts[parts.length - 2], 10);
+  if (parts.length === 3) min += parseInt(parts[0], 10) * 60;
+  if (sec > 59) return null;
+  return String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+}
+
+function clockSeconds(v) {
+  const m = /^(\d+):(\d{2})$/.exec(String(v));
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 0;
+}
+
+// ออกจากช่องเวลา: จัดรูปแบบให้ ถ้าผิดให้ขอบแดงและแจ้งเตือน
+function tidyClock(el) {
+  const n = normalizeClock(el.value);
+  if (n === null) {
+    el.classList.add("input-error");
+    showToast(t("toast_notice"), t("time_invalid"), "error");
+  } else {
+    el.classList.remove("input-error");
+    el.value = n;
+  }
+}
+
+// อ่านท่อนที่เต้นจากฟอร์ม (add / edit) คืน {start,end} หรือ null ถ้าไม่ผ่าน (แจ้งผู้ใช้แล้ว)
+function readSongTimes(prefix) {
+  const pre = prefix === "add" ? "song" : "edit-song";
+  const part = document.getElementById(pre + "-dance-part").value;
+  if (part !== "Custom") return { start: part, end: "" };
+  const sEl = document.getElementById(pre + "-start");
+  const eEl = document.getElementById(pre + "-end");
+  const s = normalizeClock(sEl.value);
+  const e = normalizeClock(eEl.value);
+  const bad = s === null ? sEl : e === null ? eEl : null;
+  if (bad) {
+    bad.classList.add("input-error");
+    bad.focus();
+    showToast(t("toast_notice"), t("time_invalid"), "error");
+    return null;
+  }
+  if (s && e && clockSeconds(e) <= clockSeconds(s)) {
+    eEl.classList.add("input-error");
+    eEl.focus();
+    showToast(t("toast_notice"), t("time_order"), "error");
+    return null;
+  }
+  sEl.classList.remove("input-error");
+  eEl.classList.remove("input-error");
+  sEl.value = s;
+  eEl.value = e;
+  return { start: s, end: e };
+}
+
+// ตัวบอกโควตาบนปุ่มขอเพลง (ไม่แสดงให้แอดมินที่ไม่จำกัด หรือคนที่ยังไม่ล็อกอิน)
+function updateQuotaBadge() {
+  const el = document.getElementById("quota-badge");
+  if (!el) return;
+  if (!userUUID || isAdminLoggedIn || !activeEvent || activeEvent.status === "Closed") {
+    el.classList.add("hidden");
+    return;
+  }
+  const max = parseInt(activeEvent.quota) || 3;
+  const used = currentSongs.filter((s) => isMine(s)).length;
+  const left = Math.max(0, max - used);
+  el.textContent = left > 0 ? t("quota_left", { left: left, max: max }) : t("quota_none", { max: max });
+  el.classList.toggle("quota-full", left === 0);
+  el.classList.remove("hidden");
+}
+
+// คะแนนเสมอที่ "มีความหมาย": โหวตสูงกว่าค่ากลางของงานและมีเพลงอื่นคะแนนเท่ากัน (เสมอกันที่ 1-2 โหวตมีเยอะเกินไป ไม่ต้องติดป้าย)
+const tieCache = { ref: null, info: null };
+function getTieInfo() {
+  if (tieCache.ref === currentSongs && tieCache.info) return tieCache.info;
+  const list = currentSongs.filter((s) => s.status !== "Played");
+  const counts = {};
+  list.forEach((s) => (counts[s.votes] = (counts[s.votes] || 0) + 1));
+  const sorted = list.map((s) => s.votes).sort((a, b) => a - b);
+  const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+  tieCache.ref = currentSongs;
+  tieCache.info = { counts: counts, min: Math.max(2, median + 1) };
+  return tieCache.info;
 }
 
 // เพลงนี้เป็นของฉันไหม / ฉันโหวตแล้วไหม
@@ -1750,6 +1923,137 @@ function filterSongs() {
 
   renderSongs(filtered);
   refreshDiscover();
+  updateQuotaBadge();
+}
+
+// ==========================================
+// รวมเพลงซ้ำ (แอดมิน)
+// ==========================================
+let dupGroups = [];
+
+// จัดกลุ่มเพลงที่ซ้ำกัน: วิดีโอเดียวกัน หรือชื่อเหมือนกัน (ต่อกันเป็นกลุ่มเดียวได้)
+function computeDupGroups() {
+  const songs = currentSongs;
+  const parent = songs.map((_, i) => i);
+  const find = (x) => (parent[x] === x ? x : (parent[x] = find(parent[x])));
+  const union = (a, b) => {
+    a = find(a);
+    b = find(b);
+    if (a !== b) parent[b] = a;
+  };
+  const byKey = new Map();
+  songs.forEach((s, i) => {
+    const keys = [];
+    const vid = ytVideoId(s.link);
+    if (vid) keys.push("v:" + vid);
+    const n = normSongName(s.name);
+    if (n) keys.push("n:" + n);
+    keys.forEach((k) => {
+      if (byKey.has(k)) union(byKey.get(k), i);
+      else byKey.set(k, i);
+    });
+  });
+  const groups = new Map();
+  songs.forEach((s, i) => {
+    const r = find(i);
+    if (!groups.has(r)) groups.set(r, []);
+    groups.get(r).push(s);
+  });
+  return Array.from(groups.values())
+    .filter((g) => g.length >= 2)
+    .map((g) => {
+      // เก็บเพลงที่โหวตมากที่สุด (เท่ากัน = เพลงที่ขอก่อน เพราะรายการเรียงตามลำดับขอไว้แล้ว)
+      let keep = g[0];
+      g.forEach((s) => {
+        if (s.votes > keep.votes) keep = s;
+      });
+      return { songs: g, keepId: keep.id };
+    });
+}
+
+function openDupMergeModal() {
+  dupGroups = computeDupGroups();
+  renderDupGroups();
+  openModal("dupMergeModal");
+}
+
+function renderDupGroups() {
+  const box = document.getElementById("dup-merge-list");
+  const btn = document.getElementById("btn-dup-merge-apply");
+  if (!box) return;
+  if (dupGroups.length === 0) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t("dup_tool_none"))}</p>`;
+    if (btn) btn.disabled = true;
+    return;
+  }
+  box.innerHTML = dupGroups
+    .map((g, gi) => {
+      const rows = g.songs
+        .map(
+          (s) => `<label class="dup-pick">
+            <input type="radio" name="dup-keep-${gi}" value="${escapeHTML(s.id)}" ${s.id === g.keepId ? "checked" : ""} onchange="setDupKeep(${gi}, this.value)" />
+            <div class="dup-info"><strong>${escapeHTML(s.name)}</strong><span class="text-muted">${escapeHTML(s.artist)}</span></div>
+            <span class="dup-votes"><i class="fa-solid fa-heart"></i> ${s.votes}</span>
+          </label>`,
+        )
+        .join("");
+      return `<div class="dup-group">
+        <label class="dup-group-head"><input type="checkbox" class="dup-check" data-g="${gi}" checked onchange="updateDupButton()" /> ${escapeHTML(t("dup_group", { n: gi + 1 }))}</label>
+        ${rows}
+      </div>`;
+    })
+    .join("");
+  updateDupButton();
+}
+
+function setDupKeep(gi, id) {
+  if (dupGroups[gi]) dupGroups[gi].keepId = id;
+}
+
+function selectedDupGroups() {
+  return Array.from(document.querySelectorAll("#dup-merge-list .dup-check:checked")).map((c) => dupGroups[parseInt(c.dataset.g, 10)]);
+}
+
+function updateDupButton() {
+  const n = selectedDupGroups().length;
+  const btn = document.getElementById("btn-dup-merge-apply");
+  if (btn) {
+    btn.disabled = n === 0;
+    const label = btn.querySelector("span");
+    if (label) label.innerText = `${t("dup_tool_apply")} (${n})`;
+  }
+}
+
+function applyDupMerges() {
+  const chosen = selectedDupGroups();
+  if (chosen.length === 0) return;
+  const merges = chosen.map((g) => ({
+    keepId: g.keepId,
+    dropIds: g.songs.map((s) => s.id).filter((id) => id !== g.keepId),
+  }));
+  const rows = merges.reduce((n, m) => n + m.dropIds.length, 0);
+  showCustomConfirm(
+    t("dup_merge_confirm_title"),
+    t("dup_merge_confirm_msg", { groups: merges.length, rows: rows }),
+    () => {
+      const btn = document.getElementById("btn-dup-merge-apply");
+      if (btn) btn.disabled = true;
+      fetchAPI(
+        "mergeSongs",
+        { eventId: activeEvent.id, merges: merges },
+        (res) => {
+          currentSongs = fixSongIds(res);
+          filterSongs();
+          closeModal("dupMergeModal");
+          showToast(t("toast_success"), t("dup_merged", { n: merges.length }), "success");
+        },
+        (err) => {
+          if (btn) btn.disabled = false;
+          if (err === "Invalid Action") showToast(t("toast_notice"), t("need_deploy"), "error");
+        },
+      );
+    },
+  );
 }
 
 // ==========================================
@@ -2483,6 +2787,11 @@ async function processYoutubeLink(prefix) {
   const f = SONG_FORM[prefix];
   const url = (document.getElementById(f.link).value || "").trim();
   if (!/youtu/i.test(url)) return;
+  if (prefix === "add") {
+    // วิดีโอนี้มีคนขอไว้แล้ว (ลิงก์คนละรูปแบบก็จับได้) ให้โหวตของเดิมแทน ไม่ต้องดึงข้อมูลซ้ำ
+    const same = ytVideoId(url) ? currentSongs.find((s) => ytVideoId(s.link) === ytVideoId(url)) : null;
+    if (same) return handleDuplicateSong(same);
+  }
 
   const btn = document.getElementById(f.btn);
   const seq = ++linkSeq[prefix];
@@ -2802,35 +3111,13 @@ function preCheckAddSong() {
   const link = linkInput ? linkInput.value.trim() : "";
   if (!name) return showToast(t("toast_notice"), t("enter_song_name"), "error");
 
-  let dup = currentSongs.find(
-    (s) =>
-      (link && s.link.toLowerCase().trim() === link.toLowerCase().trim()) ||
-      s.name.toLowerCase().replace(/\s/g, "") ===
-        name.toLowerCase().replace(/\s/g, ""),
-  );
+  const dup = findDuplicateSong(link, name, null);
+  if (dup) return handleDuplicateSong(dup);
 
-  if (dup) {
-    if (hasVoted(dup)) {
-      return showToast(t("toast_notice"), t("already_voted"), "error");
-    } else if (isMine(dup)) {
-      return showToast(t("toast_notice"), t("you_are_creator"), "error");
-    } else {
-      // 🌟 เปิด Smart Duplicate Modal แทนการเพิ่มอัตโนมัติ
-      openDuplicateModal(dup);
-      return;
-    }
-  }
-
-  const part = document.getElementById("song-dance-part").value;
-  let finalStart = "",
-    finalEnd = "";
-  if (part === "Custom") {
-    finalStart = document.getElementById("song-start").value.trim();
-    finalEnd = document.getElementById("song-end").value.trim();
-  } else {
-    finalStart = part;
-    finalEnd = "";
-  }
+  const times = readSongTimes("add");
+  if (!times) return;
+  const finalStart = times.start,
+    finalEnd = times.end;
 
   pendingSongData = {
     name: name,
@@ -2949,16 +3236,10 @@ function executeEditSong() {
   const name = document.getElementById("edit-song-name").value.trim();
   if (!name) return showToast(t("toast_error"), t("enter_song_name"), "error");
 
-  const part = document.getElementById("edit-song-dance-part").value;
-  let finalStart = "",
-    finalEnd = "";
-  if (part === "Custom") {
-    finalStart = document.getElementById("edit-song-start").value.trim();
-    finalEnd = document.getElementById("edit-song-end").value.trim();
-  } else {
-    finalStart = part;
-    finalEnd = "";
-  }
+  const times = readSongTimes("edit");
+  if (!times) return;
+  const finalStart = times.start,
+    finalEnd = times.end;
 
   const updatedData = {
     name: name,
@@ -3525,6 +3806,16 @@ function createPlaylistItem(song) {
     tags += `<span class="tag tag-f">F</span>`;
   else tags += `<span class="tag">Mix</span>`;
   if (div.dataset.bd === "true") tags += ` <span class="tag tag-bd">BD</span>`;
+  const live = currentSongs.find((x) => x.id === song.id);
+  if (live) {
+    div.dataset.votes = live.votes;
+    tags += ` <span class="tag tag-votes">♥ ${live.votes}</span>`;
+    const tie = getTieInfo();
+    const same = tie.counts[live.votes] || 0;
+    if (live.status !== "Played" && live.votes >= tie.min && same >= 2) {
+      tags += ` <span class="tag tag-tie" title="${escapeHTML(t("tie_tip", { m: same - 1 }))}">${escapeHTML(t("tie_badge", { n: same }))}</span>`;
+    }
+  }
 
   div.innerHTML = `
     <div style="display:flex; align-items:center; overflow:hidden; gap: 8px;">

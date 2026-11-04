@@ -173,6 +173,7 @@
           >
             <i class="fa-solid fa-plus"></i>
             <span data-i18n="btn_add_song">ขอเพลงใหม่</span>
+            <span id="quota-badge" class="quota-badge hidden"></span>
           </button>
           <!-- ปุ่มเปิดตาราง Leaderboard -->
           <button
@@ -222,6 +223,14 @@
           >
             <i class="fa-solid fa-user-check"></i>
             <span data-i18n="btn_type_fix">ตรวจประเภทเพลง</span>
+          </button>
+          <button
+            class="btn btn-outline hidden admin-only"
+            onclick="openDupMergeModal()"
+            style="border-color: #0984e3; color: #0984e3"
+          >
+            <i class="fa-solid fa-code-merge"></i>
+            <span data-i18n="btn_dup_merge">รวมเพลงซ้ำ</span>
           </button>
         </div>
       </div>
@@ -847,7 +856,7 @@
             <label data-i18n="start_time">เริ่ม (นาที:วินาที)</label
             ><input
               type="text"
-              id="song-start"
+              id="song-start" onblur="tidyClock(this)"
               class="form-control"
               placeholder="เช่น 1:30"
               data-i18n-ph="ex_time"
@@ -857,7 +866,7 @@
             <label data-i18n="end_time">จบ (นาที:วินาที)</label
             ><input
               type="text"
-              id="song-end"
+              id="song-end" onblur="tidyClock(this)"
               class="form-control"
               placeholder="เช่น 2:05"
               data-i18n-ph="ex_time_end"
@@ -970,7 +979,7 @@
             <label data-i18n="start_time">เริ่ม (นาที:วินาที)</label
             ><input
               type="text"
-              id="edit-song-start"
+              id="edit-song-start" onblur="tidyClock(this)"
               class="form-control"
               placeholder="เช่น 1:30"
               data-i18n-ph="ex_time"
@@ -980,7 +989,7 @@
             <label data-i18n="end_time">จบ (นาที:วินาที)</label
             ><input
               type="text"
-              id="edit-song-end"
+              id="edit-song-end" onblur="tidyClock(this)"
               class="form-control"
               placeholder="เช่น 2:05"
               data-i18n-ph="ex_time_end"
@@ -1626,6 +1635,38 @@
         >
           <i class="fa-solid fa-check"></i>
           <span>ใช้ที่เลือก</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- รวมเพลงซ้ำ (แอดมิน) -->
+    <div class="modal-overlay" id="dupMergeModal">
+      <div class="modal-content" style="max-width: 600px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('dupMergeModal')"
+        ></i>
+        <h2 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-code-merge"></i>
+          <span data-i18n="dup_tool_title">รวมเพลงซ้ำ</span>
+        </h2>
+        <p
+          class="text-muted"
+          style="font-size: 0.85rem; margin-bottom: 12px"
+          data-i18n="dup_tool_hint"
+        >
+          เพลงที่เป็นวิดีโอเดียวกันหรือชื่อเหมือนกัน
+        </p>
+        <div id="dup-merge-list"></div>
+        <button
+          class="btn btn-primary btn-full"
+          id="btn-dup-merge-apply"
+          onclick="applyDupMerges()"
+          style="margin-top: 15px"
+          disabled
+        >
+          <i class="fa-solid fa-code-merge"></i>
+          <span>รวมที่เลือก</span>
         </button>
       </div>
     </div>

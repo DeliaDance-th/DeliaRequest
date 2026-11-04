@@ -2236,3 +2236,79 @@ body.pl-dragging .dynamic-category.collapsed .drop-zone .playlist-item {
     transition: none;
   }
 }
+
+/* =========================================
+   ตัวบอกโควตา / ป้ายคะแนนเสมอ / รวมเพลงซ้ำ
+========================================= */
+.quota-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 9px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.28);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.quota-badge.quota-full {
+  background: #fff3cd;
+  color: #8a5a00;
+}
+.form-control.input-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.15);
+}
+.tag-votes {
+  background: #fde8ef;
+  color: var(--primary-hover);
+  font-weight: 600;
+}
+.tag-tie {
+  background: #fff3cd;
+  color: #8a5a00;
+  font-weight: 700;
+  border: 1px solid #ffe08a;
+}
+.dup-group {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: var(--card-bg);
+}
+.dup-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.dup-pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 4px;
+  border-top: 1px dashed var(--border-color);
+  cursor: pointer;
+}
+.dup-pick:first-of-type {
+  border-top: none;
+}
+.dup-pick .dup-info {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+.dup-pick .dup-info strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dup-pick .dup-votes {
+  font-size: 0.8rem;
+  color: var(--primary-hover);
+  white-space: nowrap;
+}
