@@ -69,9 +69,10 @@ const translations = {
     // ฟอร์มประเมิน
     txtFeedbackTitle: "แสดงความคิดเห็นสำหรับงานนี้",
     lblSongList: "1. SONG LIST (รายการเพลงในงาน)",
-    lblPlace: "2. PLACE (สถานที่จัดงาน/บรรยากาศ)",
-    lblWebsite: "3. WEBSITE REQUEST SONG (ระบบเว็บขอเพลง)",
-    lblAdditional: "4. ADDITIONAL COMMENT (ข้อเสนอแนะเพิ่มเติม)",
+    lblSpecialList: "2. SPECIAL LIST (ลิสต์พิเศษ)",
+    lblPlace: "3. PLACE (สถานที่จัดงาน/บรรยากาศ)",
+    lblWebsite: "4. WEBSITE REQUEST SONG (ระบบเว็บขอเพลง)",
+    lblAdditional: "5. ADDITIONAL COMMENT (ข้อเสนอแนะเพิ่มเติม)",
     fb_comment_ph: "ความคิดเห็นเพิ่มเติม...",
     fb_additional_ph: "พิมพ์ข้อเสนอแนะของคุณที่นี่...",
     txtDontShowToday: "ไม่ต้องแสดงอีกในวันนี้",
@@ -232,6 +233,14 @@ const translations = {
     // จัดลิสต์อัตโนมัติ / สุ่ม / อันดับของฉัน
     btn_pl_auto: "จัดลิสต์อัตโนมัติ",
     shuffle_pool: "สุ่มทั้งหมด",
+    pool_search_ph: "ค้นหาเพลง / ศิลปิน / m f bd kpop",
+    pool_search_count: "พบ {n} จาก {total} เพลง",
+    pool_search_none: "ไม่พบเพลงที่ตรงกับ \"{q}\"",
+    move_title: "ย้ายเพลงไปที่...",
+    move_top: "ขึ้นบนสุดของลิสต์นี้",
+    move_bottom: "ลงล่างสุดของลิสต์นี้",
+    move_here: "อยู่ที่นี่",
+    move_done: "ย้าย \"{song}\" ไปที่ {list} แล้ว",
     pool_shuffled: "สุ่มลำดับเพลงในกองกลางแล้วค่ะ",
     shuffle_need_2: "ต้องมีเพลงในกองกลางอย่างน้อย 2 เพลงค่ะ",
     auto_title: "จัดลิสต์อัตโนมัติ",
@@ -398,9 +407,10 @@ const translations = {
     // Feedback form
     txtFeedbackTitle: "Event Feedback Form",
     lblSongList: "1. SONG LIST",
-    lblPlace: "2. PLACE",
-    lblWebsite: "3. WEBSITE REQUEST SONG",
-    lblAdditional: "4. ADDITIONAL COMMENT",
+    lblSpecialList: "2. SPECIAL LIST",
+    lblPlace: "3. PLACE",
+    lblWebsite: "4. WEBSITE REQUEST SONG",
+    lblAdditional: "5. ADDITIONAL COMMENT",
     fb_comment_ph: "Additional comments...",
     fb_additional_ph: "Type your suggestions here...",
     txtDontShowToday: "Don't show again today",
@@ -561,6 +571,14 @@ const translations = {
     // Auto setlist / shuffle / my rank
     btn_pl_auto: "Auto-arrange",
     shuffle_pool: "Shuffle all",
+    pool_search_ph: "Search song / artist / m f bd kpop",
+    pool_search_count: "{n} of {total} songs",
+    pool_search_none: "No songs match \"{q}\"",
+    move_title: "Move song to...",
+    move_top: "Move to top of this list",
+    move_bottom: "Move to bottom of this list",
+    move_here: "Current",
+    move_done: "Moved \"{song}\" to {list}",
     pool_shuffled: "Pool songs shuffled.",
     shuffle_need_2: "You need at least 2 songs in the pool.",
     auto_title: "Auto-arrange setlist",
@@ -1063,7 +1081,10 @@ function isMine(s) {
 }
 function hasVoted(s) {
   if (s.voted !== undefined) return !!s.voted;
-  return !!(userUUID && s.voters && s.voters.includes(userUUID));
+  if (!userUUID || !s.voters) return false;
+  // เทียบทีละคน (เดิมใช้ includes กับข้อความทั้งก้อน ทำให้ ann@x.com ถูกนับว่าโหวตแล้ว ถ้ามี joann@x.com โหวตไว้)
+  const list = Array.isArray(s.voters) ? s.voters : String(s.voters).split(",");
+  return list.includes(userUUID);
 }
 // ใช้ระบุแถวของตัวเองใน Leaderboard (รหัสย่อ หรืออีเมลในโหมดเดิม)
 function isMyLeaderboardId(id) {
@@ -1852,7 +1873,8 @@ function loadSongs() {
   );
 }
 
-function filterSongs() {
+function filterSongs(opts) {
+  const quiet = !!(opts && opts.quiet);
   const searchInput = document.getElementById("search-bar");
   const q = searchInput ? searchInput.value.toLowerCase() : "";
 
@@ -1921,7 +1943,7 @@ function filterSongs() {
     filtered = filtered.filter((s) => hasVoted(s));
   }
 
-  renderSongs(filtered);
+  renderSongs(filtered, quiet);
   refreshDiscover();
   updateQuotaBadge();
 }
@@ -2388,19 +2410,82 @@ window.discoverVote = function (e, songId) {
   const clicked = e.currentTarget;
   if (hasVoted(s) || (clicked && clicked.classList && clicked.classList.contains("voted"))) return;
 
-  const track = document.getElementById("discover-track");
-  const btns = track ? Array.from(track.querySelectorAll(`.discover-card[data-id="${CSS.escape(songId)}"] .discover-vote`)) : [];
-  btns.forEach((b) => setDiscoverVoted(b, true));
+  sendVote(songId);
+};
+
+// ==========================================
+// โหวตแบบเห็นผลทันที (ใช้ร่วมกันทั้งการ์ดด้านบนและรายการเพลงด้านล่าง)
+// ==========================================
+// เปลี่ยนข้อมูลในเครื่องก่อน แล้ววาดทั้งรายการเพลง + การ์ด + แท็บ "ที่ฉันโหวต" ใหม่ทันที ไม่ต้องรอเซิร์ฟเวอร์
+// pendingVotes: เพลงที่ยังรอคำตอบอยู่ -> สถานะที่ผู้ใช้ต้องการ + จำนวนคำขอที่ค้าง
+// ใช้กันคำตอบของการโหวตเพลงอื่นที่มาถึงก่อน (ซึ่งยังไม่รู้เรื่องโหวตนี้) มาเขียนทับให้หัวใจเด้งกลับ
+const pendingVotes = new Map();
+
+// สลับสถานะโหวตของเพลงในรายการ (คืนรายการใหม่ เพื่อให้แคชที่ผูกกับรายการเดิมรู้ว่าข้อมูลเปลี่ยน)
+function toggleVoteLocal(list, songId) {
+  return list.map((s) => {
+    if (s.id !== songId) return s;
+    const was = hasVoted(s);
+    const c = Object.assign({}, s);
+    c.votes = Math.max(0, (parseInt(s.votes, 10) || 0) + (was ? -1 : 1));
+    if (Array.isArray(s.voters)) {
+      c.voters = was ? s.voters.filter((v) => v !== userUUID) : s.voters.concat([userUUID]);
+    } else if (typeof s.voters === "string") {
+      const arr = s.voters.split(",").filter((v) => v !== "" && v !== userUUID);
+      if (!was) arr.push(userUUID);
+      c.voters = arr.join(",");
+    } else if (!was && s.voted === undefined) {
+      c.voters = [userUUID];
+    }
+    if (s.voted !== undefined || s.voters === undefined) c.voted = !was;
+    return c;
+  });
+}
+
+// นำโหวตที่ยังรอคำตอบไปทับข้อมูลจากเซิร์ฟเวอร์ ให้หน้าจอตรงกับสิ่งที่ผู้ใช้เพิ่งกด
+function applyPendingVotes(list) {
+  pendingVotes.forEach((p, id) => {
+    const s = list.find((x) => x.id === id);
+    if (s && hasVoted(s) !== p.voted) list = toggleVoteLocal(list, id);
+  });
+  return list;
+}
+
+function sendVote(songId) {
+  const before = currentSongs.find((x) => x.id === songId);
+  if (!before) return;
+  const wantVoted = !hasVoted(before);
+  const p = pendingVotes.get(songId) || { voted: wantVoted, n: 0 };
+  p.voted = wantVoted;
+  p.n++;
+  pendingVotes.set(songId, p);
+
+  currentSongs = toggleVoteLocal(currentSongs, songId);
+  filterSongs({ quiet: true });
+
+  const settle = () => {
+    const cur = pendingVotes.get(songId);
+    if (cur && --cur.n <= 0) pendingVotes.delete(songId);
+  };
   fetchAPI(
     "voteSong",
     { eventId: activeEvent.id, songId: songId, uuid: userUUID },
     (res) => {
-      currentSongs = fixSongIds(res);
-      filterSongs();
+      settle();
+      currentSongs = applyPendingVotes(fixSongIds(res));
+      filterSongs({ quiet: true });
     },
-    () => btns.forEach((b) => setDiscoverVoted(b, false)),
+    () => {
+      // เซิร์ฟเวอร์ไม่รับ: ย้อนกลับเฉพาะเมื่อไม่มีการกดเพลงนี้ซ้อนอยู่
+      settle();
+      if (!pendingVotes.has(songId)) {
+        const s = currentSongs.find((x) => x.id === songId);
+        if (s && hasVoted(s) === wantVoted) currentSongs = toggleVoteLocal(currentSongs, songId);
+        filterSongs({ quiet: true });
+      }
+    },
   );
-};
+}
 
 window.quickVote = function (e, songId) {
   e.stopPropagation();
@@ -2412,54 +2497,24 @@ window.quickVote = function (e, songId) {
   if (!userUUID) return openModal("welcomeModal");
 
   const s = currentSongs.find((x) => x.id === songId);
+  if (!s) return;
   if (isMine(s)) {
     return showToast(t("toast_notice"), t("cant_vote_own"), "error");
   }
-
-  const voteBtn = e.currentTarget;
-  const icon = voteBtn.querySelector("i");
-  const countSpan = voteBtn.querySelector(".vote-count");
-  let currentVotes = parseInt(countSpan.innerText);
-  // เก็บสถานะเดิมไว้ เผื่อเซิร์ฟเวอร์ปฏิเสธ (เช่น ระบบหนาแน่น) จะได้ย้อนกลับให้ตรงความจริง
-  const prevState = {
-    iconClass: icon.className,
-    iconColor: icon.style.color,
-    countColor: countSpan.style.color,
-    count: countSpan.innerText,
-  };
-
-  if (icon.classList.contains("fa-regular")) {
-    icon.classList.remove("fa-regular");
-    icon.classList.add("fa-solid");
-    icon.style.color = "var(--primary)";
-    countSpan.style.color = "var(--primary)";
-    countSpan.innerText = currentVotes + 1;
-    icon.classList.add("heart-pop");
-    setTimeout(() => icon.classList.remove("heart-pop"), 300);
-  } else {
-    icon.classList.remove("fa-solid");
-    icon.classList.add("fa-regular");
-    icon.style.color = "var(--text-muted)";
-    countSpan.style.color = "var(--text-muted)";
-    countSpan.innerText = currentVotes - 1;
+  const popId = !hasVoted(s) ? songId : null;
+  sendVote(songId);
+  // หัวใจเด้งบนการ์ดที่เพิ่งวาดใหม่
+  if (popId) {
+    const icon = document.querySelector(`.song-card[data-id="${CSS.escape(popId)}"] .vote-anim-icon`);
+    if (icon) {
+      icon.classList.add("heart-pop");
+      setTimeout(() => icon.classList.remove("heart-pop"), 300);
+    }
   }
-
-  fetchAPI(
-    "voteSong",
-    { eventId: activeEvent.id, songId: songId, uuid: userUUID },
-    (res) => {
-      currentSongs = fixSongIds(res);
-    },
-    () => {
-      icon.className = prevState.iconClass;
-      icon.style.color = prevState.iconColor;
-      countSpan.style.color = prevState.countColor;
-      countSpan.innerText = prevState.count;
-    },
-  );
 };
 
-function renderSongs(songs) {
+// quiet = วาดใหม่หลังโหวต: ไม่เล่นแอนิเมชันการ์ดไหลเข้า (ไม่งั้นทั้งรายการกระพริบทุกครั้งที่กดหัวใจ)
+function renderSongs(songs, quiet) {
   const container = document.getElementById("song-list-content");
   if (!container) return;
   container.innerHTML = "";
@@ -2505,7 +2560,13 @@ function renderSongs(songs) {
           ? "status-played"
           : "";
     card.className = `song-card ${statusClass} ${topClass}`;
-    card.style.animationDelay = `${index * 0.05}s`;
+    card.dataset.id = s.id;
+    if (quiet) {
+      card.style.animation = "none";
+      card.style.opacity = "1";
+    } else {
+      card.style.animationDelay = `${index * 0.05}s`;
+    }
 
     let tagsHTML = "";
     // ... โค้ดสร้าง Tag เวลาเหมือนเดิม
@@ -3417,6 +3478,9 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
   updateListCounts();
   updateCollapseAllButton();
   initSortables();
+  watchPoolForSearch();
+  bindPlaylistTap();
+  filterPool();
   return missing.length;
 }
 
@@ -3436,7 +3500,7 @@ function collectPlaylistLists() {
           gender: s.gender,
           // ส่งเป็น true/false จริง (ค่าในชีตเป็น "Yes"/"No" ซึ่ง "No" ก็นับเป็นจริงในเซิร์ฟเวอร์)
           isBreakdance: s.isBreakdance === "Yes" || s.isBreakdance === true,
-          time: `${s.start}-${s.end}`,
+          time: s.end ? `${s.start}-${s.end}` : String(s.start || ""),
           link: s.link,
         });
     });
@@ -3781,6 +3845,9 @@ function createPlaylistItem(song) {
   const div = document.createElement("div");
   div.className = "playlist-item";
   div.dataset.id = song.id;
+  div.dataset.name = song.name || "";
+  div.dataset.artist = song.artist || "";
+  div.dataset.origin = song.origin || "K-Pop";
   div.dataset.gender = song.gender || "Mix";
   div.dataset.bd =
     song.isBreakdance === "Yes" || song.isBreakdance === true
@@ -3819,7 +3886,7 @@ function createPlaylistItem(song) {
 
   div.innerHTML = `
     <div style="display:flex; align-items:center; overflow:hidden; gap: 8px;">
-      <img src="${getYTThumb(song.link)}" style="width:40px; height:24px; object-fit:cover; border-radius:4px;">
+      <img src="${getYTThumb(song.link)}" draggable="false" alt="" style="width:40px; height:24px; object-fit:cover; border-radius:4px;">
       <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
         <strong>${escapeHTML(song.name)}</strong><br><span style="font-size:0.75rem; color:#888;">${escapeHTML(song.artist)}</span>
       </div>
@@ -3837,9 +3904,12 @@ function initSortables() {
   boardSortable = new Sortable(document.getElementById("dynamic-board"), {
     animation: 150,
     handle: ".list-col-header",
+    filter: ".list-toggle, .fa-pen, .fa-trash, .btn",
+    preventOnFilter: false,
     ghostClass: "sortable-ghost",
     delay: 2000,
     delayOnTouchOnly: false,
+    ...touchSortOptions(),
   });
 
   document.querySelectorAll(".drop-zone").forEach((zone) => {
@@ -3848,12 +3918,14 @@ function initSortables() {
         group: "shared",
         animation: 150,
         ghostClass: "sortable-ghost",
-        delay: 150,
+        delay: IS_TOUCH ? 180 : 0,
         delayOnTouchOnly: true,
+        ...touchSortOptions(),
         // ระหว่างลาก ลิสต์ที่ย่ออยู่จะโผล่เป็นแถบ "วางที่นี่" ให้ลากเพลงใส่ได้
         onStart: () => document.body.classList.add("pl-dragging"),
         onEnd: () => {
           document.body.classList.remove("pl-dragging");
+          plLastDragEnd = Date.now();
           updateListCounts();
         },
         onAdd: updateListCounts,
@@ -3916,6 +3988,237 @@ function shufflePool() {
   }
   items.forEach((el) => pool.appendChild(el));
   showToast(t("toast_success"), t("pool_shuffled"), "success");
+}
+
+// ==========================================
+// ค้นหาเพลงในกองกลาง (กรองทันทีที่พิมพ์ ไม่ต้องกดค้นหา)
+// ==========================================
+// - หลายคำ = ต้องตรงทุกคำ (เช่น "bts butter")
+// - ไม่สนตัวพิมพ์เล็กใหญ่ ช่องว่าง ขีด จุด (เช่น "blackpink" เจอ "BLACK PINK", "kpop" เจอ "K-Pop")
+// - พิมพ์ผิดได้ 1 ตัวอักษรสำหรับคำยาว 4 ตัวขึ้นไป (เช่น "blakpink")
+// - คำย่อแท็ก: m / bg = บอยกรุ๊ป, f / gg = เกิร์ลกรุ๊ป, mix, bd = Dance Break, kpop / tpop / jpop,
+//   ตัวเลขตามด้วย + (เช่น 5+) = โหวตตั้งแต่ 5 ขึ้นไป, ขึ้นต้นด้วย - เพื่อตัดออก (เช่น "-bd")
+function normSearch(s) {
+  return String(s == null ? "" : s)
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[๐-๙]/g, (c) => String(c.charCodeAt(0) - 0x0e50))
+    .replace(/[\s\-_.,:;!?'"`’‘“”()[\]{}/\\|&+*#~^]+/g, "");
+}
+
+function editDistanceAtMost1(a, b) {
+  if (a === b) return true;
+  const la = a.length,
+    lb = b.length;
+  if (Math.abs(la - lb) > 1) return false;
+  let i = 0,
+    j = 0,
+    diff = 0;
+  while (i < la && j < lb) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++diff > 1) return false;
+    if (la > lb) i++;
+    else if (lb > la) j++;
+    else {
+      i++;
+      j++;
+    }
+  }
+  return diff + (la - i) + (lb - j) <= 1;
+}
+
+const plIsM = (el) => el.dataset.gender === "M";
+const plIsF = (el) => el.dataset.gender === "F";
+const plIsMix = (el) => !plIsM(el) && !plIsF(el);
+const plIsBD = (el) => el.dataset.bd === "true";
+// คำย่อที่เป็นแท็กล้วน (ไม่ค้นในชื่อเพลง เพราะสั้นจนเจอเกือบทุกเพลง)
+const POOL_TAG_ONLY = { m: plIsM, bg: plIsM, f: plIsF, gg: plIsF, bd: plIsBD };
+// คำที่เป็นได้ทั้งแท็กและชื่อเพลง (ตรงอย่างใดอย่างหนึ่งก็ผ่าน)
+const POOL_TAG_WORDS = {
+  boy: plIsM, boys: plIsM, male: plIsM, ชาย: plIsM, girl: plIsF, girls: plIsF, female: plIsF, หญิง: plIsF,
+  mix: plIsMix, ผสม: plIsMix, break: plIsBD, breakdance: plIsBD, dancebreak: plIsBD,
+  kpop: (el) => el.dataset.origin === "K-Pop",
+  tpop: (el) => el.dataset.origin === "T-Pop",
+  jpop: (el) => el.dataset.origin === "J-Pop",
+};
+
+function poolTokenMatches(el, raw) {
+  const tok = normSearch(raw);
+  const rawT = String(raw).trim();
+  const minVotes = /^(\d+)\+$/.exec(rawT) || /^>=?(\d+)$/.exec(rawT);
+  if (minVotes) return (parseInt(el.dataset.votes, 10) || 0) >= parseInt(minVotes[1], 10);
+  if (!tok) return true;
+  if (POOL_TAG_ONLY[tok]) return POOL_TAG_ONLY[tok](el);
+  if (POOL_TAG_WORDS[tok] && POOL_TAG_WORDS[tok](el)) return true;
+
+  if (!el._searchHay) {
+    const name = el.dataset.name || "";
+    const artist = el.dataset.artist || "";
+    el._searchHay = normSearch(name) + "\u0001" + normSearch(artist);
+    el._searchWords = (name + " " + artist)
+      .split(/[\s\-_/,()[\]]+/)
+      .map(normSearch)
+      .filter(Boolean)
+      .concat([normSearch(name), normSearch(artist)]);
+  }
+  if (el._searchHay.includes(tok)) return true;
+  if (tok.length < 4) return false;
+  // ยอมให้พิมพ์ผิด 1 ตัว: เทียบกับต้นคำแต่ละคำในชื่อเพลง/ศิลปิน
+  return el._searchWords.some(
+    (w) =>
+      editDistanceAtMost1(tok, w.slice(0, tok.length)) ||
+      editDistanceAtMost1(tok, w.slice(0, tok.length + 1)) ||
+      editDistanceAtMost1(tok, w.slice(0, tok.length - 1)),
+  );
+}
+
+function filterPool() {
+  const input = document.getElementById("pool-search");
+  const pool = document.getElementById("list-pool");
+  if (!input || !pool) return;
+  const q = input.value.trim();
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const items = Array.from(pool.querySelectorAll(".playlist-item"));
+  let shown = 0;
+  items.forEach((el) => {
+    const ok = tokens.every((tk) =>
+      tk.length > 1 && tk[0] === "-" ? !poolTokenMatches(el, tk.slice(1)) : poolTokenMatches(el, tk),
+    );
+    el.classList.toggle("pool-hide", !ok);
+    if (ok) shown++;
+  });
+  const clearBtn = document.getElementById("pool-search-clear");
+  if (clearBtn) clearBtn.classList.toggle("hidden", q === "");
+  const meta = document.getElementById("pool-search-meta");
+  if (meta) {
+    meta.classList.toggle("hidden", q === "");
+    meta.classList.toggle("empty", q !== "" && shown === 0);
+    meta.textContent =
+      q === ""
+        ? ""
+        : shown === 0
+          ? t("pool_search_none", { q: q })
+          : t("pool_search_count", { n: shown, total: items.length });
+  }
+}
+
+function clearPoolSearch() {
+  const input = document.getElementById("pool-search");
+  if (input) input.value = "";
+  filterPool();
+}
+
+// เพลงเข้า/ออกกองกลาง (ลากวาง โหลดลิสต์ เติมเพลงใหม่ สุ่ม) ให้กรองตามคำค้นที่พิมพ์ค้างไว้เสมอ
+let poolObserver = null;
+function watchPoolForSearch() {
+  const pool = document.getElementById("list-pool");
+  if (!pool || poolObserver || typeof MutationObserver === "undefined") return;
+  poolObserver = new MutationObserver(() => {
+    // เพลงที่ถูกลากออกจากกองกลางไปลิสต์อื่น ต้องไม่ถูกซ่อนค้างไว้
+    document
+      .querySelectorAll("#dynamic-board .playlist-item.pool-hide")
+      .forEach((el) => el.classList.remove("pool-hide"));
+    filterPool(); // เปลี่ยนแค่ class ไม่เพิ่ม/ลบลูก จึงไม่วนเรียกตัวเองซ้ำ
+  });
+  poolObserver.observe(pool, { childList: true });
+}
+
+// ==========================================
+// รองรับการจัดลิสต์บนจอสัมผัส (iPad / แท็บเล็ต / มือถือ)
+// ==========================================
+const IS_TOUCH =
+  "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0;
+let plLastDragEnd = 0;
+
+// Safari บน iPad ลากแบบ HTML5 ได้ไม่ดี (ต้องกดค้างนาน ภาพลอยหาย ลากออกนอกกล่องที่เลื่อนได้ไม่ได้)
+// จึงใช้โหมดจำลองการลากของ SortableJS: ตัวลอยติดนิ้ว ลากข้ามลิสต์ได้ และเลื่อนจออัตโนมัติเมื่อลากไปชิดขอบ
+function touchSortOptions() {
+  const base = { scroll: true, bubbleScroll: true, scrollSensitivity: 80, scrollSpeed: 16 };
+  if (!IS_TOUCH) return base;
+  return Object.assign(base, {
+    forceFallback: true,
+    fallbackOnBody: true, // ตัวลอยอยู่บน body ไม่ถูกกล่อง overflow ตัดหาย
+    fallbackTolerance: 4,
+    touchStartThreshold: 6, // นิ้วขยับเกินนี้ก่อนครบเวลากดค้าง = เลื่อนจอ ไม่ใช่ลาก
+    fallbackClass: "sortable-fallback",
+  });
+}
+
+// แตะเพลง (ไม่ได้ลาก) = เปิดเมนูย้ายเพลงไปลิสต์อื่น เหมาะกับ iPad ที่ต้องลากไกลข้ามจอ
+let moveSongEl = null;
+let moveZones = [];
+function bindPlaylistTap() {
+  const ws = document.querySelector(".playlist-workspace");
+  if (!ws || ws.dataset.tapBound) return;
+  ws.dataset.tapBound = "1";
+  ws.addEventListener("click", (e) => {
+    const item = e.target.closest(".playlist-item");
+    if (!item || !ws.contains(item)) return;
+    if (Date.now() - plLastDragEnd < 400) return; // เพิ่งลากเสร็จ ไม่ใช่การแตะ
+    openMoveSong(item);
+  });
+}
+
+function zoneLabel(zone) {
+  if (zone.id === "list-pool") return t("pool");
+  return zone.getAttribute("data-category") || "";
+}
+
+function openMoveSong(item) {
+  moveSongEl = item;
+  const from = item.closest(".drop-zone");
+  const nameEl = document.getElementById("move-song-name");
+  if (nameEl) nameEl.textContent = `${item.dataset.name} — ${item.dataset.artist}`;
+  const box = document.getElementById("move-song-targets");
+  if (!box) return;
+  moveZones = [document.getElementById("list-pool")]
+    .concat(Array.from(document.querySelectorAll("#dynamic-board .drop-zone")))
+    .filter(Boolean);
+  let html = "";
+  if (from && from.querySelectorAll(".playlist-item").length > 1) {
+    html += `<div class="move-row">
+      <button type="button" class="btn btn-outline btn-sm" onclick="moveSongWithin('top')"><i class="fa-solid fa-arrow-up"></i> ${escapeHTML(t("move_top"))}</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="moveSongWithin('bottom')"><i class="fa-solid fa-arrow-down"></i> ${escapeHTML(t("move_bottom"))}</button>
+    </div>`;
+  }
+  html += moveZones
+    .map((z, i) => {
+      const here = z === from;
+      const n = z.querySelectorAll(".playlist-item").length;
+      return `<button type="button" class="move-target${here ? " here" : ""}" ${here ? "disabled" : ""} onclick="moveSongTo(${i})">
+        <span class="move-target-name">${escapeHTML(zoneLabel(z))}</span>
+        <span class="move-target-count">${here ? escapeHTML(t("move_here")) : n}</span>
+      </button>`;
+    })
+    .join("");
+  box.innerHTML = html;
+  openModal("moveSongModal");
+}
+
+function moveSongTo(i) {
+  const zone = moveZones[i];
+  const el = moveSongEl;
+  if (!zone || !el) return;
+  zone.appendChild(el);
+  el.classList.remove("pool-hide");
+  updateListCounts();
+  closeModal("moveSongModal");
+  showToast(t("toast_success"), t("move_done", { song: el.dataset.name, list: zoneLabel(zone) }), "success");
+  moveSongEl = null;
+}
+
+function moveSongWithin(where) {
+  const el = moveSongEl;
+  const zone = el ? el.closest(".drop-zone") : null;
+  if (!zone) return;
+  if (where === "top") zone.insertBefore(el, zone.firstChild);
+  else zone.appendChild(el);
+  closeModal("moveSongModal");
+  moveSongEl = null;
 }
 
 // ==========================================
@@ -4287,7 +4590,7 @@ window.openEventIntroUpcoming = function (id) {
 // ==========================================
 // ระบบ Feedback Form
 // ==========================================
-let currentRatings = { songList: 0, place: 0, website: 0 };
+let currentRatings = { songList: 0, specialList: 0, place: 0, website: 0 };
 let currentEventId = "";
 
 function setRating(category, score) {
@@ -4359,6 +4662,7 @@ function handleFeedbackSubmit(e) {
     timestamp: new Date().toLocaleString("en-GB"), // 🌟 เพิ่มบรรทัดนี้
     comments: {
       songList: document.getElementById("fbSongListComment").value,
+      specialList: document.getElementById("fbSpecialListComment").value,
       place: document.getElementById("fbPlaceComment").value,
       website: document.getElementById("fbWebsiteComment").value,
       additional: document.getElementById("fbAdditionalComment").value,
@@ -4378,6 +4682,19 @@ function handleFeedbackSubmit(e) {
     closeFeedbackModal();
     btnSubmit.innerHTML = originalText;
     btnSubmit.disabled = false;
+    resetFeedbackForm();
+  }, () => {
+    // ส่งไม่สำเร็จ (เน็ตหลุด/ระบบหนาแน่น): คืนปุ่มให้กดส่งใหม่ได้ ข้อความที่พิมพ์ไว้ยังอยู่ครบ
+    btnSubmit.innerHTML = originalText;
+    btnSubmit.disabled = false;
+  });
+}
+
+function resetFeedbackForm() {
+  Object.keys(currentRatings).forEach((k) => setRating(k, 0));
+  ["fbSongListComment", "fbSpecialListComment", "fbPlaceComment", "fbWebsiteComment", "fbAdditionalComment"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
   });
 }
 
@@ -4432,17 +4749,14 @@ function openAdminAddSongModal() {
   openModal("addSongModal");
 }
 
-function closeAdminFeedbackModal() {
-  // 🌟 ใช้ระบบปิด Modal หลักของเว็บ
-  closeModal("adminFeedbackDashboardModal");
-}
-
 function renderDashboardData(data) {
   const sList = document.getElementById("avgSongList");
+  const sSpecial = document.getElementById("avgSpecialList");
   const sPlace = document.getElementById("avgPlace");
   const sWeb = document.getElementById("avgWebsite");
 
   if (sList) sList.innerText = `${data.avgSongList || "0.0"} / 5`;
+  if (sSpecial) sSpecial.innerText = `${data.avgSpecialList || "0.0"} / 5`;
   if (sPlace) sPlace.innerText = `${data.avgPlace || "0.0"} / 5`;
   if (sWeb) sWeb.innerText = `${data.avgWebsite || "0.0"} / 5`;
 
@@ -4472,9 +4786,10 @@ function renderDashboardData(data) {
             <span style="font-size: 0.75rem; color: #aaa; float: right; font-weight: normal;">${escapeHTML(item.timestamp)}</span>
           </div>
           <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>1. Song List:</strong> <span style="color: #555;">${escapeHTML(item.songList)}</span></div>
-          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>2. Place:</strong> <span style="color: #555;">${escapeHTML(item.place)}</span></div>
-          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>3. Website:</strong> <span style="color: #555;">${escapeHTML(item.website)}</span></div>
-          <div style="font-size: 0.9rem;"><strong>4. Additional:</strong> <span style="color: #555;">${escapeHTML(item.additional)}</span></div>
+          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>2. Special List:</strong> <span style="color: #555;">${escapeHTML(item.specialList || "-")}</span></div>
+          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>3. Place:</strong> <span style="color: #555;">${escapeHTML(item.place)}</span></div>
+          <div style="font-size: 0.9rem; margin-bottom: 4px;"><strong>4. Website:</strong> <span style="color: #555;">${escapeHTML(item.website)}</span></div>
+          <div style="font-size: 0.9rem;"><strong>5. Additional:</strong> <span style="color: #555;">${escapeHTML(item.additional)}</span></div>
         </div>
       `;
     });

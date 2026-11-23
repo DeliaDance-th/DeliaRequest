@@ -16,7 +16,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css"
@@ -390,6 +390,32 @@
                 <span data-i18n="shuffle_pool">สุ่มทั้งหมด</span>
               </button>
             </div>
+            <!-- ค้นหาเพลงในกองกลาง (กรองทันทีที่พิมพ์) -->
+            <div class="pool-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="search"
+                id="pool-search"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                enterkeyhint="search"
+                placeholder="ค้นหาเพลง / ศิลปิน"
+                data-i18n-ph="pool_search_ph"
+                oninput="filterPool()"
+                onkeydown="if (event.key === 'Escape') clearPoolSearch()"
+              />
+              <button
+                type="button"
+                class="pool-search-clear hidden"
+                id="pool-search-clear"
+                onclick="clearPoolSearch()"
+                aria-label="clear"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div class="pool-search-meta hidden" id="pool-search-meta"></div>
           </div>
           <div id="list-pool" class="drop-zone" data-category="list-pool"></div>
         </div>
@@ -1304,9 +1330,27 @@
             ></textarea>
           </div>
 
-          <!-- 2. PLACE -->
+          <!-- 2. SPECIAL LIST -->
           <div class="feedback-group">
-            <label id="lblPlace" data-i18n="lblPlace">2. PLACE (สถานที่จัดงาน/บรรยากาศ)</label>
+            <label id="lblSpecialList" data-i18n="lblSpecialList">2. SPECIAL LIST (ลิสต์พิเศษ)</label>
+            <div class="rating-stars" data-category="specialList">
+              <span class="star" onclick="setRating('specialList', 1)">★</span>
+              <span class="star" onclick="setRating('specialList', 2)">★</span>
+              <span class="star" onclick="setRating('specialList', 3)">★</span>
+              <span class="star" onclick="setRating('specialList', 4)">★</span>
+              <span class="star" onclick="setRating('specialList', 5)">★</span>
+            </div>
+            <textarea
+              id="fbSpecialListComment"
+              rows="2"
+              placeholder="ความคิดเห็นเพิ่มเติม..."
+              data-i18n-ph="fb_comment_ph"
+            ></textarea>
+          </div>
+
+          <!-- 3. PLACE -->
+          <div class="feedback-group">
+            <label id="lblPlace" data-i18n="lblPlace">3. PLACE (สถานที่จัดงาน/บรรยากาศ)</label>
             <div class="rating-stars" data-category="place">
               <span class="star" onclick="setRating('place', 1)">★</span>
               <span class="star" onclick="setRating('place', 2)">★</span>
@@ -1322,10 +1366,10 @@
             ></textarea>
           </div>
 
-          <!-- 3. WEBSITE REQUEST SONG -->
+          <!-- 4. WEBSITE REQUEST SONG -->
           <div class="feedback-group">
             <label id="lblWebsite" data-i18n="lblWebsite"
-              >3. WEBSITE REQUEST SONG (ระบบเว็บขอเพลง)</label
+              >4. WEBSITE REQUEST SONG (ระบบเว็บขอเพลง)</label
             >
             <div class="rating-stars" data-category="website">
               <span class="star" onclick="setRating('website', 1)">★</span>
@@ -1342,10 +1386,10 @@
             ></textarea>
           </div>
 
-          <!-- 4. ADDITIONAL COMMENT -->
+          <!-- 5. ADDITIONAL COMMENT -->
           <div class="feedback-group">
             <label id="lblAdditional" data-i18n="lblAdditional"
-              >4. ADDITIONAL COMMENT (ข้อเสนอแนะเพิ่มเติม)</label
+              >5. ADDITIONAL COMMENT (ข้อเสนอแนะเพิ่มเติม)</label
             >
             <textarea
               id="fbAdditionalComment"
@@ -1451,7 +1495,7 @@
             class="rating-summary-grid"
             style="
               display: grid;
-              grid-template-columns: repeat(3, 1fr);
+              grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
               gap: 10px;
               margin-bottom: 15px;
             "
@@ -1461,6 +1505,12 @@
                 Song List
               </div>
               <div class="score" id="avgSongList">0.0 / 5</div>
+            </div>
+            <div class="summary-card">
+              <div style="font-size: 0.8rem; color: var(--text-muted)">
+                Special List
+              </div>
+              <div class="score" id="avgSpecialList">0.0 / 5</div>
             </div>
             <div class="summary-card">
               <div style="font-size: 0.8rem; color: var(--text-muted)">
@@ -1636,6 +1686,26 @@
           <i class="fa-solid fa-check"></i>
           <span>ใช้ที่เลือก</span>
         </button>
+      </div>
+    </div>
+
+    <!-- ย้ายเพลงไปลิสต์อื่นแบบแตะ (ใช้บน iPad / มือถือ แทนการลากไกล ๆ) -->
+    <div class="modal-overlay" id="moveSongModal">
+      <div class="modal-content" style="max-width: 420px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('moveSongModal')"
+        ></i>
+        <h3 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i>
+          <span data-i18n="move_title">ย้ายเพลงไปที่...</span>
+        </h3>
+        <p
+          id="move-song-name"
+          class="text-muted"
+          style="text-align: center; font-size: 0.9rem; margin-bottom: 12px"
+        ></p>
+        <div id="move-song-targets" class="move-targets"></div>
       </div>
     </div>
 

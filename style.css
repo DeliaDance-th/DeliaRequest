@@ -2312,3 +2312,171 @@ body.pl-dragging .dynamic-category.collapsed .drop-zone .playlist-item {
   color: var(--primary-hover);
   white-space: nowrap;
 }
+
+/* =========================================
+   ค้นหาเพลงในกองกลาง
+========================================= */
+.pool-search {
+  position: relative;
+  margin: 8px 10px 0;
+}
+.pool-search > .fa-magnifying-glass {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+.pool-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 34px 8px 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 16px; /* 16px ขึ้นไป Safari บน iPad/iPhone จะไม่ซูมหน้าจอตอนแตะช่องพิมพ์ */
+  font-family: inherit;
+  background: #fafafa;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.pool-search input {
+  /* หัวกล่องตั้ง user-select: none ไว้กันคลุมดำตอนลาก แต่ช่องพิมพ์ต้องพิมพ์ได้ (Safari จะไม่ให้โฟกัส) */
+  -webkit-user-select: text;
+  user-select: text;
+}
+.pool-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.pool-search input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 77, 133, 0.12);
+}
+.pool-search-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.pool-search-meta {
+  margin: 6px 12px 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+.pool-search-meta.empty {
+  color: var(--danger);
+}
+.playlist-item.pool-hide {
+  display: none !important;
+}
+
+/* =========================================
+   จัดลิสต์บนจอสัมผัส (iPad / แท็บเล็ต)
+========================================= */
+.playlist-workspace {
+  height: calc(100dvh - 150px); /* แถบเครื่องมือ Safari ยุบ/ขยาย ไม่ทำให้กล่องล้นจอ */
+}
+.playlist-item,
+.list-col-header {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none; /* ไม่ให้เมนูคัดลอก/บันทึกรูปของ iOS โผล่ตอนกดค้าง */
+  -webkit-tap-highlight-color: transparent;
+}
+.playlist-item img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.sortable-ghost {
+  opacity: 0.35;
+}
+.sortable-fallback {
+  opacity: 0.95 !important;
+  transform: rotate(1.5deg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--primary) !important;
+}
+@media (pointer: coarse) {
+  .playlist-item {
+    padding: 11px 12px;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+  .list-col-header .fa-pen,
+  .list-col-header .fa-trash {
+    font-size: 1rem !important;
+    padding: 8px;
+    margin-left: 0 !important;
+  }
+  .list-toggle {
+    width: 36px;
+    height: 36px;
+  }
+}
+@media (max-width: 768px) {
+  .playlist-workspace {
+    height: calc(100dvh - 120px);
+  }
+}
+
+/* เมนูย้ายเพลง (แตะเพลงในหน้าจัดลิสต์) */
+.move-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.move-row .btn {
+  flex: 1;
+}
+.move-targets {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.move-target {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+.move-target:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: #fff5f8;
+}
+.move-target.here {
+  opacity: 0.55;
+  cursor: default;
+}
+.move-target-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.move-target-count {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg-color);
+  padding: 2px 10px;
+  border-radius: 12px;
+}
