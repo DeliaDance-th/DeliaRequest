@@ -241,6 +241,26 @@ const translations = {
     move_bottom: "ลงล่างสุดของลิสต์นี้",
     move_here: "อยู่ที่นี่",
     move_done: "ย้าย \"{song}\" ไปที่ {list} แล้ว",
+    list_add_title: "เพิ่มเพลงลงลิสต์นี้",
+    list_add_heading: "เพิ่มเพลงลงลิสต์",
+    list_add_new: "เพิ่มเพลงใหม่",
+    list_add_new_hint: "กรอกลิงก์ / ชื่อเพลง แล้วเพลงจะลงลิสต์นี้ทันที",
+    list_add_old: "เลือกจากงานเก่า",
+    list_add_old_hint: "ดึงเพลงที่เคยขอในงานก่อน ๆ มาใส่ลิสต์นี้",
+    btn_old_pool: "กองกลางงานเก่า",
+    old_pool_title: "กองกลางงานเก่า",
+    old_pool_event: "งาน",
+    old_pool_dest: "ใส่ลงใน",
+    old_pool_pick: "— เลือกงาน —",
+    old_pool_pick_hint: "เลือกงานด้านบนเพื่อดูเพลงที่เคยขอในงานนั้น",
+    old_pool_empty: "งานนี้ไม่มีเพลง",
+    old_pool_no_match: "ไม่พบเพลงที่ค้นหา",
+    old_pool_search_ph: "ค้นหาเพลง / ศิลปิน",
+    old_pool_all: "เลือกทั้งหมด",
+    old_pool_have: "มีในงานนี้แล้ว",
+    old_pool_add: "เลือกเพลงที่ต้องการ",
+    old_pool_add_n: "เพิ่ม {n} เพลง",
+    old_pool_done: "เพิ่ม {n} เพลงลง {list} แล้ว อย่าลืมกดเซฟนะคะ",
     pool_shuffled: "สุ่มลำดับเพลงในกองกลางแล้วค่ะ",
     shuffle_need_2: "ต้องมีเพลงในกองกลางอย่างน้อย 2 เพลงค่ะ",
     auto_title: "จัดลิสต์อัตโนมัติ",
@@ -579,6 +599,26 @@ const translations = {
     move_bottom: "Move to bottom of this list",
     move_here: "Current",
     move_done: "Moved \"{song}\" to {list}",
+    list_add_title: "Add a song to this list",
+    list_add_heading: "Add song to list",
+    list_add_new: "New song",
+    list_add_new_hint: "Enter a link / title and it goes straight into this list",
+    list_add_old: "From a past event",
+    list_add_old_hint: "Bring in songs requested at earlier events",
+    btn_old_pool: "Past event pools",
+    old_pool_title: "Past event pools",
+    old_pool_event: "Event",
+    old_pool_dest: "Add to",
+    old_pool_pick: "— Pick an event —",
+    old_pool_pick_hint: "Pick an event above to see the songs requested there.",
+    old_pool_empty: "This event has no songs.",
+    old_pool_no_match: "No songs match your search.",
+    old_pool_search_ph: "Search song / artist",
+    old_pool_all: "Select all",
+    old_pool_have: "Already here",
+    old_pool_add: "Select songs to add",
+    old_pool_add_n: "Add {n} song(s)",
+    old_pool_done: "Added {n} song(s) to {list}. Remember to Save.",
     pool_shuffled: "Pool songs shuffled.",
     shuffle_need_2: "You need at least 2 songs in the pool.",
     auto_title: "Auto-arrange setlist",
@@ -3134,6 +3174,7 @@ function applyTypeFixes() {
 
 function checkQuotaAndOpenModal() {
   if (!userUUID) return openModal("welcomeModal");
+  plAddTarget = null;
 
   const maxQuota = parseInt(activeEvent.quota) || 3;
 
@@ -3173,6 +3214,7 @@ function preCheckAddSong() {
   if (!name) return showToast(t("toast_notice"), t("enter_song_name"), "error");
 
   const dup = findDuplicateSong(link, name, null);
+  if (dup && placeExistingInTarget(dup)) return;
   if (dup) return handleDuplicateSong(dup);
 
   const times = readSongTimes("add");
@@ -3259,11 +3301,18 @@ function refreshPoolIfNeeded() {
     .querySelectorAll(".drop-zone [data-id]")
     .forEach((el) => existingIds.add(el.dataset.id));
 
+  // เพิ่มจากปุ่ม + ของลิสต์ไหน เพลงใหม่ก็ไปลงลิสต์นั้นเลย
+  const target = plAddTargetZone();
+  let last = null;
   currentSongs.forEach((s) => {
     if (s.status !== "Played" && !existingIds.has(s.id)) {
-      pool.appendChild(createPlaylistItem(s));
+      last = createPlaylistItem(s);
+      (target || pool).appendChild(last);
     }
   });
+  plAddTarget = null;
+  updateListCounts();
+  if (last && target) flashPlaylistItem(last);
 }
 
 function openUserEditSong() {
@@ -3766,7 +3815,10 @@ function createCategoryBox(title) {
         <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${safeId}')"></i> 
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${safeId}')"></i>
       </h3>
-      <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('${safeId}')"><i class="fa-solid fa-shuffle"></i> M/F</button>
+      <div class="list-col-actions">
+        <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('${safeId}')"><i class="fa-solid fa-shuffle"></i> M/F</button>
+        <button type="button" class="btn btn-outline btn-sm list-add-btn" title="${escapeHTML(t("list_add_title"))}" aria-label="${escapeHTML(t("list_add_title"))}" onclick="openListAddMenu('${safeId}')"><i class="fa-solid fa-plus"></i></button>
+      </div>
     </div>
     <div id="${safeId}" class="drop-zone" data-category="${escapeHTML(title)}" data-drop-hint="${escapeHTML(t("drop_here"))}"></div>
   `;
@@ -4219,6 +4271,330 @@ function moveSongWithin(where) {
   else zone.appendChild(el);
   closeModal("moveSongModal");
   moveSongEl = null;
+}
+
+// ==========================================
+// ปุ่ม + บนหัวลิสต์: เพิ่มเพลงลงลิสต์นี้ตรง ๆ (ไม่ต้องไปเลื่อนหาในกองกลาง)
+// ==========================================
+let plAddTarget = null; // id ของ drop-zone ที่เพลงใหม่จะถูกใส่
+
+function plAddTargetZone() {
+  if (!plAddTarget || currentViewId !== "playlist") return null;
+  return document.getElementById(plAddTarget);
+}
+
+function flashPlaylistItem(el) {
+  const col = el.closest(".dynamic-category");
+  if (col && col.classList.contains("collapsed")) {
+    setCategoryCollapsed(col, false);
+    saveCollapsedState();
+    updateCollapseAllButton();
+  }
+  el.classList.remove("pl-flash");
+  void el.offsetWidth;
+  el.classList.add("pl-flash");
+  el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  setTimeout(() => el.classList.remove("pl-flash"), 2200);
+}
+
+// วางเพลง (ของงานนี้) ลงลิสต์: ถ้าอยู่บนกระดานแล้วก็ย้ายมา ไม่งั้นสร้างใหม่
+function placeSongInZone(song, zone) {
+  let el = Array.from(document.querySelectorAll(".drop-zone [data-id]")).find(
+    (x) => x.dataset.id === String(song.id),
+  );
+  if (!el) el = createPlaylistItem(song);
+  zone.appendChild(el);
+  el.classList.remove("pool-hide");
+  return el;
+}
+
+// เพลงนี้มีอยู่แล้วในงาน: ย้ายมาไว้ในลิสต์ที่เลือกแทนการเพิ่มซ้ำ (คืน true ถ้าจัดการแล้ว)
+function placeExistingInTarget(song) {
+  const zone = plAddTargetZone();
+  if (!zone) return false;
+  const el = placeSongInZone(song, zone);
+  plAddTarget = null;
+  updateListCounts();
+  closeModal("addSongModal");
+  flashPlaylistItem(el);
+  showToast(
+    t("toast_success"),
+    t("move_done", { song: song.name, list: zoneLabel(zone) }),
+    "info",
+  );
+  return true;
+}
+
+function openListAddMenu(zoneId) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  plAddTarget = zoneId;
+  const nameEl = document.getElementById("list-add-name");
+  if (nameEl) nameEl.textContent = zoneLabel(zone);
+  openModal("listAddModal");
+}
+
+function listAddNewSong() {
+  closeModal("listAddModal");
+  openAdminAddSongModal(true);
+}
+
+function listAddFromOld() {
+  const zoneId = plAddTarget;
+  closeModal("listAddModal");
+  openOldPoolModal(zoneId);
+}
+
+// ==========================================
+// คลังเพลงงานเก่า: เปิดดูเพลงที่เคยขอในงานก่อน ๆ แล้วดึงเข้ามาในงานนี้
+// เพลงที่ดึงมาถูกเพิ่มเป็นเพลงของแอดมิน (AdminOnly ไม่โชว์ในหน้าโหวต)
+// ==========================================
+const oldPool = { eventId: "", songs: [], selected: new Set(), cache: {}, busy: false };
+
+function eventTime(e) {
+  const d = new Date(e.date);
+  return isNaN(d) ? 0 : d.getTime();
+}
+
+function openOldPoolModal(targetZoneId) {
+  const evSel = document.getElementById("old-pool-event");
+  const past = currentEvents
+    .filter((e) => activeEvent && e.id !== activeEvent.id)
+    .sort((a, b) => eventTime(b) - eventTime(a));
+  evSel.innerHTML =
+    `<option value="">${escapeHTML(t("old_pool_pick"))}</option>` +
+    past
+      .map(
+        (e) =>
+          `<option value="${escapeHTML(e.id)}">${escapeHTML(e.date)} · ${escapeHTML(e.name)}</option>`,
+      )
+      .join("");
+  if (!past.some((e) => e.id === oldPool.eventId)) oldPool.eventId = "";
+  evSel.value = oldPool.eventId;
+
+  // ปลายทาง: กองกลาง + ทุกลิสต์บนกระดาน
+  const destSel = document.getElementById("old-pool-dest");
+  const zones = [document.getElementById("list-pool")].concat(
+    Array.from(document.querySelectorAll("#dynamic-board .drop-zone")),
+  );
+  destSel.innerHTML = zones
+    .map(
+      (z) =>
+        `<option value="${escapeHTML(z.id)}">${escapeHTML(zoneLabel(z))}</option>`,
+    )
+    .join("");
+  destSel.value =
+    targetZoneId && document.getElementById(targetZoneId)
+      ? targetZoneId
+      : "list-pool";
+  plAddTarget = null;
+
+  document.getElementById("old-pool-search").value = "";
+  oldPool.selected.clear();
+  oldPool.busy = false;
+  openModal("oldPoolModal");
+  loadOldPool(oldPool.eventId);
+}
+
+function loadOldPool(eventId) {
+  oldPool.eventId = eventId;
+  oldPool.selected.clear();
+  const box = document.getElementById("old-pool-list");
+  if (!eventId || oldPool.cache[eventId]) {
+    oldPool.songs = eventId ? oldPool.cache[eventId] : [];
+    return renderOldPool();
+  }
+  oldPool.songs = [];
+  updateOldPoolButton();
+  box.innerHTML = `<div class="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>`;
+  fetchAPI(
+    "getSongs",
+    { eventId: eventId, uuid: userUUID },
+    (res) => {
+      oldPool.cache[eventId] = fixSongIds(res || []);
+      if (oldPool.eventId !== eventId) return;
+      oldPool.songs = oldPool.cache[eventId];
+      renderOldPool();
+    },
+    () => {
+      if (oldPool.eventId === eventId)
+        box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t("load_error"))}</p>`;
+    },
+  );
+}
+
+function oldPoolVisible() {
+  const q = normSearch(document.getElementById("old-pool-search").value);
+  if (!q) return oldPool.songs;
+  return oldPool.songs.filter((s) =>
+    normSearch(`${s.name} ${s.artist}`).includes(q),
+  );
+}
+
+function renderOldPool() {
+  const box = document.getElementById("old-pool-list");
+  const all = document.getElementById("btn-old-pool-all");
+  if (all) all.disabled = !oldPool.songs.length;
+  if (!oldPool.eventId) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t("old_pool_pick_hint"))}</p>`;
+    return updateOldPoolButton();
+  }
+  const list = oldPoolVisible();
+  if (!list.length) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t(oldPool.songs.length ? "old_pool_no_match" : "old_pool_empty"))}</p>`;
+    return updateOldPoolButton();
+  }
+  box.innerHTML = list
+    .map((s, i) => {
+      const have = findDuplicateSong(s.link, s.name, null);
+      const on = oldPool.selected.has(s.id);
+      const g =
+        s.gender === "M"
+          ? `<span class="tag tag-m">M</span>`
+          : s.gender === "F"
+            ? `<span class="tag tag-f">F</span>`
+            : `<span class="tag">Mix</span>`;
+      const bd =
+        s.isBreakdance === "Yes" || s.isBreakdance === true
+          ? ` <span class="tag tag-bd">BD</span>`
+          : "";
+      const haveTag = have
+        ? ` <span class="tag tag-have">${escapeHTML(t("old_pool_have"))}</span>`
+        : "";
+      return `<label class="old-pool-item${on ? " on" : ""}" data-idx="${i}">
+        <input type="checkbox" ${on ? "checked" : ""} onchange="toggleOldPoolSong(this)">
+        <img src="${getYTThumb(s.link)}" alt="" loading="lazy">
+        <span class="old-pool-info">
+          <strong>${escapeHTML(s.name)}</strong>
+          <span class="text-muted">${escapeHTML(s.artist)}</span>
+        </span>
+        <span class="old-pool-tags"><span class="tag">${escapeHTML(s.origin || "K-Pop")}</span> ${g}${bd}${haveTag}</span>
+      </label>`;
+    })
+    .join("");
+  oldPool.visible = list;
+  updateOldPoolButton();
+}
+
+function toggleOldPoolSong(input) {
+  const row = input.closest(".old-pool-item");
+  const s = (oldPool.visible || [])[parseInt(row.dataset.idx, 10)];
+  if (!s) return;
+  if (input.checked) oldPool.selected.add(s.id);
+  else oldPool.selected.delete(s.id);
+  row.classList.toggle("on", input.checked);
+  updateOldPoolButton();
+}
+
+function selectAllOldPool() {
+  const list = oldPoolVisible();
+  const allOn = list.length > 0 && list.every((s) => oldPool.selected.has(s.id));
+  list.forEach((s) =>
+    allOn ? oldPool.selected.delete(s.id) : oldPool.selected.add(s.id),
+  );
+  renderOldPool();
+}
+
+function updateOldPoolButton() {
+  const btn = document.getElementById("btn-old-pool-add");
+  const label = document.getElementById("old-pool-add-label");
+  const n = oldPool.selected.size;
+  if (btn) btn.disabled = n === 0 || oldPool.busy;
+  if (label && !oldPool.busy)
+    label.textContent = n ? t("old_pool_add_n", { n: n }) : t("old_pool_add");
+}
+
+function importOldPoolSongs() {
+  if (oldPool.busy) return;
+  const picked = oldPool.songs.filter((s) => oldPool.selected.has(s.id));
+  if (!picked.length) return;
+  const zone =
+    document.getElementById(document.getElementById("old-pool-dest").value) ||
+    document.getElementById("list-pool");
+  const toAdd = picked
+    .filter((s) => !findDuplicateSong(s.link, s.name, null))
+    .map((s) => ({
+      name: s.name,
+      artist: s.artist,
+      link: s.link,
+      start: s.start,
+      end: s.end,
+      isBreakdance: s.isBreakdance === "Yes" || s.isBreakdance === true,
+      gender: s.gender || "Mix",
+      origin: s.origin || "K-Pop",
+    }));
+
+  const finish = () => {
+    oldPool.busy = false;
+    let last = null;
+    picked.forEach((s) => {
+      const mine = findDuplicateSong(s.link, s.name, null);
+      if (mine) last = placeSongInZone(mine, zone);
+    });
+    plAddTarget = null;
+    refreshPoolIfNeeded(); // เพลงอื่นที่เพิ่งมีคนขอเข้ามา (ถ้ามี) ไปกองกลางตามปกติ
+    filterPool();
+    oldPool.selected.clear();
+    updateOldPoolButton();
+    closeModal("oldPoolModal");
+    if (last) flashPlaylistItem(last);
+    showToast(
+      t("toast_success"),
+      t("old_pool_done", { n: picked.length, list: zoneLabel(zone) }),
+      "success",
+    );
+  };
+  const fail = () => {
+    oldPool.busy = false;
+    updateOldPoolButton();
+  };
+  const applyList = (res) => {
+    currentSongs = fixSongIds(res);
+    filterSongs();
+  };
+
+  oldPool.busy = true;
+  const btn = document.getElementById("btn-old-pool-add");
+  if (btn) btn.disabled = true;
+  const label = document.getElementById("old-pool-add-label");
+  if (label) label.textContent = t("msg_saving");
+  if (!toAdd.length) return finish();
+
+  const base = {
+    eventId: activeEvent.id,
+    uuid: userUUID,
+    isAdmin: isAdminLoggedIn,
+  };
+  fetchAPI(
+    "addSongs",
+    Object.assign({ songs: toAdd }, base),
+    (res) => {
+      applyList(res);
+      finish();
+    },
+    (err) => {
+      if (err !== "Invalid Action") {
+        showToast(t("toast_notice"), err === "NETWORK_ERROR" ? t("toast_network_msg") : err, "error");
+        return fail();
+      }
+      // Apps Script ยังไม่ได้อัปเดต: เพิ่มทีละเพลงแทน
+      let i = 0;
+      const next = () => {
+        if (i >= toAdd.length) return finish();
+        fetchAPI(
+          "addSong",
+          Object.assign({ songData: toAdd[i++] }, base),
+          (res) => {
+            applyList(res);
+            next();
+          },
+          fail,
+        );
+      };
+      next();
+    },
+    true,
+  );
 }
 
 // ==========================================
@@ -4729,7 +5105,8 @@ function closeAdminFeedbackModal() {
   closeModal("adminFeedbackDashboardModal");
 }
 
-function openAdminAddSongModal() {
+function openAdminAddSongModal(keepTarget) {
+  if (keepTarget !== true) plAddTarget = null;
   ["song-link", "song-name", "song-artist", "song-start", "song-end"].forEach(
     (id) => {
       const el = document.getElementById(id);

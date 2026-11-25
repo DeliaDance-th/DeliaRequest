@@ -17,10 +17,11 @@ const ADMIN_ACTIONS = {
   updateSongStatus: 1, deleteSong: 1,
   getPlaylist: 1, savePlaylist: 1, listPlaylists: 1, getPlaylistBySheet: 1, savePlaylistBackup: 1,
   aiMagicSetlist: 1, getFeedback: 1,
-  addArtistToDB: 1, suggestSongFixes: 1, applySongFixes: 1, mergeSongs: 1
+  addArtistToDB: 1, suggestSongFixes: 1, applySongFixes: 1, mergeSongs: 1,
+  addSongs: 1
 };
 // ฟังก์ชันที่ตอบเป็นรายการเพลง (ต้องซ่อนอีเมลเมื่อ HARDENED = true)
-const SONG_LIST_ACTIONS = { getSongs: 1, addSong: 1, editSong: 1, voteSong: 1, updateSongStatus: 1, deleteSong: 1, mergeSongs: 1 };
+const SONG_LIST_ACTIONS = { getSongs: 1, addSong: 1, addSongs: 1, editSong: 1, voteSong: 1, updateSongStatus: 1, deleteSong: 1, mergeSongs: 1 };
 
 var _ssCache = null;
 function getSS() {
@@ -192,6 +193,7 @@ function doPost(e) {
       case "getSongs": result = getSongs(p.eventId); break;
       case "getFeedback": result = getFeedback(p.eventId); break;
       case "addSong": result = addSong(p.eventId, p.songData, p.uuid, adminFlag); break;
+      case "addSongs": result = addSongs(p.eventId, p.songs, p.uuid, adminFlag); break;
       case "getGlobalLeaderboard": result = getGlobalLeaderboard(); break;
       case "editSong": result = editSong(p.eventId, p.songId, p.songData, p.uuid, adminFlag); break;
       case "voteSong": result = voteSong(p.eventId, p.songId, p.uuid); break;
@@ -1214,6 +1216,19 @@ function deleteEvent(id) {
 function addSong(eventId, songData, uuid, isAdmin) {
   return withScriptLock(15000, function () {
     return addSongLocked(eventId, songData, uuid, isAdmin);
+  });
+}
+
+// เพิ่มหลายเพลงในครั้งเดียว (ดึงเพลงจากงานเก่าเข้าหน้าตัดลิสต์) เฉพาะแอดมิน
+// เพลงที่ซ้ำกับที่มีอยู่แล้วจะนับเป็นโหวตตามปกติของ addSong
+function addSongs(eventId, songs, uuid, isAdmin) {
+  if (!isAdmin) throw new Error("เฉพาะแอดมินเท่านั้นค่ะ");
+  const list = Array.isArray(songs) ? songs.slice(0, 100) : [];
+  return withScriptLock(30000, function () {
+    list.forEach(function (songData) {
+      if (songData && String(songData.name || "").trim()) addSongLocked(eventId, songData, uuid, true);
+    });
+    return getSongs(eventId);
   });
 }
 

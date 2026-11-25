@@ -440,6 +440,14 @@
             </button>
             <button
               class="btn btn-outline btn-sm"
+              id="btn-pl-old-pool"
+              onclick="openOldPoolModal()"
+            >
+              <i class="fa-solid fa-box-archive"></i>
+              <span data-i18n="btn_old_pool">กองกลางงานเก่า</span>
+            </button>
+            <button
+              class="btn btn-outline btn-sm"
               id="btn-pl-collapse-all"
               onclick="toggleAllCategories()"
               disabled
@@ -1706,6 +1714,99 @@
           style="text-align: center; font-size: 0.9rem; margin-bottom: 12px"
         ></p>
         <div id="move-song-targets" class="move-targets"></div>
+      </div>
+    </div>
+
+    <!-- ปุ่ม + บนหัวลิสต์: เลือกวิธีเพิ่มเพลงลงลิสต์นั้น -->
+    <div class="modal-overlay" id="listAddModal">
+      <div class="modal-content" style="max-width: 420px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('listAddModal')"
+        ></i>
+        <h3 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-plus"></i>
+          <span data-i18n="list_add_heading">เพิ่มเพลงลงลิสต์</span>
+        </h3>
+        <p
+          id="list-add-name"
+          class="text-muted"
+          style="text-align: center; font-size: 0.95rem; margin-bottom: 12px; font-weight: 600"
+        ></p>
+        <div class="move-targets">
+          <button type="button" class="move-target" onclick="listAddNewSong()">
+            <span class="list-add-opt">
+              <span class="move-target-name"><i class="fa-solid fa-plus-circle"></i> <span data-i18n="list_add_new">เพิ่มเพลงใหม่</span></span>
+              <span class="text-muted" data-i18n="list_add_new_hint">กรอกลิงก์ / ชื่อเพลง แล้วเพลงจะลงลิสต์นี้ทันที</span>
+            </span>
+            <i class="fa-solid fa-chevron-right text-muted"></i>
+          </button>
+          <button type="button" class="move-target" onclick="listAddFromOld()">
+            <span class="list-add-opt">
+              <span class="move-target-name"><i class="fa-solid fa-box-archive"></i> <span data-i18n="list_add_old">เลือกจากงานเก่า</span></span>
+              <span class="text-muted" data-i18n="list_add_old_hint">ดึงเพลงที่เคยขอในงานก่อน ๆ มาใส่ลิสต์นี้</span>
+            </span>
+            <i class="fa-solid fa-chevron-right text-muted"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- กองกลางงานเก่า: ดึงเพลงจากงานก่อน ๆ เข้ามาในงานนี้ -->
+    <div class="modal-overlay" id="oldPoolModal">
+      <div class="modal-content" style="max-width: 600px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('oldPoolModal')"
+        ></i>
+        <h2 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-box-archive"></i>
+          <span data-i18n="old_pool_title">กองกลางงานเก่า</span>
+        </h2>
+        <div class="old-pool-controls">
+          <label>
+            <span data-i18n="old_pool_event">งาน</span>
+            <select id="old-pool-event" class="form-control" onchange="loadOldPool(this.value)"></select>
+          </label>
+          <label>
+            <span data-i18n="old_pool_dest">ใส่ลงใน</span>
+            <select id="old-pool-dest" class="form-control"></select>
+          </label>
+        </div>
+        <div class="old-pool-searchrow">
+          <div class="pool-search" style="flex: 1; margin: 0">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="search"
+              id="old-pool-search"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="ค้นหาเพลง / ศิลปิน"
+              data-i18n-ph="old_pool_search_ph"
+              oninput="renderOldPool()"
+            />
+          </div>
+          <button
+            type="button"
+            class="btn btn-outline btn-sm"
+            id="btn-old-pool-all"
+            onclick="selectAllOldPool()"
+          >
+            <i class="fa-solid fa-check-double"></i>
+            <span data-i18n="old_pool_all">เลือกทั้งหมด</span>
+          </button>
+        </div>
+        <div id="old-pool-list"></div>
+        <button
+          class="btn btn-primary btn-full"
+          id="btn-old-pool-add"
+          onclick="importOldPoolSongs()"
+          style="margin-top: 12px"
+          disabled
+        >
+          <i class="fa-solid fa-plus"></i>
+          <span id="old-pool-add-label">เลือกเพลงที่ต้องการ</span>
+        </button>
       </div>
     </div>
 
