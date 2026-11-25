@@ -4574,6 +4574,7 @@ function updateTrashCount(pop) {
   const z = trashZone();
   const n = z ? z.querySelectorAll(".playlist-item").length : 0;
   const badge = document.getElementById("pl-trash-count");
+  const bin = document.getElementById("pl-trash");
   if (badge) {
     badge.textContent = n;
     badge.classList.toggle("hidden", n === 0);
@@ -4583,6 +4584,7 @@ function updateTrashCount(pop) {
       badge.classList.add("pop");
     }
   }
+  if (bin) bin.classList.toggle("has-items", n > 0);
 }
 
 function setTrashHover(on) {
@@ -4594,10 +4596,6 @@ function setTrashHover(on) {
 function playTrashAnimation(name) {
   const bin = document.getElementById("pl-trash");
   if (!bin) return;
-  // ให้แถบถังขยะค้างอยู่ครู่หนึ่งหลังปล่อยเพลง จะได้เห็นอนิเมชั่น
-  bin.classList.add("linger");
-  clearTimeout(bin._lingerTimer);
-  bin._lingerTimer = setTimeout(() => bin.classList.remove("linger"), 900);
   bin.classList.remove("gulp");
   void bin.offsetWidth;
   bin.classList.add("gulp");

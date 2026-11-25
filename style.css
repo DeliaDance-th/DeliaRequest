@@ -2641,65 +2641,73 @@ body.pl-dragging .dynamic-category.collapsed .drop-zone .playlist-item {
 
 /* =========================================
    ถังขยะหน้าจัดลิสต์ (ลากเพลงมาวางเพื่อเอาออก)
-   ปกติซ่อนไว้ ระหว่างลากเพลงจะมีแถบวางเลื่อนขึ้นจากขอบล่างจอ
 ========================================= */
 .pl-trash {
   position: fixed;
   left: 50%;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
   z-index: 950;
-  width: min(520px, calc(100% - 32px));
-  height: 72px;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  border-radius: 18px;
-  border: 2px dashed #ef9a9a;
-  background: rgba(255, 255, 255, 0.94);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
-  color: #e57373;
-  /* ซ่อนแบบอยู่ที่เดิม (เลื่อนลงนิดเดียว) เพื่อให้ลากมาวางได้ทันทีที่เริ่มลาก แม้อนิเมชั่นยังไม่จบ */
-  transform: translate(-50%, 18px) scale(0.97);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  gap: 10px;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  color: #9e9e9e;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1),
-    opacity 0.16s ease,
-    visibility 0s linear 0.22s,
-    background 0.18s,
-    border-color 0.18s,
-    color 0.18s,
-    box-shadow 0.18s;
+    width 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
 }
-/* แสดงระหว่างลาก และค้างไว้ครู่หนึ่งหลังทิ้งเพลง ให้เห็นอนิเมชั่น */
-body.pl-dragging .pl-trash,
-.pl-trash.linger {
-  transform: translate(-50%, 0);
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
+.pl-trash:hover,
+.pl-trash.has-items {
+  color: #757575;
 }
-body.pl-dragging .pl-trash {
-  pointer-events: auto;
+.pl-trash:focus-visible {
+  outline: 3px solid var(--primary-light);
+  outline-offset: 3px;
 }
 .pl-trash-label {
+  display: none;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   white-space: nowrap;
 }
-/* ลากมาอยู่เหนือแถบ: แดงเข้ม ฝาเปิด ถังส่าย */
+/* ระหว่างลากเพลง: ถังขยายออกเป็นจุดวาง */
+body.pl-dragging .pl-trash {
+  width: 250px;
+  height: 76px;
+  border-style: dashed;
+  border-color: #ef9a9a;
+  background: #fffafa;
+  color: #e57373;
+  animation: plTrashIn 0.35s ease;
+}
+body.pl-dragging .pl-trash-label {
+  display: inline;
+}
+body.pl-dragging .pl-trash .pl-trash-count {
+  display: none;
+}
+/* ลากมาอยู่เหนือถัง: ฝาเปิด ถังโต สั่น */
 .pl-trash.over {
-  background: #ffebee;
-  border-color: #e53935;
-  border-style: solid;
-  color: #e53935;
-  box-shadow: 0 12px 32px rgba(229, 57, 53, 0.3);
-  transform: translate(-50%, 0) scale(1.04);
+  width: 270px !important;
+  height: 86px !important;
+  background: #ffebee !important;
+  border-color: #e53935 !important;
+  border-style: solid !important;
+  color: #e53935 !important;
+  box-shadow: 0 10px 28px rgba(229, 57, 53, 0.35);
 }
 .pl-trash.over .pl-trash-can {
   animation: plTrashWiggle 0.4s ease-in-out infinite;
@@ -2707,10 +2715,6 @@ body.pl-dragging .pl-trash {
 .pl-trash.over .pl-trash-lid,
 .pl-trash.gulp .pl-trash-lid {
   transform: translateY(-3px) rotate(-38deg);
-}
-.pl-trash.linger:not(.over) {
-  border-style: solid;
-  border-color: #e57373;
 }
 
 /* ตัวถัง (วาดด้วย CSS เพื่อให้ฝาขยับได้) */
@@ -2759,36 +2763,41 @@ body.pl-dragging .pl-trash {
     linear-gradient(currentColor, currentColor) calc(100% - 4px) 4px / 2px 11px no-repeat;
 }
 
-/* จุดวางจริงของ Sortable: คลุมแถบทั้งแถบ เพลงข้างในซ่อนไว้ */
+/* จำนวนเพลงในถัง */
+.pl-trash-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(229, 57, 53, 0.4);
+}
+.pl-trash-count.pop {
+  animation: plTrashPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* จุดวางจริงของ Sortable: คลุมถังทั้งใบ (ขยายพื้นที่รับให้วางง่าย) เพลงข้างในซ่อนไว้ */
 .pl-trash .pl-trash-zone {
   position: absolute;
-  inset: 0;
+  inset: -12px;
   min-height: 0 !important;
   padding: 0 !important;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 999px;
   background: transparent;
   z-index: 2;
 }
 .pl-trash .pl-trash-zone > * {
   display: none !important;
-}
-
-/* ปุ่มถังขยะบนแถบเครื่องมือ (ดู / นำเพลงกลับ) */
-.btn-trash-count {
-  display: inline-block;
-  min-width: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: #e53935;
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 18px;
-  text-align: center;
-}
-.btn-trash-count.pop {
-  animation: plTrashPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ทิ้งลงถังแล้ว: ถังเด้ง + การ์ดหล่นลง + เศษกระดาษ */
@@ -2798,8 +2807,8 @@ body.pl-dragging .pl-trash {
 .pl-trash-fly {
   position: absolute;
   left: 50%;
-  bottom: 70%;
-  max-width: 200px;
+  bottom: 60%;
+  max-width: 180px;
   padding: 6px 12px;
   border-radius: 10px;
   background: #fff;
@@ -2836,6 +2845,14 @@ body.pl-dragging .pl-trash {
   border-radius: 50%;
 }
 
+@keyframes plTrashIn {
+  0% {
+    transform: translateX(-50%) translateY(16px) scale(0.85);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
 @keyframes plTrashWiggle {
   0%,
   100% {
@@ -2874,7 +2891,7 @@ body.pl-dragging .pl-trash {
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, 30px) scale(0.15) rotate(12deg);
+    transform: translate(-50%, 24px) scale(0.15) rotate(12deg);
     opacity: 0;
   }
 }
@@ -2953,8 +2970,11 @@ body.pl-dragging .pl-trash {
 }
 
 @media (max-width: 520px) {
-  .pl-trash {
-    height: 64px;
+  body.pl-dragging .pl-trash {
+    width: 200px;
+  }
+  .pl-trash.over {
+    width: 220px !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2962,9 +2982,10 @@ body.pl-dragging .pl-trash {
   .pl-trash-lid {
     transition: none;
   }
+  body.pl-dragging .pl-trash,
   .pl-trash.over .pl-trash-can,
   .pl-trash.gulp .pl-trash-can,
-  .btn-trash-count.pop {
+  .pl-trash-count.pop {
     animation: none;
   }
 }
