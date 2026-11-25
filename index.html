@@ -451,6 +451,15 @@
               <i class="fa-solid fa-rotate-right"></i>
               <span data-i18n="btn_redo">ทำซ้ำ</span>
             </button>
+            <button
+              class="btn btn-outline btn-sm"
+              id="btn-pl-trash"
+              onclick="openTrashModal()"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+              <span data-i18n="trash_title">ถังขยะ</span>
+              <span class="btn-trash-count hidden" id="pl-trash-count">0</span>
+            </button>
             <div style="flex: 1"></div>
             <button
               class="btn btn-primary btn-sm"
@@ -527,22 +536,12 @@
           </div>
           <div class="dynamic-board" id="dynamic-board"></div>
           <!-- ถังขยะ: ลากเพลงมาวางเพื่อเอาออกจากหน้าจัดลิสต์ / แตะเพื่อดูและนำกลับ -->
-          <div
-            class="pl-trash"
-            id="pl-trash"
-            role="button"
-            tabindex="0"
-            title="ถังขยะ"
-            data-i18n-title="trash_title"
-            onclick="openTrashModal()"
-            onkeydown="if (event.key === 'Enter') openTrashModal()"
-          >
+          <div class="pl-trash" id="pl-trash" aria-hidden="true">
             <div class="pl-trash-can" aria-hidden="true">
               <span class="pl-trash-lid"></span>
               <span class="pl-trash-body"></span>
             </div>
             <span class="pl-trash-label" data-i18n="trash_hint">ลากเพลงมาวางเพื่อเอาออก</span>
-            <span class="pl-trash-count hidden" id="pl-trash-count">0</span>
             <div
               id="list-trash"
               class="drop-zone pl-trash-zone"
@@ -1781,15 +1780,24 @@
           เพลงในถังจะไม่อยู่ในลิสต์และไม่เด้งกลับเข้ากองกลาง
         </p>
         <div id="trash-list" class="trash-list"></div>
-        <button
-          class="btn btn-outline btn-full"
-          id="btn-trash-restore-all"
-          onclick="restoreFromTrash()"
-          style="margin-top: 12px"
-        >
-          <i class="fa-solid fa-rotate-left"></i>
-          <span data-i18n="trash_restore_all">นำกลับเข้ากองกลางทั้งหมด</span>
-        </button>
+        <div class="trash-footer">
+          <button
+            class="btn btn-outline"
+            id="btn-trash-restore-all"
+            onclick="restoreFromTrash()"
+          >
+            <i class="fa-solid fa-rotate-left"></i>
+            <span data-i18n="trash_restore_all">นำกลับทั้งหมด</span>
+          </button>
+          <button
+            class="btn btn-danger"
+            id="btn-trash-delete-all"
+            onclick="deleteFromTrash()"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+            <span data-i18n="trash_delete_all">ลบถาวรทั้งหมด</span>
+          </button>
+        </div>
       </div>
     </div>
 

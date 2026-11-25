@@ -250,7 +250,14 @@ const translations = {
     trash_modal_hint: "เพลงในถังจะไม่อยู่ในลิสต์และไม่เด้งกลับเข้ากองกลาง (เพลงและโหวตยังอยู่ครบ) กดเซฟเพื่อบันทึก",
     trash_empty: "ถังขยะว่างเปล่า",
     trash_restore: "นำกลับ",
-    trash_restore_all: "นำกลับเข้ากองกลางทั้งหมด",
+    trash_restore_all: "นำกลับทั้งหมด",
+    trash_delete: "ลบถาวร",
+    trash_delete_all: "ลบถาวรทั้งหมด",
+    trash_delete_title: "ลบเพลงถาวร?",
+    trash_delete_one_msg: "ลบ \"{song}\" ออกจากงานนี้ถาวร เพลงจะหายจากรายการเพลงและหน้าโหวต ย้อนกลับไม่ได้",
+    trash_delete_all_msg: "ลบ {n} เพลงในถังขยะออกจากงานนี้ถาวร เพลงจะหายจากรายการเพลงและหน้าโหวต ย้อนกลับไม่ได้",
+    trash_delete_voted: "(มี {n} เพลงที่สมาชิกขอ/โหวตไว้ โหวตจะหายไปด้วย)",
+    trash_deleted: "ลบถาวร {n} เพลงแล้ว",
     trash_restored: "นำ {n} เพลงกลับเข้ากองกลางแล้ว",
     trash_move: "ทิ้งลงถังขยะ",
     trash_done: "ทิ้ง \"{song}\" ลงถังขยะแล้ว",
@@ -621,7 +628,14 @@ const translations = {
     trash_modal_hint: "Trashed songs are left out of the lists and won't come back into the pool (the song and its votes are kept). Press Save to keep this.",
     trash_empty: "The trash is empty.",
     trash_restore: "Restore",
-    trash_restore_all: "Restore all to pool",
+    trash_restore_all: "Restore all",
+    trash_delete: "Delete permanently",
+    trash_delete_all: "Delete all permanently",
+    trash_delete_title: "Delete permanently?",
+    trash_delete_one_msg: "Permanently delete \"{song}\" from this event. It will disappear from the song list and voting page. This can't be undone.",
+    trash_delete_all_msg: "Permanently delete {n} song(s) in the trash from this event. They will disappear from the song list and voting page. This can't be undone.",
+    trash_delete_voted: "({n} of them were requested/voted by members; those votes will be lost.)",
+    trash_deleted: "Permanently deleted {n} song(s).",
     trash_restored: "Restored {n} song(s) to the pool.",
     trash_move: "Move to trash",
     trash_done: "Moved \"{song}\" to the trash.",
@@ -3542,6 +3556,7 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
 
   savedLists.forEach((saved) => {
     const latest = currentSongs.find((x) => x.id === saved.id);
+    if (!latest && isTrashName(saved.listName)) return; // เพลงที่ลบถาวรไปแล้ว
     const target = findDropZone(saved.listName) || pool;
     target.appendChild(createPlaylistItem(latest || saved));
   });
@@ -4559,7 +4574,6 @@ function updateTrashCount(pop) {
   const z = trashZone();
   const n = z ? z.querySelectorAll(".playlist-item").length : 0;
   const badge = document.getElementById("pl-trash-count");
-  const bin = document.getElementById("pl-trash");
   if (badge) {
     badge.textContent = n;
     badge.classList.toggle("hidden", n === 0);
@@ -4569,7 +4583,6 @@ function updateTrashCount(pop) {
       badge.classList.add("pop");
     }
   }
-  if (bin) bin.classList.toggle("has-items", n > 0);
 }
 
 function setTrashHover(on) {
@@ -4581,6 +4594,10 @@ function setTrashHover(on) {
 function playTrashAnimation(name) {
   const bin = document.getElementById("pl-trash");
   if (!bin) return;
+  // ให้แถบถังขยะค้างอยู่ครู่หนึ่งหลังปล่อยเพลง จะได้เห็นอนิเมชั่น
+  bin.classList.add("linger");
+  clearTimeout(bin._lingerTimer);
+  bin._lingerTimer = setTimeout(() => bin.classList.remove("linger"), 900);
   bin.classList.remove("gulp");
   void bin.offsetWidth;
   bin.classList.add("gulp");
@@ -4626,6 +4643,64 @@ function trashSongFromMenu() {
   showToast(t("toast_success"), t("trash_done", { song: el.dataset.name }), "success");
 }
 
+// ลบเพลงในถังออกจากงานถาวร (ลบแถวในชีตรายการเพลง โหวตหายไปด้วย ย้อนกลับไม่ได้)
+let trashDeleting = false;
+
+function deleteFromTrash(i) {
+  const z = trashZone();
+  if (!z || trashDeleting) return;
+  const items = Array.from(z.children);
+  const pick = i === undefined ? items : [items[i]].filter(Boolean);
+  if (!pick.length) return;
+  const songs = pick.map((el) => currentSongs.find((s) => s.id === el.dataset.id));
+  const requested = songs.filter((s) => s && s.status !== "AdminOnly").length;
+  let msg =
+    pick.length === 1
+      ? t("trash_delete_one_msg", { song: pick[0].dataset.name })
+      : t("trash_delete_all_msg", { n: pick.length });
+  if (requested) msg += " " + t("trash_delete_voted", { n: requested });
+  showCustomConfirm(t("trash_delete_title"), msg, () => runTrashDelete(pick));
+}
+
+function runTrashDelete(items) {
+  trashDeleting = true;
+  renderTrashList();
+  let done = 0;
+  const finish = () => {
+    trashDeleting = false;
+    updateTrashCount();
+    renderTrashList();
+    filterSongs();
+    if (done) {
+      showToast(t("toast_success"), t("trash_deleted", { n: done }), "success");
+      const z = trashZone();
+      if (z && !z.children.length) closeModal("trashModal");
+    }
+  };
+  const next = () => {
+    if (!items.length) return finish();
+    const el = items.shift();
+    const id = el.dataset.id;
+    const gone = () => {
+      el.remove();
+      plElCache.delete(id);
+      done++;
+      next();
+    };
+    if (!currentSongs.some((s) => s.id === id)) return gone(); // ไม่มีในงานแล้ว แค่เอาออกจากถัง
+    fetchAPI(
+      "deleteSong",
+      { eventId: activeEvent.id, songId: id, uuid: userUUID },
+      (res) => {
+        currentSongs = fixSongIds(res);
+        gone();
+      },
+      finish, // ผิดพลาด: หยุด เพลงที่เหลือยังอยู่ในถัง
+    );
+  };
+  next();
+}
+
 function openTrashModal() {
   renderTrashList();
   openModal("trashModal");
@@ -4635,8 +4710,10 @@ function renderTrashList() {
   const z = trashZone();
   const box = document.getElementById("trash-list");
   const allBtn = document.getElementById("btn-trash-restore-all");
+  const delBtn = document.getElementById("btn-trash-delete-all");
   const items = z ? Array.from(z.children) : [];
-  if (allBtn) allBtn.disabled = items.length === 0;
+  if (allBtn) allBtn.disabled = items.length === 0 || trashDeleting;
+  if (delBtn) delBtn.disabled = items.length === 0 || trashDeleting;
   if (!box) return;
   if (!items.length) {
     box.innerHTML = `<p class="text-center text-muted" style="padding: 24px 0;"><i class="fa-solid fa-trash-can" style="font-size:1.6rem; opacity:.4; display:block; margin-bottom:8px;"></i>${escapeHTML(t("trash_empty"))}</p>`;
@@ -4649,7 +4726,10 @@ function renderTrashList() {
           <strong>${escapeHTML(el.dataset.name)}</strong>
           <span class="text-muted">${escapeHTML(el.dataset.artist)}</span>
         </div>
-        <button type="button" class="btn btn-outline btn-sm" onclick="restoreFromTrash(${i})"><i class="fa-solid fa-rotate-left"></i> ${escapeHTML(t("trash_restore"))}</button>
+        <div class="trash-actions">
+          <button type="button" class="btn btn-outline btn-sm" onclick="restoreFromTrash(${i})"><i class="fa-solid fa-rotate-left"></i> ${escapeHTML(t("trash_restore"))}</button>
+          <button type="button" class="btn btn-sm btn-trash-del" title="${escapeHTML(t("trash_delete"))}" aria-label="${escapeHTML(t("trash_delete"))}" onclick="deleteFromTrash(${i})"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
       </div>`,
     )
     .join("");
@@ -4659,7 +4739,7 @@ function renderTrashList() {
 function restoreFromTrash(i) {
   const z = trashZone();
   const pool = document.getElementById("list-pool");
-  if (!z || !pool) return;
+  if (!z || !pool || trashDeleting) return;
   const items = Array.from(z.children);
   const pick = i === undefined ? items : [items[i]].filter(Boolean);
   pick.forEach((el) => {
