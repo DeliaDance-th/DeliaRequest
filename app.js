@@ -258,6 +258,8 @@ const translations = {
     trash_delete_all_msg: "ลบ {n} เพลงในถังขยะออกจากงานนี้ถาวร เพลงจะหายจากรายการเพลงและหน้าโหวต ย้อนกลับไม่ได้",
     trash_delete_voted: "(มี {n} เพลงที่สมาชิกขอ/โหวตไว้ โหวตจะหายไปด้วย)",
     trash_deleted: "ลบถาวร {n} เพลงแล้ว",
+    trash_deleting: "กำลังลบ... ({done}/{total})",
+    trash_deleting_n: "กำลังลบ {n} เพลง...",
     trash_restored: "นำ {n} เพลงกลับเข้ากองกลางแล้ว",
     trash_move: "ทิ้งลงถังขยะ",
     trash_done: "ทิ้ง \"{song}\" ลงถังขยะแล้ว",
@@ -636,6 +638,8 @@ const translations = {
     trash_delete_all_msg: "Permanently delete {n} song(s) in the trash from this event. They will disappear from the song list and voting page. This can't be undone.",
     trash_delete_voted: "({n} of them were requested/voted by members; those votes will be lost.)",
     trash_deleted: "Permanently deleted {n} song(s).",
+    trash_deleting: "Deleting... ({done}/{total})",
+    trash_deleting_n: "Deleting {n} song(s)...",
     trash_restored: "Restored {n} song(s) to the pool.",
     trash_move: "Move to trash",
     trash_done: "Moved \"{song}\" to the trash.",
@@ -4663,9 +4667,21 @@ function deleteFromTrash(i) {
 function runTrashDelete(items) {
   trashDeleting = true;
   renderTrashList();
+  const delBtn = document.getElementById("btn-trash-delete-all");
+  const label = delBtn ? delBtn.querySelector("span") : null;
+  const setLabel = (txt) => {
+    if (label) label.textContent = txt;
+  };
+  const total = items.length;
   let done = 0;
+  const removeEl = (el) => {
+    el.remove();
+    plElCache.delete(el.dataset.id);
+    done++;
+  };
   const finish = () => {
     trashDeleting = false;
+    setLabel(t("trash_delete_all"));
     updateTrashCount();
     renderTrashList();
     filterSongs();
@@ -4675,28 +4691,50 @@ function runTrashDelete(items) {
       if (z && !z.children.length) closeModal("trashModal");
     }
   };
-  const next = () => {
-    if (!items.length) return finish();
-    const el = items.shift();
-    const id = el.dataset.id;
-    const gone = () => {
-      el.remove();
-      plElCache.delete(id);
-      done++;
+  // เพลงที่ไม่มีในงานแล้ว แค่เอาออกจากถัง
+  const live = items.filter((el) => {
+    if (currentSongs.some((s) => s.id === el.dataset.id)) return true;
+    removeEl(el);
+    return false;
+  });
+  if (!live.length) return finish();
+  setLabel(t("trash_deleting_n", { n: live.length }));
+
+  // ลบทั้งหมดในคำขอเดียว (เร็ว) ถ้า Apps Script ยังไม่อัปเดต ค่อยลบทีละเพลง
+  fetchAPI(
+    "deleteSongs",
+    { eventId: activeEvent.id, songIds: live.map((el) => el.dataset.id), uuid: userUUID },
+    (res) => {
+      currentSongs = fixSongIds(res);
+      live.forEach((el) => {
+        if (!currentSongs.some((s) => s.id === el.dataset.id)) removeEl(el);
+      });
+      finish();
+    },
+    (err) => {
+      if (err !== "Invalid Action") {
+        showToast(t("toast_notice"), err === "NETWORK_ERROR" ? t("toast_network_msg") : err, "error");
+        return finish();
+      }
+      const next = () => {
+        if (!live.length) return finish();
+        const el = live.shift();
+        setLabel(t("trash_deleting", { done: done, total: total }));
+        fetchAPI(
+          "deleteSong",
+          { eventId: activeEvent.id, songId: el.dataset.id, uuid: userUUID },
+          (res) => {
+            currentSongs = fixSongIds(res);
+            removeEl(el);
+            next();
+          },
+          finish, // ผิดพลาด: หยุด เพลงที่เหลือยังอยู่ในถัง
+        );
+      };
       next();
-    };
-    if (!currentSongs.some((s) => s.id === id)) return gone(); // ไม่มีในงานแล้ว แค่เอาออกจากถัง
-    fetchAPI(
-      "deleteSong",
-      { eventId: activeEvent.id, songId: id, uuid: userUUID },
-      (res) => {
-        currentSongs = fixSongIds(res);
-        gone();
-      },
-      finish, // ผิดพลาด: หยุด เพลงที่เหลือยังอยู่ในถัง
-    );
-  };
-  next();
+    },
+    true,
+  );
 }
 
 function openTrashModal() {

@@ -18,10 +18,10 @@ const ADMIN_ACTIONS = {
   getPlaylist: 1, savePlaylist: 1, listPlaylists: 1, getPlaylistBySheet: 1, savePlaylistBackup: 1,
   aiMagicSetlist: 1, getFeedback: 1,
   addArtistToDB: 1, suggestSongFixes: 1, applySongFixes: 1, mergeSongs: 1,
-  addSongs: 1
+  addSongs: 1, deleteSongs: 1
 };
 // ฟังก์ชันที่ตอบเป็นรายการเพลง (ต้องซ่อนอีเมลเมื่อ HARDENED = true)
-const SONG_LIST_ACTIONS = { getSongs: 1, addSong: 1, addSongs: 1, editSong: 1, voteSong: 1, updateSongStatus: 1, deleteSong: 1, mergeSongs: 1 };
+const SONG_LIST_ACTIONS = { getSongs: 1, addSong: 1, addSongs: 1, deleteSongs: 1, editSong: 1, voteSong: 1, updateSongStatus: 1, deleteSong: 1, mergeSongs: 1 };
 
 var _ssCache = null;
 function getSS() {
@@ -208,6 +208,7 @@ function doPost(e) {
       case "deleteEvent": result = deleteEvent(p.id); break;
       case "updateSongStatus": result = updateSongStatus(p.eventId, p.songId, p.status); break;
       case "deleteSong": result = deleteSong(p.eventId, p.songId); break;
+      case "deleteSongs": result = deleteSongs(p.eventId, p.songIds); break;
       case "mergeSongs": result = mergeSongs(p.eventId, p.merges); break;
       case "getPlaylist": result = getPlaylist(p.eventId, p.date); break;
       case "savePlaylist": result = savePlaylist(p.eventId, p.date, p.lists); break;
@@ -1457,6 +1458,26 @@ function deleteSong(eventId, songId) {
         break;
       }
     }
+    return getSongs(eventId);
+  });
+}
+
+// ลบหลายเพลงในครั้งเดียว (ถังขยะหน้าจัดลิสต์) อ่านชีตครั้งเดียว ลบจากล่างขึ้นบน แล้วส่งรายการเพลงกลับครั้งเดียว
+function deleteSongs(eventId, songIds) {
+  return withScriptLock(30000, function () {
+    const ids = {};
+    (Array.isArray(songIds) ? songIds : []).slice(0, 500).forEach(function (id) {
+      id = String(id == null ? "" : id).trim();
+      if (id) ids[id] = 1;
+    });
+    const sheet = getSS().getSheetByName("Req_" + eventId);
+    if (!sheet) throw new Error("ไม่พบรายการเพลงของงานนี้");
+    const data = sheet.getDataRange().getValues();
+    const rows = [];
+    for (let i = 1; i < data.length; i++) {
+      if (ids[String(data[i][0])]) rows.push(i + 1);
+    }
+    rows.sort(function (a, b) { return b - a; }).forEach(function (r) { sheet.deleteRow(r); });
     return getSongs(eventId);
   });
 }
