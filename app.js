@@ -241,6 +241,19 @@ const translations = {
     move_bottom: "ลงล่างสุดของลิสต์นี้",
     move_here: "อยู่ที่นี่",
     move_done: "ย้าย \"{song}\" ไปที่ {list} แล้ว",
+    btn_undo: "ย้อนกลับ",
+    btn_redo: "ทำซ้ำ",
+    undo_tip: "ย้อนกลับ (Ctrl+Z)",
+    redo_tip: "ทำซ้ำ (Ctrl+Y)",
+    trash_title: "ถังขยะ",
+    trash_hint: "ลากเพลงมาวางเพื่อเอาออก",
+    trash_modal_hint: "เพลงในถังจะไม่อยู่ในลิสต์และไม่เด้งกลับเข้ากองกลาง (เพลงและโหวตยังอยู่ครบ) กดเซฟเพื่อบันทึก",
+    trash_empty: "ถังขยะว่างเปล่า",
+    trash_restore: "นำกลับ",
+    trash_restore_all: "นำกลับเข้ากองกลางทั้งหมด",
+    trash_restored: "นำ {n} เพลงกลับเข้ากองกลางแล้ว",
+    trash_move: "ทิ้งลงถังขยะ",
+    trash_done: "ทิ้ง \"{song}\" ลงถังขยะแล้ว",
     list_add_title: "เพิ่มเพลงลงลิสต์นี้",
     list_add_heading: "เพิ่มเพลงลงลิสต์",
     list_add_new: "เพิ่มเพลงใหม่",
@@ -599,6 +612,19 @@ const translations = {
     move_bottom: "Move to bottom of this list",
     move_here: "Current",
     move_done: "Moved \"{song}\" to {list}",
+    btn_undo: "Undo",
+    btn_redo: "Redo",
+    undo_tip: "Undo (Ctrl+Z)",
+    redo_tip: "Redo (Ctrl+Y)",
+    trash_title: "Trash",
+    trash_hint: "Drop a song here to remove it",
+    trash_modal_hint: "Trashed songs are left out of the lists and won't come back into the pool (the song and its votes are kept). Press Save to keep this.",
+    trash_empty: "The trash is empty.",
+    trash_restore: "Restore",
+    trash_restore_all: "Restore all to pool",
+    trash_restored: "Restored {n} song(s) to the pool.",
+    trash_move: "Move to trash",
+    trash_done: "Moved \"{song}\" to the trash.",
     list_add_title: "Add a song to this list",
     list_add_heading: "Add song to list",
     list_add_new: "New song",
@@ -3450,6 +3476,10 @@ function openPlaylistManager() {
   showView("playlist");
   document.getElementById("list-pool").innerHTML = "";
   document.getElementById("dynamic-board").innerHTML = "";
+  trashZone().innerHTML = "";
+  updateTrashCount();
+  watchBoardHistory();
+  plResetHistory();
 
   const pool = document.getElementById("pool-sidebar");
   const workspace = document.querySelector(".playlist-workspace");
@@ -3477,6 +3507,7 @@ function openPlaylistManager() {
       }
       // ถ้าวันที่นี้ยังไม่มีลิสต์ ลองดูว่าเคยบันทึกไว้ตอนวันที่อื่นหรือไม่
       if (savedLists.length === 0) offerPlaylistRestoreIfAny();
+      plResetHistory();
     },
   );
 }
@@ -3498,6 +3529,7 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
   const board = document.getElementById("dynamic-board");
   pool.innerHTML = "";
   board.innerHTML = "";
+  trashZone().innerHTML = "";
 
   const poolNames = ["list-pool", "POOL", "กองกลาง"];
   const categoryNames = [
@@ -3505,7 +3537,7 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
       ...(categoryOrder || []),
       ...savedLists.map((s) => s.listName),
     ]),
-  ].filter((n) => !poolNames.includes(n));
+  ].filter((n) => !poolNames.includes(n) && !isTrashName(n));
   categoryNames.forEach((cat) => createCategoryBox(cat));
 
   savedLists.forEach((saved) => {
@@ -3673,7 +3705,7 @@ function backupPlaylistCopy() {
 
 // ดาวน์โหลดลิสต์ปัจจุบันเป็นไฟล์ CSV (เปิดใน Excel/Sheets ได้ ภาษาไทยไม่เพี้ยน)
 function downloadPlaylistCSV() {
-  const lists = collectPlaylistLists();
+  const lists = collectPlaylistLists().filter((s) => !isTrashName(s.listName));
   if (lists.length === 0)
     return showToast(t("toast_notice"), t("backup_empty"), "error");
   const cell = (v) => {
@@ -3715,7 +3747,8 @@ function addNewCategory() {
       !newTitle ||
       newTitle.toLowerCase() === "pool" ||
       newTitle === "list-pool" ||
-      newTitle === "กองกลาง"
+      newTitle === "กองกลาง" ||
+      isTrashName(newTitle)
     )
       return;
     createCategoryBox(newTitle);
@@ -3799,6 +3832,7 @@ function updateListCounts() {
     const badge = col.querySelector(".list-count");
     if (zone && badge) badge.innerText = zone.querySelectorAll(".playlist-item").length;
   });
+  updateTrashCount();
 }
 
 function createCategoryBox(title) {
@@ -3881,6 +3915,7 @@ function confirmImportFromVotes() {
         .querySelectorAll(".dynamic-board .drop-zone")
         .forEach((zone) => (zone.innerHTML = ""));
       pool.innerHTML = "";
+      trashZone().innerHTML = "";
       currentSongs
         .filter((s) => s.status !== "Played")
         .sort((a, b) => b.votes - a.votes)
@@ -3962,9 +3997,29 @@ function initSortables() {
     delay: 2000,
     delayOnTouchOnly: false,
     ...touchSortOptions(),
+    onStart: () => {
+      plBoardDragging = true;
+    },
+    onEnd: () => {
+      plBoardDragging = false;
+      plScheduleCommit();
+    },
   });
 
   document.querySelectorAll(".drop-zone").forEach((zone) => {
+    if (zone.id === "list-trash") {
+      // ถังขยะ: รับเพลงเข้าอย่างเดียว (นำกลับผ่านปุ่มในหน้าต่างถังขยะ)
+      sortableLists.push(
+        new Sortable(zone, {
+          group: { name: "shared", pull: false, put: true },
+          sort: false,
+          animation: 0,
+          ...touchSortOptions(),
+          onAdd: onTrashAdd,
+        }),
+      );
+      return;
+    }
     sortableLists.push(
       new Sortable(zone, {
         group: "shared",
@@ -3975,10 +4030,15 @@ function initSortables() {
         ...touchSortOptions(),
         // ระหว่างลาก ลิสต์ที่ย่ออยู่จะโผล่เป็นแถบ "วางที่นี่" ให้ลากเพลงใส่ได้
         onStart: () => document.body.classList.add("pl-dragging"),
+        onMove: (evt) => {
+          setTrashHover(evt.to && evt.to.id === "list-trash");
+        },
         onEnd: () => {
           document.body.classList.remove("pl-dragging");
+          setTrashHover(false);
           plLastDragEnd = Date.now();
           updateListCounts();
+          plScheduleCommit();
         },
         onAdd: updateListCounts,
         onRemove: updateListCounts,
@@ -4247,6 +4307,9 @@ function openMoveSong(item) {
       </button>`;
     })
     .join("");
+  html += `<button type="button" class="move-target move-target-trash" onclick="trashSongFromMenu()">
+    <span class="move-target-name"><i class="fa-solid fa-trash-can"></i> ${escapeHTML(t("trash_move"))}</span>
+  </button>`;
   box.innerHTML = html;
   openModal("moveSongModal");
 }
@@ -4271,6 +4334,349 @@ function moveSongWithin(where) {
   else zone.appendChild(el);
   closeModal("moveSongModal");
   moveSongEl = null;
+}
+
+// ==========================================
+// ย้อนกลับ / ทำซ้ำ (Undo / Redo) ของกระดานจัดลิสต์ + Ctrl+Z / Ctrl+Y
+// จับภาพสถานะกระดาน (ลิสต์ ลำดับเพลง กองกลาง ถังขยะ) ทุกครั้งที่มีการเปลี่ยนแปลง
+// จึงย้อนได้ทุกอย่าง: ลากเพลง ย้ายลิสต์ ทิ้งถังขยะ สุ่ม จัดอัตโนมัติ เพิ่ม/แก้/ลบลิสต์ ฯลฯ
+// ==========================================
+const PL_HISTORY_MAX = 60;
+const plHistory = { undo: [], redo: [], last: null, timer: null, applying: false, observer: null };
+let plBoardDragging = false;
+const plElCache = new Map(); // การ์ดเพลงที่ถูกเอาออกจากกระดานด้วยการย้อน เก็บไว้ใช้ตอนทำซ้ำ
+
+function plIds(zone) {
+  return zone ? Array.from(zone.children).filter((el) => el.dataset.id).map((el) => el.dataset.id) : [];
+}
+
+function plSnapshot() {
+  return JSON.stringify({
+    cats: Array.from(document.querySelectorAll("#dynamic-board .drop-zone")).map((z) => ({
+      name: z.getAttribute("data-category"),
+      ids: plIds(z),
+    })),
+    pool: plIds(document.getElementById("list-pool")),
+    trash: plIds(trashZone()),
+  });
+}
+
+function plIsDragging() {
+  return plBoardDragging || document.body.classList.contains("pl-dragging");
+}
+
+// เรียกหลังกระดานเปลี่ยน: ถ้าสถานะต่างจากเดิม เก็บสถานะเดิมไว้ในกองย้อนกลับ
+function plCommit() {
+  clearTimeout(plHistory.timer);
+  plHistory.timer = null;
+  if (plHistory.applying || plIsDragging() || currentViewId !== "playlist") return;
+  const now = plSnapshot();
+  if (plHistory.last === null) plHistory.last = now;
+  if (now === plHistory.last) return;
+  plHistory.undo.push(plHistory.last);
+  if (plHistory.undo.length > PL_HISTORY_MAX) plHistory.undo.shift();
+  plHistory.redo = [];
+  plHistory.last = now;
+  updateUndoButtons();
+}
+
+function plScheduleCommit() {
+  clearTimeout(plHistory.timer);
+  plHistory.timer = setTimeout(plCommit, 60); // รวมการเปลี่ยนหลายขั้นในคราวเดียว (เช่น จัดอัตโนมัติ) เป็นขั้นเดียว
+}
+
+// เริ่มประวัติใหม่ (ตอนเปิดหน้าจัดลิสต์ / โหลดลิสต์จากชีต)
+function plResetHistory() {
+  clearTimeout(plHistory.timer);
+  plHistory.timer = null;
+  plHistory.undo = [];
+  plHistory.redo = [];
+  plHistory.last = plSnapshot();
+  plElCache.clear();
+  updateUndoButtons();
+}
+
+function watchBoardHistory() {
+  if (plHistory.observer) return;
+  const ws = document.querySelector(".playlist-workspace");
+  if (!ws) return;
+  plHistory.observer = new MutationObserver((records) => {
+    if (plHistory.applying) return;
+    // สนใจเฉพาะการเพิ่ม/ลบ/ย้ายการ์ดเพลงหรือกล่องลิสต์ และการเปลี่ยนชื่อลิสต์
+    const relevant = records.some(
+      (r) =>
+        r.type === "attributes" ||
+        r.target.classList.contains("drop-zone") ||
+        r.target.id === "dynamic-board",
+    );
+    if (relevant) plScheduleCommit();
+  });
+  plHistory.observer.observe(ws, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["data-category"],
+  });
+}
+
+function plItemFor(id) {
+  let el = Array.from(document.querySelectorAll(".playlist-workspace .drop-zone [data-id]")).find(
+    (x) => x.dataset.id === id,
+  );
+  if (!el) el = plElCache.get(id);
+  if (!el) {
+    const s = currentSongs.find((x) => x.id === id);
+    if (s) el = createPlaylistItem(s);
+  }
+  return el || null;
+}
+
+// วางกระดานตามภาพสถานะ (ใช้การ์ด/กล่องลิสต์เดิมให้มากที่สุด สถานะย่อ/ขยายจึงไม่หาย)
+function plApplySnapshot(json) {
+  const snap = JSON.parse(json);
+  const board = document.getElementById("dynamic-board");
+  const pool = document.getElementById("list-pool");
+  const trash = trashZone();
+  plHistory.applying = true;
+  try {
+    // จำการ์ดทั้งหมดไว้ก่อน
+    document.querySelectorAll(".playlist-workspace .drop-zone [data-id]").forEach((el) => plElCache.set(el.dataset.id, el));
+
+    const oldCols = Array.from(board.querySelectorAll(":scope > .dynamic-category"));
+    const used = new Set();
+    let created = false;
+    const zones = snap.cats.map((c) => {
+      let col = oldCols.find((x) => !used.has(x) && x.querySelector(".drop-zone").getAttribute("data-category") === c.name);
+      if (!col) {
+        createCategoryBox(c.name);
+        col = board.lastElementChild;
+        created = true;
+      }
+      used.add(col);
+      board.appendChild(col); // เรียงลำดับลิสต์ตามภาพสถานะ
+      return col.querySelector(".drop-zone");
+    });
+    oldCols.filter((x) => !used.has(x)).forEach((x) => x.remove());
+
+    const place = (zone, ids) => {
+      ids.forEach((id) => {
+        const el = plItemFor(id);
+        if (el) zone.appendChild(el);
+      });
+    };
+    const keep = new Set([...snap.pool, ...snap.trash, ...snap.cats.flatMap((c) => c.ids)]);
+    snap.cats.forEach((c, i) => place(zones[i], c.ids));
+    place(pool, snap.pool);
+    place(trash, snap.trash);
+    // การ์ดที่ไม่อยู่ในภาพสถานะนี้ (เช่น เพลงที่เพิ่งเพิ่ม) เอาออกจากกระดานแต่เก็บไว้
+    document.querySelectorAll(".playlist-workspace .drop-zone [data-id]").forEach((el) => {
+      if (!keep.has(el.dataset.id)) el.remove();
+    });
+    // ลำดับกองกลาง/ลิสต์: ให้การ์ดที่ไม่ได้อยู่ในรายการ (ถ้ามี) ไม่ค้างอยู่ข้างหน้า
+    if (created) initSortables();
+    saveCollapsedState();
+    updateCollapseAllButton();
+    updateListCounts();
+    filterPool();
+  } finally {
+    plHistory.applying = false;
+  }
+  plHistory.last = plSnapshot();
+}
+
+function plUndo() {
+  plCommit(); // เก็บการเปลี่ยนแปลงที่ยังค้างอยู่ก่อน
+  if (!plHistory.undo.length) return false;
+  plHistory.redo.push(plHistory.last);
+  plApplySnapshot(plHistory.undo.pop());
+  updateUndoButtons();
+  pulseUndoButton("btn-pl-undo");
+  return true;
+}
+
+function plRedo() {
+  plCommit();
+  if (!plHistory.redo.length) return false;
+  plHistory.undo.push(plHistory.last);
+  plApplySnapshot(plHistory.redo.pop());
+  updateUndoButtons();
+  pulseUndoButton("btn-pl-redo");
+  return true;
+}
+
+function updateUndoButtons() {
+  const u = document.getElementById("btn-pl-undo");
+  const r = document.getElementById("btn-pl-redo");
+  if (u) u.disabled = plHistory.undo.length === 0;
+  if (r) r.disabled = plHistory.redo.length === 0;
+}
+
+function pulseUndoButton(id) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.classList.remove("pulse");
+  void btn.offsetWidth;
+  btn.classList.add("pulse");
+}
+
+// Ctrl+Z = ย้อนกลับ, Ctrl+Y / Ctrl+Shift+Z = ทำซ้ำ (Mac ใช้ ⌘ ได้)
+// ไม่ทำงานตอนพิมพ์อยู่ในช่องข้อความ (ให้ช่องพิมพ์ย้อนตัวอักษรตามปกติ) และตอนมีหน้าต่างเปิดอยู่
+document.addEventListener("keydown", (e) => {
+  if (currentViewId !== "playlist" || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const k = String(e.key || "").toLowerCase();
+  const isUndo = k === "z" && !e.shiftKey;
+  const isRedo = k === "y" || (k === "z" && e.shiftKey);
+  if (!isUndo && !isRedo) return;
+  const tgt = e.target;
+  if (tgt && (tgt.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName))) return;
+  if (document.querySelector(".modal-overlay.active")) return;
+  e.preventDefault();
+  if (isUndo) plUndo();
+  else plRedo();
+});
+
+// ==========================================
+// ถังขยะ: ลากเพลงมาวางเพื่อเอาออกจากหน้าจัดลิสต์
+// เพลงในถังถูกบันทึกเป็นหมวด "🗑️ ถังขยะ" ท้ายชีต จึงไม่เด้งกลับเข้ากองกลางตอนเปิดใหม่
+// (เพลงและโหวตยังอยู่ครบ นำกลับได้ทุกเมื่อ)
+// ==========================================
+const TRASH_LIST = "🗑️ ถังขยะ";
+
+function trashZone() {
+  return document.getElementById("list-trash");
+}
+
+function isTrashName(name) {
+  return String(name || "").trim() === TRASH_LIST;
+}
+
+function trashedIds() {
+  const z = trashZone();
+  return new Set(z ? Array.from(z.children).map((el) => el.dataset.id) : []);
+}
+
+function updateTrashCount(pop) {
+  const z = trashZone();
+  const n = z ? z.querySelectorAll(".playlist-item").length : 0;
+  const badge = document.getElementById("pl-trash-count");
+  const bin = document.getElementById("pl-trash");
+  if (badge) {
+    badge.textContent = n;
+    badge.classList.toggle("hidden", n === 0);
+    if (pop) {
+      badge.classList.remove("pop");
+      void badge.offsetWidth;
+      badge.classList.add("pop");
+    }
+  }
+  if (bin) bin.classList.toggle("has-items", n > 0);
+}
+
+function setTrashHover(on) {
+  const bin = document.getElementById("pl-trash");
+  if (bin) bin.classList.toggle("over", !!on);
+}
+
+// อนิเมชั่น: การ์ดเพลงย่อตัวหล่นลงถัง ฝาเปิด-ปิด ถังเด้ง เศษกระดาษกระจาย
+function playTrashAnimation(name) {
+  const bin = document.getElementById("pl-trash");
+  if (!bin) return;
+  bin.classList.remove("gulp");
+  void bin.offsetWidth;
+  bin.classList.add("gulp");
+  setTimeout(() => bin.classList.remove("gulp"), 700);
+
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) return;
+  const card = document.createElement("div");
+  card.className = "pl-trash-fly";
+  card.textContent = name || "";
+  bin.appendChild(card);
+  setTimeout(() => card.remove(), 750);
+  for (let i = 0; i < 6; i++) {
+    const bit = document.createElement("span");
+    bit.className = "pl-trash-bit";
+    const ang = (-150 + i * 24) * (Math.PI / 180);
+    bit.style.setProperty("--dx", `${Math.cos(ang) * (34 + Math.random() * 16)}px`);
+    bit.style.setProperty("--dy", `${Math.sin(ang) * (34 + Math.random() * 16)}px`);
+    bit.style.animationDelay = "0.32s";
+    bin.appendChild(bit);
+    setTimeout(() => bit.remove(), 1100);
+  }
+}
+
+function onTrashAdd(evt) {
+  const el = evt.item;
+  setTrashHover(false);
+  if (el) el.classList.remove("pool-hide");
+  updateListCounts();
+  updateTrashCount(true);
+  playTrashAnimation(el ? el.dataset.name : "");
+}
+
+// ใช้จากเมนูแตะเพลง (iPad / มือถือ)
+function trashSongFromMenu() {
+  const el = moveSongEl;
+  const z = trashZone();
+  if (!el || !z) return;
+  closeModal("moveSongModal");
+  moveSongEl = null;
+  z.appendChild(el);
+  onTrashAdd({ item: el });
+  showToast(t("toast_success"), t("trash_done", { song: el.dataset.name }), "success");
+}
+
+function openTrashModal() {
+  renderTrashList();
+  openModal("trashModal");
+}
+
+function renderTrashList() {
+  const z = trashZone();
+  const box = document.getElementById("trash-list");
+  const allBtn = document.getElementById("btn-trash-restore-all");
+  const items = z ? Array.from(z.children) : [];
+  if (allBtn) allBtn.disabled = items.length === 0;
+  if (!box) return;
+  if (!items.length) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 24px 0;"><i class="fa-solid fa-trash-can" style="font-size:1.6rem; opacity:.4; display:block; margin-bottom:8px;"></i>${escapeHTML(t("trash_empty"))}</p>`;
+    return;
+  }
+  box.innerHTML = items
+    .map(
+      (el, i) => `<div class="restore-item">
+        <div class="restore-info">
+          <strong>${escapeHTML(el.dataset.name)}</strong>
+          <span class="text-muted">${escapeHTML(el.dataset.artist)}</span>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="restoreFromTrash(${i})"><i class="fa-solid fa-rotate-left"></i> ${escapeHTML(t("trash_restore"))}</button>
+      </div>`,
+    )
+    .join("");
+}
+
+// นำกลับเข้ากองกลาง (i = ลำดับในถัง, ไม่ระบุ = ทั้งหมด)
+function restoreFromTrash(i) {
+  const z = trashZone();
+  const pool = document.getElementById("list-pool");
+  if (!z || !pool) return;
+  const items = Array.from(z.children);
+  const pick = i === undefined ? items : [items[i]].filter(Boolean);
+  pick.forEach((el) => {
+    pool.insertBefore(el, pool.firstChild);
+    el.classList.remove("pl-flash");
+    void el.offsetWidth;
+    el.classList.add("pl-flash");
+    setTimeout(() => el.classList.remove("pl-flash"), 2200);
+  });
+  updateTrashCount();
+  updateListCounts();
+  filterPool();
+  renderTrashList();
+  if (pick.length) {
+    showToast(t("toast_success"), t("trash_restored", { n: pick.length }), "success");
+    if (!z.children.length) closeModal("trashModal");
+  }
 }
 
 // ==========================================
@@ -4733,12 +5139,16 @@ function runAutoSetlist() {
     return showToast(t("toast_notice"), t("no_songs"), "error");
 
   const apply = () => {
-    const res = buildAutoSetlist(specs, currentSongs, {
+    const trashed = trashedIds();
+    const res = buildAutoSetlist(specs, currentSongs.filter((s) => !trashed.has(s.id)), {
       maxPerList: document.getElementById("auto-max").value,
       alternate: document.getElementById("auto-alternate").checked,
     });
     const rows = [];
     res.lists.forEach((l) => l.songs.forEach((s) => rows.push(Object.assign({}, s, { listName: l.name }))));
+    currentSongs
+      .filter((s) => trashed.has(s.id))
+      .forEach((s) => rows.push(Object.assign({}, s, { listName: TRASH_LIST })));
     closeModal("autoSetlistModal");
     clearCollapsedState();
     renderPlaylistBoard(rows, specs.map((x) => x.name)); // เพลงที่เหลือถูกเติมเข้ากองกลางให้เอง
@@ -4756,7 +5166,7 @@ function runAutoSetlist() {
   };
 
   const hasArranged = Array.from(document.querySelectorAll(".drop-zone")).some(
-    (z) => z.id !== "list-pool" && z.children.length > 0,
+    (z) => z.id !== "list-pool" && z.id !== "list-trash" && z.children.length > 0,
   );
   if (hasArranged) showCustomConfirm(t("auto_confirm_title"), t("auto_confirm_msg"), apply);
   else apply();
