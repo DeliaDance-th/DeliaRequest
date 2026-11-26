@@ -3171,3 +3171,205 @@ body.pl-dragging .pl-trash .pl-trash-count {
   min-width: 2ch;
   text-align: right;
 }
+
+.artist-stats-from {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   หน้าจัดลิสต์: แถบเครื่องมือจัดกลุ่มตามความถี่ที่ใช้ + เมนูเพิ่มเติม
+   ============================================================ */
+.playlist-toolbar {
+  gap: 8px;
+}
+.pl-tool-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pl-tool-spacer {
+  flex: 1;
+}
+.btn-icon {
+  width: 34px;
+  min-width: 34px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  justify-content: center;
+}
+.pl-more-wrap {
+  position: relative;
+}
+.pl-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 60;
+  min-width: 250px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  text-align: left;
+}
+.pl-menu[hidden] {
+  display: none;
+}
+.pl-popover {
+  position: fixed;
+  right: auto;
+  top: 0;
+  min-width: 200px;
+}
+.pl-menu-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 8px 10px 2px;
+}
+.pl-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+}
+.pl-menu-item i {
+  width: 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.pl-menu-item:hover:not(:disabled),
+.pl-menu-item:focus-visible {
+  background: var(--bg-color);
+  outline: none;
+}
+.pl-menu-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.pl-menu-item.danger,
+.pl-menu-item.danger i {
+  color: var(--danger);
+}
+.pl-menu-sep {
+  border-top: 1px solid var(--border-color);
+  margin: 6px 4px;
+}
+button.pl-sync-status {
+  border: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+button.pl-sync-status:hover {
+  filter: brightness(0.97);
+}
+
+/* หัวกล่องลิสต์: ปุ่มหลัก "เพิ่มเพลง" + ไอคอนสุ่ม/นับศิลปิน/ตัวเลือก */
+.list-col-header h3 {
+  padding: 0 34px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.list-col-actions {
+  align-items: center;
+}
+.list-add-main {
+  flex: 1;
+  justify-content: center;
+}
+
+/* กระดานยังไม่มีลิสต์ */
+.pl-empty-guide {
+  margin: 15px;
+  padding: 22px 18px;
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius-md);
+  background: #fff;
+  text-align: center;
+}
+.pl-empty-guide h3 {
+  margin: 0 0 14px;
+  color: var(--dark);
+}
+.pl-guide-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.pl-guide-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--text-main);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.pl-guide-card i {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+}
+.pl-guide-card span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.pl-guide-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.pl-guide-primary {
+  border-color: var(--primary);
+  background: #fff5f8;
+}
+.pl-guide-primary i {
+  color: var(--primary);
+}
+.pl-guide-tips {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+@media (max-width: 520px) {
+  .pl-tool-label {
+    display: none;
+  }
+  .playlist-toolbar .pl-tool-group .btn:not(.btn-primary) {
+    min-width: 36px;
+    justify-content: center;
+  }
+}
+
+/* มือถือ: เว้นที่ให้แท็บ "กองกลาง" ที่ลอยอยู่ซ้าย ไม่ให้ทับปุ่มย้อนกลับ / ปุ่มเพิ่มเพลงในลิสต์ไม่ตัดบรรทัด */
+@media (max-width: 768px) {
+  .playlist-toolbar {
+    padding-left: 46px;
+  }
+}
+.list-add-main {
+  white-space: nowrap;
+}

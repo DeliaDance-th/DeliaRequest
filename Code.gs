@@ -16,7 +16,7 @@ const ADMIN_ACTIONS = {
   createEvent: 1, closeEvent: 1, editEvent: 1, deleteEvent: 1,
   updateSongStatus: 1, deleteSong: 1,
   getPlaylist: 1, savePlaylist: 1, listPlaylists: 1, getPlaylistBySheet: 1, savePlaylistBackup: 1,
-  getPlaylistState: 1, savePlaylistState: 1,
+  getPlaylistState: 1, savePlaylistState: 1, resolveArtists: 1,
   aiMagicSetlist: 1, getFeedback: 1,
   addArtistToDB: 1, suggestSongFixes: 1, applySongFixes: 1, mergeSongs: 1,
   addSongs: 1, deleteSongs: 1
@@ -229,6 +229,7 @@ function doPost(e) {
       // 🌟 ประมวลผลเพลงด้วย Database
       case "aiProcess": result = processSongDB(p.title, p.author); break;
       case "aiMagicSetlist": result = processAiSetlist(p.songs); break;
+      case "resolveArtists": result = resolveArtists(p.items); break;
       case "addArtistToDB": result = addArtistToDB(p.name, p.gender, p.origin, p.aliases); break;
       case "suggestSongFixes": result = suggestSongFixes(p.eventId); break;
       case "applySongFixes": result = applySongFixes(p.eventId, p.fixes); break;
@@ -776,6 +777,26 @@ function detectSongType(title, author, idx) {
       ? (gender === "M" ? "บอยกรุ๊ป" : gender === "F" ? "เกิร์ลกรุ๊ป" : "วงผสม") + " (" + source + ")"
       : "ไม่ทราบ (Fallback)"
   };
+}
+
+// หาชื่อศิลปินจริงของเพลง (ใช้ในสถิตินับศิลปินของหน้าจัดลิสต์)
+//   ช่องศิลปินในชีตมักเป็น "ชื่อช่อง YouTube" (เช่น HYBE LABELS) และชื่อเพลงเป็นชื่อคลิปเต็ม
+//   items = [{id, name, artist}] -> [{id, matched: ชื่อศิลปินจาก ArtistDB หรือ "", label: ช่องนี้เป็นช่องค่าย/รวมเพลงไหม}]
+function resolveArtists(items) {
+  const idx = getArtistIndex();
+  const labels = idx.filter(function (e) { return e.c; });
+  return (Array.isArray(items) ? items.slice(0, 500) : []).map(function (it) {
+    it = it || {};
+    const title = clip(it.name, 300);
+    const channel = clip(it.artist, 200);
+    const r = detectSongType(title, channel, idx);
+    const A = makeTextCtx(channel);
+    return {
+      id: clip(it.id, 60),
+      matched: r.genderKnown ? r.matched : "",
+      label: labels.some(function (e) { return entryMatchesCtx(e, A); })
+    };
+  });
 }
 
 function processSongDB(title, author) {

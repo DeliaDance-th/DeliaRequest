@@ -102,6 +102,27 @@ const translations = {
     btn_add_song_admin: "เพิ่มเพลงใหม่ (Admin)",
     btn_view_feedback_admin: "ดู Feedback งานนี้",
     shuffle_mf: "สุ่มลำดับ",
+    // แถบเครื่องมือหน้าจัดลิสต์ (จัดกลุ่มตามความถี่ที่ใช้)
+    btn_add_song_short: "เพิ่มเพลง",
+    add_song_tip: "เพิ่มเพลงใหม่เข้ากองกลาง",
+    btn_add_list: "ลิสต์ใหม่",
+    add_list_tip: "สร้างลิสต์ใหม่",
+    btn_more: "เพิ่มเติม",
+    menu_view: "มุมมอง",
+    menu_songs: "เพิ่มเพลง",
+    menu_backup: "บันทึก / สำรอง / ส่งออก",
+    btn_save_now: "บันทึกลง Sheet ตอนนี้",
+    btn_reset_board: "ล้างกระดาน เริ่มจากรายการขอเพลงใหม่",
+    sync_click_tip: "บันทึกอัตโนมัติอยู่แล้ว กดเพื่อบันทึกทันที",
+    list_add_song: "เพิ่มเพลง",
+    list_more: "ตัวเลือกลิสต์",
+    list_rename: "เปลี่ยนชื่อลิสต์",
+    list_delete: "ลบลิสต์",
+    guide_title: "เริ่มจัดลิสต์ยังไงดี?",
+    guide_auto: "พิมพ์ชื่อลิสต์ เช่น Kpop1 Kpop2 BreakDance แล้วระบบแบ่งเพลงให้ (แนะนำ)",
+    guide_manual_title: "สร้างลิสต์เอง",
+    guide_manual: "สร้างลิสต์ แล้วลากเพลงจากกองกลางมาใส่ทีละเพลง",
+    guide_tips: "ลากเพลงลงลิสต์ หรือแตะเพลงเพื่อย้าย/แก้ไข · ทุกอย่างบันทึกอัตโนมัติ คนอื่นที่เปิดอยู่เห็นทันที",
     shuffle_list_tip: "สุ่มลำดับเพลงในลิสต์นี้ (สลับทั้งหมด ไม่แยกชาย/หญิง)",
     list_shuffled: "สุ่มลำดับเพลงใน {list} แล้ว",
     // เพลงที่แอดมินเพิ่มเอง vs เพลงที่มาจากการโหวต
@@ -120,6 +141,8 @@ const translations = {
     artist_stats_unknown: "(ไม่ระบุศิลปิน)",
     artist_stats_copy: "คัดลอกตาราง",
     artist_stats_copied: "คัดลอกสถิติแล้ว วางใน Sheets / Excel ได้เลย",
+    artist_stats_checking: "กำลังเทียบกับฐานข้อมูลศิลปิน…",
+    artist_stats_from: "จากช่อง: {names}",
     // บันทึกอัตโนมัติ / ทำงานร่วมกัน
     sync_saved: "บันทึกอัตโนมัติแล้ว",
     sync_saved_by: "บันทึกล่าสุด {time} โดย {by}",
@@ -513,6 +536,26 @@ const translations = {
     btn_add_song_admin: "Add New Song (Admin)",
     btn_view_feedback_admin: "View Event Feedback",
     shuffle_mf: "Shuffle",
+    btn_add_song_short: "Add song",
+    add_song_tip: "Add a new song to the pool",
+    btn_add_list: "New list",
+    add_list_tip: "Create a new list",
+    btn_more: "More",
+    menu_view: "View",
+    menu_songs: "Add songs",
+    menu_backup: "Save / backup / export",
+    btn_save_now: "Save to Sheet now",
+    btn_reset_board: "Clear board, start again from requests",
+    sync_click_tip: "Saves automatically. Click to save right now.",
+    list_add_song: "Add song",
+    list_more: "List options",
+    list_rename: "Rename list",
+    list_delete: "Delete list",
+    guide_title: "How do you want to start?",
+    guide_auto: "Type list names like Kpop1 Kpop2 BreakDance and songs are sorted for you (recommended)",
+    guide_manual_title: "Build lists yourself",
+    guide_manual: "Create a list, then drag songs in from the pool",
+    guide_tips: "Drag songs into lists, or tap a song to move/edit it · Everything saves automatically and others see it live",
     shuffle_list_tip: "Shuffle the songs in this list (fully random, ignores gender)",
     list_shuffled: "Shuffled {list}",
     src_admin: "Admin",
@@ -529,6 +572,8 @@ const translations = {
     artist_stats_unknown: "(no artist)",
     artist_stats_copy: "Copy table",
     artist_stats_copied: "Stats copied. Paste into Sheets / Excel.",
+    artist_stats_checking: "checking the artist database…",
+    artist_stats_from: "from channel: {names}",
     sync_saved: "Saved automatically",
     sync_saved_by: "Last saved {time} by {by}",
     sync_saved_at: "Last saved {time}",
@@ -3949,7 +3994,75 @@ function toggleAllCategories() {
   updateCollapseAllButton();
 }
 
+// ==========================================
+// เมนู "เพิ่มเติม" (แถบเครื่องมือ) และเมนู ⋮ ของแต่ละลิสต์
+// ==========================================
+function closePlMenus() {
+  const more = document.getElementById("pl-more-menu");
+  if (more) more.hidden = true;
+  const btn = document.getElementById("btn-pl-more");
+  if (btn) btn.setAttribute("aria-expanded", "false");
+  const pop = document.getElementById("pl-popover");
+  if (pop) pop.remove();
+}
+
+function togglePlMore(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById("pl-more-menu");
+  if (!menu) return;
+  const open = menu.hidden;
+  closePlMenus();
+  if (open) {
+    updateCollapseAllButton();
+    menu.hidden = false;
+    document.getElementById("btn-pl-more").setAttribute("aria-expanded", "true");
+  }
+}
+
+function openListMore(e, zoneId) {
+  if (e) e.stopPropagation();
+  const already = document.getElementById("pl-popover");
+  closePlMenus();
+  if (already && already.dataset.zone === zoneId) return; // กดซ้ำ = ปิด
+  const btn = e && e.currentTarget;
+  const pop = document.createElement("div");
+  pop.id = "pl-popover";
+  pop.className = "pl-menu pl-popover";
+  pop.dataset.zone = zoneId;
+  pop.setAttribute("role", "menu");
+  pop.innerHTML = `
+    <button type="button" class="pl-menu-item" onclick="closePlMenus(); renameCategory('${zoneId}')"><i class="fa-solid fa-pen"></i> <span>${escapeHTML(t("list_rename"))}</span></button>
+    <button type="button" class="pl-menu-item" onclick="closePlMenus(); openArtistStats('${zoneId}')"><i class="fa-solid fa-chart-simple"></i> <span>${escapeHTML(t("artist_stats"))}</span></button>
+    <div class="pl-menu-sep"></div>
+    <button type="button" class="pl-menu-item danger" onclick="closePlMenus(); deleteCategory('${zoneId}')"><i class="fa-solid fa-trash"></i> <span>${escapeHTML(t("list_delete"))}</span></button>`;
+  document.body.appendChild(pop);
+  if (btn) {
+    const r = btn.getBoundingClientRect();
+    const w = pop.offsetWidth;
+    pop.style.top = `${Math.min(r.bottom + 6, window.innerHeight - pop.offsetHeight - 8)}px`;
+    pop.style.left = `${Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8))}px`;
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".pl-menu")) return;
+  closePlMenus();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closePlMenus();
+});
+window.addEventListener("resize", () => {
+  const pop = document.getElementById("pl-popover");
+  if (pop) pop.remove();
+});
+document.addEventListener("scroll", () => {
+  const pop = document.getElementById("pl-popover");
+  if (pop) pop.remove();
+}, true);
+
 function updateCollapseAllButton() {
+  const guide = document.getElementById("pl-empty-guide");
+  if (guide) guide.classList.toggle("hidden", document.querySelectorAll(".dynamic-category").length > 0);
   const btn = document.getElementById("btn-pl-collapse-all");
   if (!btn) return;
   const cols = Array.from(document.querySelectorAll(".dynamic-category"));
@@ -3981,14 +4094,12 @@ function createCategoryBox(title) {
     <div class="list-col-header" title="${t("category_drag_hint")}">
       <button type="button" class="list-toggle" aria-expanded="${!startCollapsed}" title="${escapeHTML(t("toggle_list"))}" onclick="toggleCategory('${safeId}')"><i class="fa-solid fa-chevron-down"></i></button>
       <span class="list-count">0</span>
-      <h3>${escapeHTML(title)} 
-        <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${safeId}')"></i> 
-        <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${safeId}')"></i>
-      </h3>
+      <h3>${escapeHTML(title)}</h3>
       <div class="list-col-actions">
-        <button type="button" class="btn btn-outline btn-full btn-sm" title="${escapeHTML(t("shuffle_list_tip"))}" onclick="shuffleList('${safeId}')"><i class="fa-solid fa-shuffle"></i> ${escapeHTML(t("shuffle_mf"))}</button>
-        <button type="button" class="btn btn-outline btn-sm list-stats-btn" title="${escapeHTML(t("artist_stats_tip"))}" aria-label="${escapeHTML(t("artist_stats_tip"))}" onclick="openArtistStats('${safeId}')"><i class="fa-solid fa-chart-simple"></i> ${escapeHTML(t("artist_stats"))}</button>
-        <button type="button" class="btn btn-outline btn-sm list-add-btn" title="${escapeHTML(t("list_add_title"))}" aria-label="${escapeHTML(t("list_add_title"))}" onclick="openListAddMenu('${safeId}')"><i class="fa-solid fa-plus"></i></button>
+        <button type="button" class="btn btn-outline btn-sm list-add-main" title="${escapeHTML(t("list_add_title"))}" onclick="openListAddMenu('${safeId}')"><i class="fa-solid fa-plus"></i> ${escapeHTML(t("list_add_song"))}</button>
+        <button type="button" class="btn btn-outline btn-sm btn-icon" title="${escapeHTML(t("shuffle_list_tip"))}" aria-label="${escapeHTML(t("shuffle_list_tip"))}" onclick="shuffleList('${safeId}')"><i class="fa-solid fa-shuffle"></i></button>
+        <button type="button" class="btn btn-outline btn-sm btn-icon" title="${escapeHTML(t("artist_stats_tip"))}" aria-label="${escapeHTML(t("artist_stats_tip"))}" onclick="openArtistStats('${safeId}')"><i class="fa-solid fa-chart-simple"></i></button>
+        <button type="button" class="btn btn-outline btn-sm btn-icon" title="${escapeHTML(t("list_more"))}" aria-label="${escapeHTML(t("list_more"))}" onclick="openListMore(event, '${safeId}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       </div>
     </div>
     <div id="${safeId}" class="drop-zone" data-category="${escapeHTML(title)}" data-drop-hint="${escapeHTML(t("drop_here"))}"></div>
@@ -4010,9 +4121,7 @@ function renameCategory(zoneId) {
     ) {
       zone.setAttribute("data-category", newTitle);
       saveCollapsedState();
-      zone.previousElementSibling.querySelector("h3").innerHTML = `${escapeHTML(newTitle)} 
-        <i class="fa-solid fa-pen text-muted" style="font-size:0.8rem; cursor:pointer; margin-left:8px;" onclick="renameCategory('${zoneId}')"></i> 
-        <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${zoneId}')"></i>`;
+      zone.previousElementSibling.querySelector("h3").textContent = newTitle;
     }
   });
 }
@@ -4215,22 +4324,86 @@ const randomizeAlternate = shuffleList;
 
 // ==========================================
 // นับจำนวนเพลงของแต่ละศิลปินในลิสต์ (ไว้ทำสถิติ)
-// ชื่อศิลปินที่ต่างกันแค่ตัวพิมพ์/ช่องว่าง/ขีด (เช่น "BLACKPINK" กับ "Black Pink") นับรวมกัน
+// ช่อง "ศิลปิน" ในชีตมักเป็นชื่อช่อง YouTube (เช่น HYBE LABELS, SMTOWN, aespa - Topic) จึงหาชื่อศิลปินจริงก่อนนับ:
+//   1) ฐานข้อมูลศิลปิน (ArtistDB บนเซิร์ฟเวอร์) เทียบจากชื่อคลิป + ชื่อช่อง -> ชื่อมาตรฐาน
+//   2) ไม่รู้จัก: ช่องค่าย/รวมเพลง -> ดึงจากหน้าชื่อคลิป ("ARTIST - 'Song' MV") / ช่องศิลปิน -> ตัดคำท้ายช่อง (- Topic, Official, VEVO)
+//   ชื่อที่ต่างกันแค่ตัวพิมพ์/ช่องว่าง/ขีด (BLACKPINK กับ Black Pink) นับรวมกัน
 // ==========================================
+// ชื่อช่องที่เป็นค่าย/สถานี/ช่องรวมเพลง (ไม่ใช่ชื่อศิลปิน)
+const LABEL_CHANNEL_RE =
+  /(^|[^a-z])(labels?|entertainment|ent\.?|records?|music|k-?pop|j-?pop|t-?pop|mnet|1thek|stone|studio ?choom|dingo|m2|mbc|kbs|sbs|jtbc|arirang|genie|melon|grammy|gmm|avex|smtown|official channel)([^a-z]|$)|원더케이|스튜디오/i;
+
+// ตัดคำท้ายชื่อช่องที่ไม่ใช่ชื่อศิลปิน: "aespa - Topic" "BLACKPINK Official" "TaylorSwiftVEVO" "IU (아이유)"
+function cleanChannelName(ch) {
+  const raw = String(ch || "").trim();
+  let s = raw
+    .replace(/\s*[-–—]\s*topic$/i, "")
+    .replace(/\s*vevo$/i, "")
+    .replace(/\s*(official\s*(youtube\s*)?(channel)?|オフィシャル\S*|公式\S*|ช่องทางการ)\s*$/i, "")
+    .replace(/\s*[(（][^)）]*[가-힯぀-ヿ一-鿿][^)）]*[)）]\s*$/, "")
+    .trim();
+  return s || raw;
+}
+
+// ศิลปินจากหน้าชื่อคลิป: "BLACKPINK - 'Pink Venom' M/V" "[MV] IU(아이유) _ Love wins all" "aespa 에스파 'Supernova' MV"
+function leadArtistFromTitle(title) {
+  let s = String(title || "").trim();
+  for (let i = 0; i < 3; i++) {
+    const tag = s.match(/^[\[【(（〈<][^\]】)）〉>]{0,30}[\]】)）〉>]\s*/); // [MV] 【MV】 (Official)
+    if (!tag) break;
+    s = s.slice(tag[0].length);
+  }
+  const m = s.match(/^(.+?)\s*(?:\s[-–—|_:]\s|['‘’"“”「『《〈]|\s(?:M\/?V|Official|Performance|Dance)\b)/i);
+  if (!m) return "";
+  let a = m[1]
+    .replace(/\s*[(（][^)）]*[가-힯぀-ヿ一-鿿][^)）]*[)）]\s*$/, "") // ชื่อเกาหลี/ญี่ปุ่นในวงเล็บ
+    .replace(/^([A-Za-z0-9].*?)\s+[가-힯]+$/, "$1") // "aespa 에스파" -> "aespa"
+    .replace(/[\s\-–—|_:]+$/, "")
+    .trim();
+  return a && a.length <= 40 ? a : "";
+}
+
+// คำตอบจากฐานข้อมูลบนเซิร์ฟเวอร์ (จำไว้ตามเพลง เปลี่ยนชื่อ/ช่องเมื่อไหร่ค่อยถามใหม่)
+const artistResolveCache = new Map(); // id -> { sig, matched, label }
+let artistResolveUnsupported = false; // Apps Script ยังไม่อัปเดต: ใช้แค่การแยกจากข้อความ
+
+function artistSig(s) {
+  return `${s.name || ""}|${s.artist || ""}`;
+}
+
+function resolveSongArtist(s) {
+  const ch = String(s.artist || "").trim();
+  const c = s.id ? artistResolveCache.get(s.id) : null;
+  const db = c && c.sig === artistSig(s) ? c : null;
+  const lead = leadArtistFromTitle(s.name);
+  const chName = cleanChannelName(ch);
+  if (db && db.matched) {
+    // ชื่อในฐานข้อมูลเป็นตัวพิมพ์ใหญ่ (AESPA): ถ้าชื่อคลิป/ช่องเขียนชื่อเดียวกันไว้ ใช้ตัวพิมพ์ตามนั้น (aespa)
+    const k = normSearch(db.matched);
+    const pretty = [lead, chName].find((x) => x && normSearch(x) === k);
+    return { name: pretty || db.matched, how: "db" };
+  }
+  const isLabel = (db && db.label) || !ch || LABEL_CHANNEL_RE.test(ch);
+  if (isLabel && lead) return { name: lead, how: "title" };
+  return { name: chName, how: "channel" };
+}
+
 function countArtists(songs) {
   const map = new Map();
   songs.forEach((s) => {
-    const raw = String(s.artist || "").trim();
-    const key = normSearch(raw) || "";
+    const r = resolveSongArtist(s);
+    const key = normSearch(r.name) || "";
     let row = map.get(key);
     if (!row) {
-      row = { artist: raw, count: 0, admin: 0, vote: 0, songs: [] };
+      row = { artist: r.name, count: 0, admin: 0, vote: 0, songs: [], sources: [] };
       map.set(key, row);
     }
     row.count++;
     if (isAdminSong(s)) row.admin++;
     else row.vote++;
     row.songs.push(s.name || "");
+    const ch = String(s.artist || "").trim();
+    if (ch && normSearch(ch) !== key && !row.sources.includes(ch)) row.sources.push(ch);
   });
   return Array.from(map.values()).sort(
     (a, b) => b.count - a.count || a.artist.localeCompare(b.artist),
@@ -4239,11 +4412,10 @@ function countArtists(songs) {
 
 let artistStatsRows = [];
 let artistStatsList = "";
+let artistStatsZone = null;
 
-function openArtistStats(zoneId) {
-  const zone = document.getElementById(zoneId);
-  if (!zone) return;
-  const songs = Array.from(zone.children)
+function artistStatsSongs(zone) {
+  return Array.from(zone.children)
     .filter((el) => el.dataset.id)
     .map(
       (el) =>
@@ -4252,6 +4424,51 @@ function openArtistStats(zoneId) {
           artist: el.dataset.artist,
         },
     );
+}
+
+// ถามฐานข้อมูลเฉพาะเพลงที่ยังไม่เคยถาม แล้ววาดตารางใหม่
+function resolveArtistsFor(songs, done) {
+  const need = songs.filter((s) => {
+    if (!s.id) return false;
+    const c = artistResolveCache.get(s.id);
+    return !c || c.sig !== artistSig(s);
+  });
+  if (!need.length || artistResolveUnsupported) return done(false);
+  fetchAPI(
+    "resolveArtists",
+    { items: need.map((s) => ({ id: s.id, name: s.name, artist: s.artist })) },
+    (res) => {
+      (res || []).forEach((r) => {
+        const s = need.find((x) => x.id === r.id);
+        if (s) artistResolveCache.set(s.id, { sig: artistSig(s), matched: r.matched || "", label: !!r.label });
+      });
+      done(true);
+    },
+    (err) => {
+      if (err === "Invalid Action") artistResolveUnsupported = true;
+      done(false);
+    },
+    true,
+  );
+}
+
+function openArtistStats(zoneId) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  artistStatsZone = zoneId;
+  renderArtistStats(zone);
+  openModal("artistStatsModal");
+  const songs = artistStatsSongs(zone);
+  const pending = !artistResolveUnsupported && songs.some((s) => s.id && (artistResolveCache.get(s.id) || {}).sig !== artistSig(s));
+  if (pending) document.getElementById("artist-stats-summary").textContent += " · " + t("artist_stats_checking");
+  resolveArtistsFor(songs, () => {
+    const modal = document.getElementById("artistStatsModal");
+    if (artistStatsZone === zoneId && modal && modal.classList.contains("active")) renderArtistStats(zone);
+  });
+}
+
+function renderArtistStats(zone) {
+  const songs = artistStatsSongs(zone);
   artistStatsList = zoneLabel(zone);
   artistStatsRows = countArtists(songs);
   document.getElementById("artist-stats-title").textContent = t("artist_stats_title", {
@@ -4276,9 +4493,13 @@ function openArtistStats(zoneId) {
             r.admin ? `<span class="tag tag-admin">${escapeHTML(t("src_admin"))} ${r.admin}</span>` : "",
             r.vote ? `<span class="tag tag-votes">${escapeHTML(t("src_vote"))} ${r.vote}</span>` : "",
           ].join(" ");
+          const from = r.sources.length
+            ? `<span class="artist-stats-from">${escapeHTML(t("artist_stats_from", { names: r.sources.join(", ") }))}</span>`
+            : "";
           return `<div class="artist-stats-row" title="${escapeHTML(r.songs.join("\n"))}">
             <div class="artist-stats-name">
               <strong>${escapeHTML(r.artist || t("artist_stats_unknown"))}</strong>
+              ${from}
               <span class="artist-stats-split">${split}</span>
               <span class="artist-stats-bar"><span style="width:${Math.round((r.count / max) * 100)}%"></span></span>
             </div>
@@ -4287,7 +4508,6 @@ function openArtistStats(zoneId) {
         })
         .join("");
   }
-  openModal("artistStatsModal");
 }
 
 function copyArtistStats() {

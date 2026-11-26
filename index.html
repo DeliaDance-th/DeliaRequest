@@ -334,26 +334,6 @@
         </h1>
       </div>
 
-      <div
-        style="
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          margin-bottom: 15px;
-          flex-wrap: wrap;
-        "
-      >
-        <button
-          class="btn btn-primary btn-sm"
-          onclick="openAdminAddSongModal()"
-          id="btnAddSongAdmin"
-          style="border-radius: 20px; padding: 6px 16px"
-        >
-          <i class="fa-solid fa-plus-circle"></i>
-          <span data-i18n="btn_add_song_admin">เพิ่มเพลงใหม่ (Admin)</span>
-        </button>
-      </div>
-
       <div class="playlist-workspace" style="position: relative">
         <button
           class="pool-trigger-tab hidden-desktop"
@@ -414,113 +394,130 @@
         </div>
 
         <div class="playlist-main">
+          <!-- แถบเครื่องมือ: ปุ่มที่ใช้บ่อยอยู่ข้างนอก ที่นาน ๆ ใช้อยู่ในเมนู "เพิ่มเติม" -->
           <div class="playlist-toolbar">
-            <button
-              class="btn btn-outline btn-sm hidden-mobile"
-              onclick="togglePoolSidebar()"
-            >
-              <i class="fa-solid fa-bars-staggered"></i>
-              <span id="toggle-sidebar-text">ซ่อนกองกลาง</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm btn-undo"
-              id="btn-pl-undo"
-              onclick="plUndo()"
-              title="ย้อนกลับ (Ctrl+Z)"
-              data-i18n-title="undo_tip"
-              disabled
-            >
-              <i class="fa-solid fa-rotate-left"></i>
-              <span data-i18n="btn_undo">ย้อนกลับ</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm btn-undo"
-              id="btn-pl-redo"
-              onclick="plRedo()"
-              title="ทำซ้ำ (Ctrl+Y)"
-              data-i18n-title="redo_tip"
-              disabled
-            >
-              <i class="fa-solid fa-rotate-right"></i>
-              <span data-i18n="btn_redo">ทำซ้ำ</span>
-            </button>
-            <div style="flex: 1"></div>
-            <button
-              class="btn btn-primary btn-sm"
-              id="btn-pl-auto"
-              onclick="openAutoSetlistModal()"
-            >
-              <i class="fa-solid fa-wand-magic-sparkles"></i>
-              <span data-i18n="btn_pl_auto">จัดลิสต์อัตโนมัติ</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              id="btn-pl-old-pool"
-              onclick="openOldPoolModal()"
-            >
-              <i class="fa-solid fa-box-archive"></i>
-              <span data-i18n="btn_old_pool">กองกลางงานเก่า</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              id="btn-pl-collapse-all"
-              onclick="toggleAllCategories()"
-              disabled
-            >
-              <i class="fa-solid fa-angles-up"></i>
-              <span>ย่อทุกลิสต์</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              id="btn-pl-restore"
-              onclick="openPlaylistRestoreModal()"
-            >
-              <i class="fa-solid fa-clock-rotate-left"></i>
-              <span data-i18n="btn_pl_restore">กู้คืนลิสต์</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              id="btn-pl-backup"
-              onclick="backupPlaylistCopy()"
-            >
-              <i class="fa-solid fa-copy"></i>
-              <span data-i18n="btn_pl_backup">สำรองลิสต์</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              id="btn-pl-csv"
-              onclick="downloadPlaylistCSV()"
-            >
-              <i class="fa-solid fa-file-csv"></i>
-              <span data-i18n="btn_pl_csv">ดาวน์โหลด CSV</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              onclick="confirmImportFromVotes()"
-            >
-              <i class="fa-solid fa-rotate-left"></i>
-              <span data-i18n="btn_fetch_votes">ดึงข้อมูลการขอเพลง</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm"
-              style="border-color: #f39c12; color: #f39c12"
-              onclick="addNewCategory()"
-            >
-              <i class="fa-solid fa-folder-plus"></i>
-              <span data-i18n="btn_add_cat">เพิ่มหมวดหมู่</span>
-            </button>
-            <button
-              class="btn btn-primary btn-sm"
-              id="btn-save-playlist-top"
-              onclick="savePlaylistData()"
-            >
-              <i class="fa-solid fa-floppy-disk"></i>
-              <span data-i18n="btn_save">เซฟลง Sheet</span>
-            </button>
+            <div class="pl-tool-group">
+              <button
+                class="btn btn-outline btn-sm hidden-mobile"
+                onclick="togglePoolSidebar()"
+              >
+                <i class="fa-solid fa-table-columns"></i>
+                <span id="toggle-sidebar-text">ซ่อนกองกลาง</span>
+              </button>
+              <button
+                class="btn btn-outline btn-sm btn-undo btn-icon"
+                id="btn-pl-undo"
+                onclick="plUndo()"
+                title="ย้อนกลับ (Ctrl+Z)"
+                data-i18n-title="undo_tip"
+                disabled
+              >
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+              <button
+                class="btn btn-outline btn-sm btn-undo btn-icon"
+                id="btn-pl-redo"
+                onclick="plRedo()"
+                title="ทำซ้ำ (Ctrl+Y)"
+                data-i18n-title="redo_tip"
+                disabled
+              >
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
+            <div class="pl-tool-spacer"></div>
+            <div class="pl-tool-group">
+              <button
+                class="btn btn-primary btn-sm"
+                id="btn-pl-auto"
+                onclick="openAutoSetlistModal()"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span data-i18n="btn_pl_auto">จัดลิสต์อัตโนมัติ</span>
+              </button>
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="openAdminAddSongModal()"
+                title="เพิ่มเพลงใหม่เข้ากองกลาง"
+                data-i18n-title="add_song_tip"
+              >
+                <i class="fa-solid fa-music"></i>
+                <span class="pl-tool-label" data-i18n="btn_add_song_short">เพิ่มเพลง</span>
+              </button>
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="addNewCategory()"
+                title="สร้างลิสต์ใหม่"
+                data-i18n-title="add_list_tip"
+              >
+                <i class="fa-solid fa-folder-plus"></i>
+                <span class="pl-tool-label" data-i18n="btn_add_list">ลิสต์ใหม่</span>
+              </button>
+              <div class="pl-more-wrap">
+                <button
+                  class="btn btn-outline btn-sm"
+                  id="btn-pl-more"
+                  onclick="togglePlMore(event)"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fa-solid fa-ellipsis"></i>
+                  <span class="pl-tool-label" data-i18n="btn_more">เพิ่มเติม</span>
+                </button>
+                <div class="pl-menu" id="pl-more-menu" role="menu" hidden>
+                  <div class="pl-menu-label" data-i18n="menu_view">มุมมอง</div>
+                  <button
+                    type="button"
+                    class="pl-menu-item"
+                    id="btn-pl-collapse-all"
+                    onclick="closePlMenus(); toggleAllCategories()"
+                    disabled
+                  >
+                    <i class="fa-solid fa-angles-up"></i>
+                    <span>ย่อทุกลิสต์</span>
+                  </button>
+                  <div class="pl-menu-label" data-i18n="menu_songs">เพิ่มเพลง</div>
+                  <button type="button" class="pl-menu-item" onclick="closePlMenus(); openOldPoolModal()">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span data-i18n="btn_old_pool">กองกลางงานเก่า</span>
+                  </button>
+                  <div class="pl-menu-label" data-i18n="menu_backup">บันทึก / สำรอง / ส่งออก</div>
+                  <button type="button" class="pl-menu-item" id="btn-save-playlist-top" onclick="closePlMenus(); savePlaylistData()">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span data-i18n="btn_save_now">บันทึกลง Sheet ตอนนี้</span>
+                  </button>
+                  <button type="button" class="pl-menu-item" onclick="closePlMenus(); backupPlaylistCopy()">
+                    <i class="fa-solid fa-copy"></i>
+                    <span data-i18n="btn_pl_backup">สำรองลิสต์</span>
+                  </button>
+                  <button type="button" class="pl-menu-item" onclick="closePlMenus(); openPlaylistRestoreModal()">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span data-i18n="btn_pl_restore">กู้คืนลิสต์</span>
+                  </button>
+                  <button type="button" class="pl-menu-item" onclick="closePlMenus(); downloadPlaylistCSV()">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span data-i18n="btn_pl_csv">ดาวน์โหลด CSV</span>
+                  </button>
+                  <div class="pl-menu-sep"></div>
+                  <button type="button" class="pl-menu-item danger" onclick="closePlMenus(); confirmImportFromVotes()">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span data-i18n="btn_reset_board">ล้างกระดาน เริ่มจากรายการขอเพลงใหม่</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- สถานะบันทึกอัตโนมัติ + คำอธิบายป้ายแหล่งที่มาของเพลง -->
+          <!-- สถานะบันทึกอัตโนมัติ (กดเพื่อบันทึกทันที) + คำอธิบายป้ายแหล่งที่มาของเพลง -->
           <div class="pl-infobar">
-            <div class="pl-sync-status" id="pl-sync-status" aria-live="polite"></div>
+            <button
+              type="button"
+              class="pl-sync-status"
+              id="pl-sync-status"
+              aria-live="polite"
+              onclick="savePlaylistData()"
+              title="กดเพื่อบันทึกทันที"
+              data-i18n-title="sync_click_tip"
+            ></button>
             <div class="pl-legend">
               <span class="pl-legend-item pl-legend-admin"
                 ><i class="fa-solid fa-user-shield"></i>
@@ -530,6 +527,23 @@
                 >♥ <span data-i18n="src_vote">จากการโหวต</span></span
               >
             </div>
+          </div>
+          <!-- กระดานยังไม่มีลิสต์: บอกว่าเริ่มจากตรงไหน -->
+          <div class="pl-empty-guide hidden" id="pl-empty-guide">
+            <h3 data-i18n="guide_title">เริ่มจัดลิสต์ยังไงดี?</h3>
+            <div class="pl-guide-options">
+              <button type="button" class="pl-guide-card pl-guide-primary" onclick="openAutoSetlistModal()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <strong data-i18n="btn_pl_auto">จัดลิสต์อัตโนมัติ</strong>
+                <span data-i18n="guide_auto">พิมพ์ชื่อลิสต์ เช่น Kpop1 Kpop2 BreakDance แล้วระบบแบ่งเพลงให้ (แนะนำ)</span>
+              </button>
+              <button type="button" class="pl-guide-card" onclick="addNewCategory()">
+                <i class="fa-solid fa-folder-plus"></i>
+                <strong data-i18n="guide_manual_title">สร้างลิสต์เอง</strong>
+                <span data-i18n="guide_manual">สร้างลิสต์ แล้วลากเพลงจากกองกลางมาใส่ทีละเพลง</span>
+              </button>
+            </div>
+            <p class="pl-guide-tips" data-i18n="guide_tips">ลากเพลงลงลิสต์ หรือแตะเพลงเพื่อย้าย/แก้ไข · ทุกอย่างบันทึกอัตโนมัติ คนอื่นที่เปิดอยู่เห็นทันที</p>
           </div>
           <div class="dynamic-board" id="dynamic-board"></div>
           <!-- ถังขยะ: ลากเพลงมาวางเพื่อเอาออกจากหน้าจัดลิสต์ / แตะเพื่อดูและนำกลับ -->
@@ -555,31 +569,13 @@
               data-category="🗑️ ถังขยะ"
             ></div>
           </div>
-          <div
-            style="
-              padding: 15px;
-              background: #fdfdfd;
-              border-top: 1px solid var(--border-color);
-              display: flex;
-              justify-content: flex-end;
-            "
-          >
-            <button
-              class="btn btn-primary"
-              id="btn-save-playlist-bottom"
-              onclick="savePlaylistData()"
-            >
-              <i class="fa-solid fa-floppy-disk"></i>
-              <span data-i18n="btn_save">บันทึกลง Sheet</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>
 
     <button
       id="fab-add-category"
-      class="fab-btn hidden admin-only"
+      class="fab-btn hidden admin-only hidden-desktop"
       onclick="addNewCategory()"
       title="เพิ่มหมวดหมู่ใหม่"
       data-i18n-title="add_category_title"
