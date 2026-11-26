@@ -101,7 +101,38 @@ const translations = {
     btn_close_event: "ปิดงาน",
     btn_add_song_admin: "เพิ่มเพลงใหม่ (Admin)",
     btn_view_feedback_admin: "ดู Feedback งานนี้",
-    shuffle_mf: "สุ่ม (M/F)",
+    shuffle_mf: "สุ่มลำดับ",
+    shuffle_list_tip: "สุ่มลำดับเพลงในลิสต์นี้ (สลับทั้งหมด ไม่แยกชาย/หญิง)",
+    list_shuffled: "สุ่มลำดับเพลงใน {list} แล้ว",
+    // เพลงที่แอดมินเพิ่มเอง vs เพลงที่มาจากการโหวต
+    src_admin: "แอดมินเพิ่ม",
+    src_vote: "จากการโหวต",
+    src_admin_tip: "แอดมินเพิ่มเอง (ไม่แสดงในหน้าโหวต)",
+    src_vote_tip: "ผู้ใช้ขอเพลงและโหวต",
+    // สถิติศิลปินในลิสต์
+    artist_stats: "นับศิลปิน",
+    artist_stats_tip: "นับจำนวนเพลงของแต่ละศิลปินในลิสต์นี้",
+    artist_stats_title: "สถิติศิลปิน: {list}",
+    artist_stats_summary: "{songs} เพลง · {artists} ศิลปิน",
+    artist_stats_col_artist: "ศิลปิน",
+    artist_stats_col_songs: "เพลง",
+    artist_stats_empty: "ยังไม่มีเพลงในลิสต์นี้",
+    artist_stats_unknown: "(ไม่ระบุศิลปิน)",
+    artist_stats_copy: "คัดลอกตาราง",
+    artist_stats_copied: "คัดลอกสถิติแล้ว วางใน Sheets / Excel ได้เลย",
+    // บันทึกอัตโนมัติ / ทำงานร่วมกัน
+    sync_saved: "บันทึกอัตโนมัติแล้ว",
+    sync_saved_by: "บันทึกล่าสุด {time} โดย {by}",
+    sync_saved_at: "บันทึกล่าสุด {time}",
+    sync_pending: "มีการแก้ไข กำลังจะบันทึก…",
+    sync_saving: "กำลังบันทึก…",
+    sync_offline: "บันทึกไม่สำเร็จ จะลองใหม่อัตโนมัติ",
+    sync_manual: "ยังไม่ได้บันทึก (กดเซฟลง Sheet)",
+    sync_remote: "{by} อัปเดตลิสต์แล้ว",
+    sync_remote_anon: "มีคนอัปเดตลิสต์แล้ว",
+    sync_merged: "มีคนแก้ลิสต์พร้อมกัน ระบบรวมการแก้ไขของคุณกับของอีกคนให้แล้ว",
+    sync_need_deploy: "หน้าจัดลิสต์ยังบันทึกอัตโนมัติไม่ได้ ต้องอัปเดต Apps Script (Code.gs) ก่อน ตอนนี้ต้องกดเซฟเอง",
+    move_edit_song: "แก้ไขข้อมูลเพลง",
     add_category_title: "เพิ่มหมวดหมู่ใหม่",
     filter_all: "ทั้งหมด",
     filter_bd: "Dance Break ⚡",
@@ -481,7 +512,35 @@ const translations = {
     btn_close_event: "Close Event",
     btn_add_song_admin: "Add New Song (Admin)",
     btn_view_feedback_admin: "View Event Feedback",
-    shuffle_mf: "Shuffle (M/F)",
+    shuffle_mf: "Shuffle",
+    shuffle_list_tip: "Shuffle the songs in this list (fully random, ignores gender)",
+    list_shuffled: "Shuffled {list}",
+    src_admin: "Admin",
+    src_vote: "Voted",
+    src_admin_tip: "Added by an admin (hidden from the voting page)",
+    src_vote_tip: "Requested and voted by users",
+    artist_stats: "Artists",
+    artist_stats_tip: "Count songs per artist in this list",
+    artist_stats_title: "Artist stats: {list}",
+    artist_stats_summary: "{songs} songs · {artists} artists",
+    artist_stats_col_artist: "Artist",
+    artist_stats_col_songs: "Songs",
+    artist_stats_empty: "This list has no songs yet",
+    artist_stats_unknown: "(no artist)",
+    artist_stats_copy: "Copy table",
+    artist_stats_copied: "Stats copied. Paste into Sheets / Excel.",
+    sync_saved: "Saved automatically",
+    sync_saved_by: "Last saved {time} by {by}",
+    sync_saved_at: "Last saved {time}",
+    sync_pending: "Changes pending…",
+    sync_saving: "Saving…",
+    sync_offline: "Save failed, retrying automatically",
+    sync_manual: "Not saved yet (press Save to Sheet)",
+    sync_remote: "{by} updated the setlist",
+    sync_remote_anon: "Someone updated the setlist",
+    sync_merged: "Someone edited at the same time. Your changes were merged with theirs.",
+    sync_need_deploy: "Auto-save needs the updated Apps Script (Code.gs). Save manually for now.",
+    move_edit_song: "Edit song details",
     add_category_title: "Add new category",
     filter_all: "All",
     filter_bd: "Dance Break ⚡",
@@ -1147,7 +1206,7 @@ function updateQuotaBadge() {
 const tieCache = { ref: null, info: null };
 function getTieInfo() {
   if (tieCache.ref === currentSongs && tieCache.info) return tieCache.info;
-  const list = currentSongs.filter((s) => s.status !== "Played");
+  const list = currentSongs.filter((s) => s.status !== "Played" && !isAdminSong(s));
   const counts = {};
   list.forEach((s) => (counts[s.votes] = (counts[s.votes] || 0) + 1));
   const sorted = list.map((s) => s.votes).sort((a, b) => a - b);
@@ -1155,6 +1214,15 @@ function getTieInfo() {
   tieCache.ref = currentSongs;
   tieCache.info = { counts: counts, min: Math.max(2, median + 1) };
   return tieCache.info;
+}
+
+// เพลงที่แอดมินเพิ่มเอง: สถานะ AdminOnly หรือผู้ขอเป็นบัญชีแอดมิน ("admin-<ชื่อ>" / "admin" เมื่อเซิร์ฟเวอร์ซ่อนอีเมล)
+// ใช้ผู้ขอด้วย เพราะสถานะอาจถูกเปลี่ยนภายหลัง (เช่น Approved) และเพลงแอดมินรุ่นเก่ามีสถานะ Pending
+function isAdminSong(s) {
+  if (!s) return false;
+  if (s.status === "AdminOnly") return true;
+  const c = String(s.creator || "").trim().toLowerCase();
+  return c === "admin" || c.indexOf("admin-") === 0;
 }
 
 // เพลงนี้เป็นของฉันไหม / ฉันโหวตแล้วไหม
@@ -1544,6 +1612,10 @@ function goHome() {
   loadEvents();
 }
 function showView(viewId) {
+  if (viewId !== "playlist" && currentViewId === "playlist") {
+    plSyncFlush(false); // บันทึกที่ค้างก่อนออก
+    plSyncStop();
+  }
   currentViewId = viewId;
   document.getElementById("view-calendar").classList.add("hidden");
   document.getElementById("view-songs").classList.add("hidden");
@@ -1962,10 +2034,9 @@ function filterSongs(opts) {
   const searchInput = document.getElementById("search-bar");
   const q = searchInput ? searchInput.value.toLowerCase() : "";
 
-  let visibleSongs = currentSongs;
-  if (!isAdminLoggedIn) {
-    visibleSongs = currentSongs.filter((s) => s.status !== "AdminOnly");
-  }
+  // เพลงที่แอดมินเพิ่มเอง (AdminOnly) ไม่แสดงในหน้าโหวตสำหรับทุกคน รวมถึงแอดมิน
+  // (จัดการได้ที่หน้าจัดลิสต์ ซึ่งแยกป้าย "แอดมินเพิ่ม" กับ "จากการโหวต" ไว้ให้)
+  const visibleSongs = currentSongs.filter((s) => s.status !== "AdminOnly");
 
   // 1. ค้นหาด้วยชื่อเพลงหรือศิลปิน
   let filtered = visibleSongs.filter(
@@ -3257,7 +3328,9 @@ function preCheckAddSong() {
   const link = linkInput ? linkInput.value.trim() : "";
   if (!name) return showToast(t("toast_notice"), t("enter_song_name"), "error");
 
-  const dup = findDuplicateSong(link, name, null);
+  let dup = findDuplicateSong(link, name, null);
+  // ผู้ใช้ทั่วไปมองไม่เห็นเพลงที่แอดมินเพิ่มเอง: ส่งคำขอไปตามปกติ เซิร์ฟเวอร์จะเปลี่ยนเป็นเพลงที่ผู้ใช้คนนี้ขอ
+  if (dup && !isAdminLoggedIn && dup.status === "AdminOnly") dup = null;
   if (dup && placeExistingInTarget(dup)) return;
   if (dup) return handleDuplicateSong(dup);
 
@@ -3423,8 +3496,10 @@ function sendEditSong(updatedData) {
       isAdmin: isAdminLoggedIn,
     },
     (res) => {
+      const prev = currentSongs;
       currentSongs = fixSongIds(res);
       filterSongs();
+      if (currentViewId === "playlist") plRefreshCards(prev);
       closeModal("editSongModal");
       showToast(t("toast_success"), t("song_updated"), "success");
       if (btn) btn.disabled = false;
@@ -3515,18 +3590,50 @@ function openPlaylistManager() {
     if (textBtn) textBtn.innerText = t("hide_pool");
   }
 
+  plSyncStop();
+  setSyncStatus("saving");
+  loadPlaylistState(activeEvent.id, 0);
+}
+
+function showLoadedPlaylist(savedLists) {
+  const added = renderPlaylistBoard(savedLists);
+  const hasSongs = savedLists.some((s) => !isCatMarker(s));
+  if (hasSongs && added > 0) {
+    showToast(t("toast_success"), t("merged_new", { n: added }), "info");
+  }
+  // ถ้าวันที่นี้ยังไม่มีลิสต์ ลองดูว่าเคยบันทึกไว้ตอนวันที่อื่นหรือไม่
+  if (savedLists.length === 0) offerPlaylistRestoreIfAny();
+  plResetHistory();
+}
+
+// โหลดลิสต์ล่าสุดจากเซิร์ฟเวอร์ แล้วเริ่มบันทึกอัตโนมัติ/ติดตามการแก้ไขของคนอื่น
+function loadPlaylistState(eventId, attempt) {
+  const stillHere = () => activeEvent && activeEvent.id === eventId && currentViewId === "playlist";
   fetchAPI(
-    "getPlaylist",
-    { eventId: activeEvent.id, date: activeEvent.date },
-    (savedLists) => {
-      const added = renderPlaylistBoard(savedLists);
-      if (savedLists.length > 0 && added > 0) {
-        showToast(t("toast_success"), t("merged_new", { n: added }), "info");
-      }
-      // ถ้าวันที่นี้ยังไม่มีลิสต์ ลองดูว่าเคยบันทึกไว้ตอนวันที่อื่นหรือไม่
-      if (savedLists.length === 0) offerPlaylistRestoreIfAny();
-      plResetHistory();
+    "getPlaylistState",
+    { eventId: eventId, date: activeEvent.date, knownRev: null, uuid: userUUID },
+    (st) => {
+      if (!stillHere()) return;
+      if (Array.isArray(st.songs)) currentSongs = fixSongIds(st.songs);
+      showLoadedPlaylist(st.lists || []);
+      plSyncBegin(eventId, st);
     },
+    (err) => {
+      if (!stillHere()) return;
+      if (err !== "Invalid Action") {
+        if (attempt < 3) return setTimeout(() => stillHere() && loadPlaylistState(eventId, attempt + 1), 2000 * (attempt + 1));
+        showToast(t("toast_notice"), err === "NETWORK_ERROR" ? t("toast_network_msg") : err, "error");
+      }
+      // Apps Script ยังไม่อัปเดต (หรือโหลดไม่สำเร็จ): ใช้แบบเดิม กดเซฟเอง
+      fetchAPI("getPlaylist", { eventId: eventId, date: activeEvent.date }, (savedLists) => {
+        if (!stillHere()) return;
+        showLoadedPlaylist(savedLists || []);
+        plSync.legacy = true;
+        setSyncStatus("manual");
+        if (err === "Invalid Action") showToast(t("toast_notice"), t("sync_need_deploy"), "info");
+      });
+    },
+    true,
   );
 }
 
@@ -3559,6 +3666,7 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
   categoryNames.forEach((cat) => createCategoryBox(cat));
 
   savedLists.forEach((saved) => {
+    if (isCatMarker(saved)) return; // แถวเก็บชื่อลิสต์ว่าง (สร้างกล่องไปแล้วข้างบน)
     const latest = currentSongs.find((x) => x.id === saved.id);
     if (!latest && isTrashName(saved.listName)) return; // เพลงที่ลบถาวรไปแล้ว
     const target = findDropZone(saved.listName) || pool;
@@ -3585,10 +3693,19 @@ function renderPlaylistBoard(savedLists, categoryOrder) {
 }
 
 // รวบรวมลิสต์ทั้งกระดาน (รวมกองกลาง) ในรูปแบบที่ส่งไปเซิร์ฟเวอร์
+// ลิสต์ที่ยังไม่มีเพลง เก็บเป็นแถวพิเศษ (SongID = PL_CAT_MARKER) ไม่งั้นลิสต์ว่างจะหายเมื่อเปิดใหม่ / เครื่องอื่นมองไม่เห็น
+const PL_CAT_MARKER = "__CAT__";
+const isCatMarker = (row) => !!row && row.id === PL_CAT_MARKER;
+
 function collectPlaylistLists() {
   const lists = [];
   document.querySelectorAll(".drop-zone").forEach((zone) => {
     const listName = zone.getAttribute("data-category");
+    const isBoardList = !!zone.closest("#dynamic-board");
+    if (isBoardList && !Array.from(zone.children).some((el) => el.dataset.id)) {
+      lists.push({ listName: listName, id: PL_CAT_MARKER, name: "", artist: "", gender: "", isBreakdance: false, time: "", link: "" });
+      return;
+    }
     Array.from(zone.children).forEach((el) => {
       const s = currentSongs.find((song) => song.id === el.dataset.id);
       if (s)
@@ -3701,7 +3818,7 @@ function nowStamp() {
 // บันทึกสำเนาสำรองเป็นชีตใหม่ ไม่ทับลิสต์หลัก
 function backupPlaylistCopy() {
   const lists = collectPlaylistLists();
-  if (lists.length === 0)
+  if (!lists.some((s) => !isCatMarker(s)))
     return showToast(t("toast_notice"), t("backup_empty"), "error");
   openInputModal(t("backup_label_title"), nowStamp(), (label) => {
     fetchAPI(
@@ -3724,7 +3841,7 @@ function backupPlaylistCopy() {
 
 // ดาวน์โหลดลิสต์ปัจจุบันเป็นไฟล์ CSV (เปิดใน Excel/Sheets ได้ ภาษาไทยไม่เพี้ยน)
 function downloadPlaylistCSV() {
-  const lists = collectPlaylistLists().filter((s) => !isTrashName(s.listName));
+  const lists = collectPlaylistLists().filter((s) => !isTrashName(s.listName) && !isCatMarker(s));
   if (lists.length === 0)
     return showToast(t("toast_notice"), t("backup_empty"), "error");
   const cell = (v) => {
@@ -3869,7 +3986,8 @@ function createCategoryBox(title) {
         <i class="fa-solid fa-trash text-danger" style="font-size:0.8rem; cursor:pointer; margin-left:4px;" onclick="deleteCategory('${safeId}')"></i>
       </h3>
       <div class="list-col-actions">
-        <button class="btn btn-outline btn-full btn-sm" onclick="randomizeAlternate('${safeId}')"><i class="fa-solid fa-shuffle"></i> M/F</button>
+        <button type="button" class="btn btn-outline btn-full btn-sm" title="${escapeHTML(t("shuffle_list_tip"))}" onclick="shuffleList('${safeId}')"><i class="fa-solid fa-shuffle"></i> ${escapeHTML(t("shuffle_mf"))}</button>
+        <button type="button" class="btn btn-outline btn-sm list-stats-btn" title="${escapeHTML(t("artist_stats_tip"))}" aria-label="${escapeHTML(t("artist_stats_tip"))}" onclick="openArtistStats('${safeId}')"><i class="fa-solid fa-chart-simple"></i> ${escapeHTML(t("artist_stats"))}</button>
         <button type="button" class="btn btn-outline btn-sm list-add-btn" title="${escapeHTML(t("list_add_title"))}" aria-label="${escapeHTML(t("list_add_title"))}" onclick="openListAddMenu('${safeId}')"><i class="fa-solid fa-plus"></i></button>
       </div>
     </div>
@@ -3982,11 +4100,18 @@ function createPlaylistItem(song) {
   const live = currentSongs.find((x) => x.id === song.id);
   if (live) {
     div.dataset.votes = live.votes;
-    tags += ` <span class="tag tag-votes">♥ ${live.votes}</span>`;
-    const tie = getTieInfo();
-    const same = tie.counts[live.votes] || 0;
-    if (live.status !== "Played" && live.votes >= tie.min && same >= 2) {
-      tags += ` <span class="tag tag-tie" title="${escapeHTML(t("tie_tip", { m: same - 1 }))}">${escapeHTML(t("tie_badge", { n: same }))}</span>`;
+    const admin = isAdminSong(live);
+    div.dataset.src = admin ? "admin" : "vote";
+    div.classList.add(admin ? "pl-src-admin" : "pl-src-vote");
+    if (admin) {
+      tags += ` <span class="tag tag-admin" title="${escapeHTML(t("src_admin_tip"))}"><i class="fa-solid fa-user-shield"></i> ${escapeHTML(t("src_admin"))}</span>`;
+    } else {
+      tags += ` <span class="tag tag-votes" title="${escapeHTML(t("src_vote_tip"))}">♥ ${live.votes}</span>`;
+      const tie = getTieInfo();
+      const same = tie.counts[live.votes] || 0;
+      if (live.status !== "Played" && live.votes >= tie.min && same >= 2) {
+        tags += ` <span class="tag tag-tie" title="${escapeHTML(t("tie_tip", { m: same - 1 }))}">${escapeHTML(t("tie_badge", { n: same }))}</span>`;
+      }
     }
   }
 
@@ -4066,43 +4191,133 @@ function initSortables() {
   });
 }
 
-function randomizeAlternate(containerId) {
-  const container = document.getElementById(containerId);
-  const items = Array.from(container.children);
-  if (items.length < 2) return;
-  const shuffle = (array) => array.sort(() => Math.random() - 0.5);
-  let males = shuffle(items.filter((i) => i.dataset.gender === "M"));
-  let females = shuffle(items.filter((i) => i.dataset.gender === "F"));
-  let mixes = shuffle(
-    items.filter((i) => i.dataset.gender !== "M" && i.dataset.gender !== "F"),
-  );
-  container.innerHTML = "";
-  let mIdx = 0,
-    fIdx = 0,
-    mixIdx = 0,
-    turn = "M";
-  while (
-    mIdx < males.length ||
-    fIdx < females.length ||
-    mixIdx < mixes.length
-  ) {
-    if (turn === "M") {
-      if (mIdx < males.length) {
-        container.appendChild(males[mIdx++]);
-        turn = "F";
-      } else turn = "F";
-    } else if (turn === "F") {
-      if (fIdx < females.length) {
-        container.appendChild(females[fIdx++]);
-        turn = "Mix";
-      } else turn = "Mix";
-    } else if (turn === "Mix") {
-      if (mixIdx < mixes.length) {
-        container.appendChild(mixes[mixIdx++]);
-        turn = "M";
-      } else turn = "M";
-    }
+// สุ่มลำดับเพลงในลิสต์แบบสลับทั้งหมด (ไม่แยกชาย/หญิงแล้ว) ใช้ Fisher-Yates ทุกลำดับมีโอกาสเท่ากัน
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+  return arr;
+}
+
+function shuffleList(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const items = Array.from(container.children).filter((el) => el.dataset.id);
+  if (items.length < 2)
+    return showToast(t("toast_notice"), t("shuffle_need_2"), "error");
+  shuffleArray(items).forEach((el) => container.appendChild(el));
+  showToast(t("toast_success"), t("list_shuffled", { list: zoneLabel(container) }), "success");
+}
+
+// ชื่อเดิม (เผื่อมีที่อื่นเรียกอยู่)
+const randomizeAlternate = shuffleList;
+
+// ==========================================
+// นับจำนวนเพลงของแต่ละศิลปินในลิสต์ (ไว้ทำสถิติ)
+// ชื่อศิลปินที่ต่างกันแค่ตัวพิมพ์/ช่องว่าง/ขีด (เช่น "BLACKPINK" กับ "Black Pink") นับรวมกัน
+// ==========================================
+function countArtists(songs) {
+  const map = new Map();
+  songs.forEach((s) => {
+    const raw = String(s.artist || "").trim();
+    const key = normSearch(raw) || "";
+    let row = map.get(key);
+    if (!row) {
+      row = { artist: raw, count: 0, admin: 0, vote: 0, songs: [] };
+      map.set(key, row);
+    }
+    row.count++;
+    if (isAdminSong(s)) row.admin++;
+    else row.vote++;
+    row.songs.push(s.name || "");
+  });
+  return Array.from(map.values()).sort(
+    (a, b) => b.count - a.count || a.artist.localeCompare(b.artist),
+  );
+}
+
+let artistStatsRows = [];
+let artistStatsList = "";
+
+function openArtistStats(zoneId) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  const songs = Array.from(zone.children)
+    .filter((el) => el.dataset.id)
+    .map(
+      (el) =>
+        currentSongs.find((s) => s.id === el.dataset.id) || {
+          name: el.dataset.name,
+          artist: el.dataset.artist,
+        },
+    );
+  artistStatsList = zoneLabel(zone);
+  artistStatsRows = countArtists(songs);
+  document.getElementById("artist-stats-title").textContent = t("artist_stats_title", {
+    list: artistStatsList,
+  });
+  document.getElementById("artist-stats-summary").textContent = t("artist_stats_summary", {
+    songs: songs.length,
+    artists: artistStatsRows.length,
+  });
+  const box = document.getElementById("artist-stats-list");
+  const copyBtn = document.getElementById("btn-artist-stats-copy");
+  if (copyBtn) copyBtn.disabled = artistStatsRows.length === 0;
+  if (!artistStatsRows.length) {
+    box.innerHTML = `<p class="text-center text-muted" style="padding: 20px 0;">${escapeHTML(t("artist_stats_empty"))}</p>`;
+  } else {
+    const max = artistStatsRows[0].count;
+    box.innerHTML =
+      `<div class="artist-stats-head"><span>${escapeHTML(t("artist_stats_col_artist"))}</span><span>${escapeHTML(t("artist_stats_col_songs"))}</span></div>` +
+      artistStatsRows
+        .map((r) => {
+          const split = [
+            r.admin ? `<span class="tag tag-admin">${escapeHTML(t("src_admin"))} ${r.admin}</span>` : "",
+            r.vote ? `<span class="tag tag-votes">${escapeHTML(t("src_vote"))} ${r.vote}</span>` : "",
+          ].join(" ");
+          return `<div class="artist-stats-row" title="${escapeHTML(r.songs.join("\n"))}">
+            <div class="artist-stats-name">
+              <strong>${escapeHTML(r.artist || t("artist_stats_unknown"))}</strong>
+              <span class="artist-stats-split">${split}</span>
+              <span class="artist-stats-bar"><span style="width:${Math.round((r.count / max) * 100)}%"></span></span>
+            </div>
+            <span class="artist-stats-count">${r.count}</span>
+          </div>`;
+        })
+        .join("");
+  }
+  openModal("artistStatsModal");
+}
+
+function copyArtistStats() {
+  if (!artistStatsRows.length) return;
+  const lines = [
+    [t("artist_stats_col_artist"), t("artist_stats_col_songs"), t("src_admin"), t("src_vote")].join("\t"),
+  ].concat(
+    artistStatsRows.map((r) =>
+      [r.artist || t("artist_stats_unknown"), r.count, r.admin, r.vote].join("\t"),
+    ),
+  );
+  const text = `${artistStatsList}\n${lines.join("\n")}`;
+  const done = () => showToast(t("toast_success"), t("artist_stats_copied"), "success");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+  } else fallbackCopy(text, done);
+}
+
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    done();
+  } catch (e) {}
+  ta.remove();
 }
 
 // ==========================================
@@ -4172,6 +4387,8 @@ const POOL_TAG_ONLY = { m: plIsM, bg: plIsM, f: plIsF, gg: plIsF, bd: plIsBD };
 const POOL_TAG_WORDS = {
   boy: plIsM, boys: plIsM, male: plIsM, ชาย: plIsM, girl: plIsF, girls: plIsF, female: plIsF, หญิง: plIsF,
   mix: plIsMix, ผสม: plIsMix, break: plIsBD, breakdance: plIsBD, dancebreak: plIsBD,
+  admin: (el) => el.dataset.src === "admin", แอดมิน: (el) => el.dataset.src === "admin",
+  vote: (el) => el.dataset.src === "vote", voted: (el) => el.dataset.src === "vote", โหวต: (el) => el.dataset.src === "vote",
   kpop: (el) => el.dataset.origin === "K-Pop",
   tpop: (el) => el.dataset.origin === "T-Pop",
   jpop: (el) => el.dataset.origin === "J-Pop",
@@ -4310,6 +4527,12 @@ function openMoveSong(item) {
     .concat(Array.from(document.querySelectorAll("#dynamic-board .drop-zone")))
     .filter(Boolean);
   let html = "";
+  // เพลงที่แอดมินเพิ่มเองไม่อยู่ในหน้าโหวตแล้ว จึงแก้ไขข้อมูลเพลงจากตรงนี้ได้
+  if (isAdminLoggedIn && currentSongs.some((s) => s.id === item.dataset.id)) {
+    html += `<div class="move-row">
+      <button type="button" class="btn btn-outline btn-sm" onclick="editSongFromMove()"><i class="fa-solid fa-pen"></i> ${escapeHTML(t("move_edit_song"))}</button>
+    </div>`;
+  }
   if (from && from.querySelectorAll(".playlist-item").length > 1) {
     html += `<div class="move-row">
       <button type="button" class="btn btn-outline btn-sm" onclick="moveSongWithin('top')"><i class="fa-solid fa-arrow-up"></i> ${escapeHTML(t("move_top"))}</button>
@@ -4331,6 +4554,15 @@ function openMoveSong(item) {
   </button>`;
   box.innerHTML = html;
   openModal("moveSongModal");
+}
+
+function editSongFromMove() {
+  const el = moveSongEl;
+  if (!el) return;
+  closeModal("moveSongModal");
+  moveSongEl = null;
+  selectedSongId = el.dataset.id;
+  openUserEditSong();
 }
 
 function moveSongTo(i) {
@@ -4397,6 +4629,7 @@ function plCommit() {
   plHistory.redo = [];
   plHistory.last = now;
   updateUndoButtons();
+  plSyncSchedule(); // บันทึกอัตโนมัติ
 }
 
 function plScheduleCommit() {
@@ -4510,6 +4743,7 @@ function plUndo() {
   plApplySnapshot(plHistory.undo.pop());
   updateUndoButtons();
   pulseUndoButton("btn-pl-undo");
+  plSyncSchedule();
   return true;
 }
 
@@ -4520,6 +4754,7 @@ function plRedo() {
   plApplySnapshot(plHistory.redo.pop());
   updateUndoButtons();
   pulseUndoButton("btn-pl-redo");
+  plSyncSchedule();
   return true;
 }
 
@@ -5288,8 +5523,466 @@ function runAutoSetlist() {
   else apply();
 }
 
+// ==========================================
+// 🤝 หน้าจัดลิสต์แบบทำงานร่วมกัน: บันทึกอัตโนมัติ + เห็นการแก้ไขของคนอื่นเอง
+//   - แก้ไขอะไรก็ตาม (ลาก สุ่ม เพิ่ม/ลบ/เปลี่ยนชื่อลิสต์ ย้อนกลับ ฯลฯ) บันทึกเองหลังหยุดแก้ไขครู่หนึ่ง
+//   - ถามเซิร์ฟเวอร์ทุก ๆ PL_POLL_MS ว่ามีคนอื่นบันทึกไหม (เทียบเลขรุ่น rev) ถ้ามีก็อัปเดตกระดานให้
+//   - ออกแล้วเข้าใหม่ / เปิดจากเครื่องอื่น ก็ได้ลิสต์เดียวกัน
+//   - บันทึกพร้อมกันสองคน: เซิร์ฟเวอร์ไม่เขียนทับ แต่ส่งลิสต์ล่าสุดกลับมา หน้าเว็บรวมการแก้ไขของเราลงไปแล้วบันทึกใหม่
+//   - เทียบเฉพาะลิสต์ + ถังขยะ (กองกลาง = เพลงที่เหลือ ลำดับในกองกลางเป็นของแต่ละเครื่อง)
+// ==========================================
+const PL_POLL_MS = 5000;
+const PL_SAVE_DELAY = 1000;
+const plSync = {
+  on: false, // เซิร์ฟเวอร์รองรับ และกำลังเปิดหน้าจัดลิสต์อยู่
+  legacy: false, // Apps Script ยังไม่อัปเดต: ต้องกดเซฟเอง
+  eventId: null,
+  rev: null, // เลขรุ่นของลิสต์บนเซิร์ฟเวอร์ที่กระดานนี้อิงอยู่
+  base: null, // ลิสต์ (ในรูปแบบ key) ตอนเลขรุ่น rev
+  saving: false,
+  again: false,
+  saveTimer: null,
+  pollTimer: null,
+  retry: 0,
+  by: "",
+  at: 0,
+  toastOnSave: false,
+};
+
+const PL_POOL_NAMES = ["list-pool", "POOL", "กองกลาง"];
+
+function plKeyOf(snap) {
+  return JSON.stringify({
+    cats: snap.cats.map((c) => ({ name: c.name, ids: c.ids })),
+    trash: snap.trash,
+  });
+}
+
+function plSyncKey() {
+  return plKeyOf(JSON.parse(plSnapshot()));
+}
+
+// แถวจากชีต -> { cats:[{name, ids}], trash:[ids] }
+function plRowsToSnap(rows) {
+  const cats = [];
+  const byName = new Map();
+  const trash = [];
+  const seen = new Set();
+  (rows || []).forEach((r) => {
+    const n = r.listName;
+    if (PL_POOL_NAMES.includes(n)) return;
+    if (isTrashName(n)) {
+      if (!isCatMarker(r) && r.id && !seen.has(r.id)) {
+        seen.add(r.id);
+        trash.push(r.id);
+      }
+      return;
+    }
+    let c = byName.get(n);
+    if (!c) {
+      c = { name: n, ids: [] };
+      byName.set(n, c);
+      cats.push(c);
+    }
+    if (!isCatMarker(r) && r.id && !seen.has(r.id)) {
+      seen.add(r.id);
+      c.ids.push(r.id);
+    }
+  });
+  return { cats, trash };
+}
+
+// รวมการแก้ไขในเครื่อง (base -> local) ลงบนลิสต์ล่าสุดของเซิร์ฟเวอร์ (remote) ฟังก์ชันล้วน ไม่แตะหน้าเว็บ
+//   - เพลงที่เราย้าย/เรียงใหม่ ไปอยู่ตำแหน่งที่เราวางไว้ (เพลงอื่นตามของ remote)
+//   - เพลงที่เราเอากลับกองกลาง ถูกเอาออกจากลิสต์
+//   - ลิสต์ที่เราเพิ่ม/ลบ/เปลี่ยนลำดับ ใช้ตามของเรา ลิสต์ที่อีกคนเพิ่มยังอยู่
+function plRebase(base, local, remote) {
+  const clone = (s) => ({ cats: s.cats.map((c) => ({ name: c.name, ids: c.ids.slice() })), trash: s.trash.slice() });
+  if (plKeyOf(local) === plKeyOf(base)) return clone(remote);
+  const where = (snap) => {
+    const m = new Map();
+    snap.cats.forEach((c) => c.ids.forEach((id, i) => m.set(id, { z: "c:" + c.name, i })));
+    snap.trash.forEach((id, i) => m.set(id, { z: "t", i }));
+    return m;
+  };
+  const bW = where(base);
+  const lW = where(local);
+  const baseNames = base.cats.map((c) => c.name);
+  const localNames = local.cats.map((c) => c.name);
+  const added = localNames.filter((n) => !baseNames.includes(n));
+  const removed = baseNames.filter((n) => !localNames.includes(n));
+  let names = remote.cats.map((c) => c.name).filter((n) => !removed.includes(n));
+  const keptBase = baseNames.filter((n) => localNames.includes(n));
+  const keptLocal = localNames.filter((n) => baseNames.includes(n));
+  if (JSON.stringify(keptBase) !== JSON.stringify(keptLocal)) {
+    // เราเรียงลำดับลิสต์ใหม่: ใช้ลำดับของเรา ลิสต์ที่มีแต่ฝั่ง remote ต่อท้าย
+    names = localNames
+      .filter((n) => names.includes(n) || added.includes(n))
+      .concat(names.filter((n) => !localNames.includes(n)));
+  } else {
+    added.forEach((n) => {
+      if (names.includes(n)) return;
+      const li = localNames.indexOf(n);
+      let pos = li === 0 ? 0 : names.length;
+      for (let k = li - 1; k >= 0; k--) {
+        const p = names.indexOf(localNames[k]);
+        if (p !== -1) {
+          pos = p + 1;
+          break;
+        }
+      }
+      names.splice(pos, 0, n);
+    });
+  }
+  const out = {
+    cats: names.map((n) => ({
+      name: n,
+      ids: ((remote.cats.find((c) => c.name === n) || {}).ids || []).slice(),
+    })),
+    trash: remote.trash.slice(),
+  };
+  const removeId = (id) => {
+    out.cats.forEach((c) => {
+      const k = c.ids.indexOf(id);
+      if (k !== -1) c.ids.splice(k, 1);
+    });
+    const k = out.trash.indexOf(id);
+    if (k !== -1) out.trash.splice(k, 1);
+  };
+  const zoneArr = (z) => (z === "t" ? out.trash : (out.cats.find((c) => "c:" + c.name === z) || {}).ids);
+  bW.forEach((p, id) => {
+    if (!lW.has(id)) removeId(id); // เราเอาเพลงนี้กลับกองกลาง
+  });
+  const changed = [];
+  lW.forEach((p, id) => {
+    const b = bW.get(id);
+    if (!b || b.z !== p.z || b.i !== p.i) changed.push(id);
+  });
+  changed
+    .sort((a, b) => lW.get(a).i - lW.get(b).i)
+    .forEach((id) => {
+      const p = lW.get(id);
+      const arr = zoneArr(p.z);
+      if (!arr) return;
+      removeId(id);
+      arr.splice(Math.min(p.i, arr.length), 0, id);
+    });
+  return out;
+}
+
+// วางลิสต์ที่ได้ลงกระดาน (ใช้การ์ด/กล่องเดิม สถานะย่อ-ขยายไม่หาย) เพลงที่ไม่อยู่ในลิสต์ใดกลับกองกลาง
+function plApplySync(merged) {
+  const inMerged = new Set([...merged.trash, ...merged.cats.flatMap((c) => c.ids)]);
+  const cur = JSON.parse(plSnapshot());
+  const pool = cur.pool.filter((id) => !inMerged.has(id));
+  [...cur.cats.flatMap((c) => c.ids), ...cur.trash].forEach((id) => {
+    if (!inMerged.has(id) && !pool.includes(id)) pool.unshift(id);
+  });
+  plApplySnapshot(JSON.stringify({ cats: merged.cats, pool: pool, trash: merged.trash }));
+  plAddMissingToPool();
+}
+
+// เพลงของงานที่ยังไม่อยู่บนกระดาน (เช่น เพิ่งมีคนขอ) เข้ากองกลาง
+function plAddMissingToPool() {
+  const pool = document.getElementById("list-pool");
+  if (!pool) return 0;
+  const placed = new Set(
+    Array.from(document.querySelectorAll(".playlist-workspace .drop-zone [data-id]")).map((el) => el.dataset.id),
+  );
+  const missing = currentSongs
+    .filter((s) => s.status !== "Played" && !placed.has(s.id))
+    .sort((a, b) => b.votes - a.votes);
+  if (!missing.length) return 0;
+  plHistory.applying = true;
+  try {
+    missing.forEach((s) => pool.appendChild(createPlaylistItem(s)));
+  } finally {
+    plHistory.applying = false;
+  }
+  updateListCounts();
+  filterPool();
+  return missing.length;
+}
+
+// ข้อมูลเพลงเปลี่ยน (โหวตเพิ่ม แก้ชื่อ เปลี่ยนสถานะ): วาดการ์ดใหม่เฉพาะเพลงที่เปลี่ยน ตำแหน่งเดิม
+function plSongSig(s) {
+  return s
+    ? [s.name, s.artist, s.link, s.gender, s.origin, s.isBreakdance, s.votes, s.status, s.creator].join("|")
+    : "";
+}
+
+function plRefreshCards(prevSongs) {
+  const prev = new Map((prevSongs || []).map((s) => [s.id, plSongSig(s)]));
+  plHistory.applying = true;
+  try {
+    document.querySelectorAll(".playlist-workspace .drop-zone [data-id]").forEach((el) => {
+      const s = currentSongs.find((x) => x.id === el.dataset.id);
+      if (!s) return;
+      if (prevSongs && prev.get(s.id) === plSongSig(s)) return;
+      const fresh = createPlaylistItem(s);
+      el.replaceWith(fresh);
+    });
+    plElCache.clear();
+  } finally {
+    plHistory.applying = false;
+  }
+  updateListCounts();
+  filterPool();
+}
+
+function plSyncTime(at) {
+  if (!at) return "";
+  const d = new Date(at);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+function setSyncStatus(state) {
+  const el = document.getElementById("pl-sync-status");
+  if (!el) return;
+  const icons = {
+    saved: "fa-solid fa-cloud",
+    pending: "fa-solid fa-pen",
+    saving: "fa-solid fa-arrows-rotate fa-spin",
+    offline: "fa-solid fa-triangle-exclamation",
+    manual: "fa-solid fa-floppy-disk",
+  };
+  let text;
+  if (state === "saved") {
+    const time = plSyncTime(plSync.at);
+    text = plSync.by && time
+      ? t("sync_saved_by", { time: time, by: plSync.by })
+      : time
+        ? t("sync_saved_at", { time: time })
+        : t("sync_saved");
+  } else text = t("sync_" + state);
+  el.dataset.state = state;
+  el.innerHTML = `<i class="${icons[state] || icons.saved}"></i> <span>${escapeHTML(text)}</span>`;
+}
+
+function plSyncStop() {
+  clearTimeout(plSync.saveTimer);
+  clearTimeout(plSync.pollTimer);
+  plSync.saveTimer = null;
+  plSync.pollTimer = null;
+  plSync.on = false;
+  plSync.legacy = false;
+  plSync.saving = false;
+  plSync.again = false;
+}
+
+function plSyncBegin(eventId, st) {
+  plSync.on = true;
+  plSync.legacy = false;
+  plSync.eventId = eventId;
+  plSync.rev = st.rev;
+  plSync.by = st.by || "";
+  plSync.at = st.at || 0;
+  plSync.base = plSyncKey();
+  plSync.retry = 0;
+  setSyncStatus("saved");
+  plSyncSchedulePoll();
+}
+
+// เรียกทุกครั้งที่กระดานเปลี่ยนเพราะเราแก้ไขเอง
+function plSyncSchedule(delay) {
+  if (!plSync.on) {
+    if (plSync.legacy) setSyncStatus("manual");
+    return;
+  }
+  clearTimeout(plSync.saveTimer);
+  setSyncStatus("pending");
+  plSync.saveTimer = setTimeout(plSyncSave, delay === undefined ? PL_SAVE_DELAY : delay);
+}
+
+function plSyncSave() {
+  clearTimeout(plSync.saveTimer);
+  plSync.saveTimer = null;
+  if (!plSync.on) return;
+  if (plSync.saving) {
+    plSync.again = true;
+    return;
+  }
+  if (plIsDragging()) {
+    plSync.saveTimer = setTimeout(plSyncSave, 500);
+    return;
+  }
+  const key = plSyncKey();
+  if (key === plSync.base) {
+    setSyncStatus("saved");
+    if (plSync.toastOnSave) showToast(t("toast_success"), t("playlist_saved"));
+    plSync.toastOnSave = false;
+    return;
+  }
+  const eventId = plSync.eventId;
+  plSync.saving = true;
+  setSyncStatus("saving");
+  fetchAPI(
+    "savePlaylistState",
+    {
+      eventId: eventId,
+      date: activeEvent.date,
+      lists: collectPlaylistLists(),
+      baseRev: plSync.rev,
+      by: userName || "",
+      uuid: userUUID,
+    },
+    (res) => {
+      plSync.saving = false;
+      if (!plSync.on || plSync.eventId !== eventId) return;
+      plSync.retry = 0;
+      if (res && res.conflict) {
+        plSyncReceive(res, true); // รวมแล้วจะบันทึกใหม่เอง
+        return;
+      }
+      plSync.rev = res.rev;
+      plSync.by = res.by || "";
+      plSync.at = res.at || Date.now();
+      plSync.base = key;
+      if (plSync.again || plSyncKey() !== plSync.base) {
+        plSync.again = false;
+        plSyncSchedule(300);
+      } else {
+        setSyncStatus("saved");
+        if (plSync.toastOnSave) showToast(t("toast_success"), t("playlist_saved"));
+        plSync.toastOnSave = false;
+      }
+    },
+    (err) => {
+      plSync.saving = false;
+      if (!plSync.on || plSync.eventId !== eventId) return;
+      if (err === "Invalid Action") {
+        plSync.on = false;
+        plSync.legacy = true;
+        setSyncStatus("manual");
+        showToast(t("toast_notice"), t("sync_need_deploy"), "error");
+        return;
+      }
+      setSyncStatus("offline");
+      plSync.retry++;
+      plSync.saveTimer = setTimeout(plSyncSave, Math.min(30000, 3000 * plSync.retry));
+    },
+    true,
+  );
+}
+
+// ได้สถานะใหม่จากเซิร์ฟเวอร์ (จากการถามเป็นระยะ หรือบันทึกชนกัน)
+function plSyncReceive(st, conflict) {
+  if (Array.isArray(st.songs)) {
+    const fresh = fixSongIds(st.songs);
+    if (JSON.stringify(fresh) !== JSON.stringify(currentSongs)) {
+      const prev = currentSongs;
+      currentSongs = fresh;
+      plRefreshCards(prev);
+    }
+  }
+  if (st.lists) {
+    const remote = plRowsToSnap(st.lists);
+    const local = JSON.parse(plSyncKey());
+    const hadLocal = plKeyOf(local) !== plSync.base;
+    const merged = plRebase(JSON.parse(plSync.base), local, remote);
+    plApplySync(merged);
+    plResetHistory(); // ย้อนกลับข้ามการแก้ไขของคนอื่นไม่ได้ (กันไปทับงานของเขา)
+    plSync.rev = st.rev;
+    plSync.by = st.by || "";
+    plSync.at = st.at || 0;
+    if (hadLocal) {
+      plSync.base = plKeyOf(remote);
+      if (conflict) showToast(t("toast_notice"), t("sync_merged"), "info");
+      plSyncSchedule(200);
+    } else {
+      plSync.base = plSyncKey();
+      setSyncStatus("saved");
+      pulseSyncStatus();
+    }
+  } else {
+    plAddMissingToPool();
+    if (conflict) plSyncSchedule(200);
+  }
+}
+
+function pulseSyncStatus() {
+  const el = document.getElementById("pl-sync-status");
+  if (!el) return;
+  el.classList.remove("pulse");
+  void el.offsetWidth;
+  el.classList.add("pulse");
+}
+
+function plSyncBusy() {
+  return (
+    plSync.saving ||
+    !!plSync.saveTimer ||
+    plIsDragging() ||
+    !!document.querySelector(".modal-overlay.active")
+  );
+}
+
+function plSyncSchedulePoll(ms) {
+  clearTimeout(plSync.pollTimer);
+  plSync.pollTimer = setTimeout(plSyncPoll, ms === undefined ? PL_POLL_MS : ms);
+}
+
+function plSyncPoll() {
+  plSync.pollTimer = null;
+  if (!plSync.on || currentViewId !== "playlist") return;
+  if (document.hidden || plSyncBusy()) return plSyncSchedulePoll(1500);
+  const eventId = plSync.eventId;
+  const rev = plSync.rev;
+  fetchAPI(
+    "getPlaylistState",
+    { eventId: eventId, date: activeEvent.date, knownRev: rev, uuid: userUUID },
+    (st) => {
+      if (!plSync.on || plSync.eventId !== eventId) return;
+      // ระหว่างรอคำตอบ ถ้าเราเริ่มแก้ไข/ลากอยู่ ข้ามรอบนี้ไป (การบันทึกจะรวมให้เองถ้าชนกัน)
+      if (!plSyncBusy() && plSync.rev === rev) plSyncReceive(st, false);
+      plSyncSchedulePoll();
+    },
+    () => {
+      if (plSync.on && plSync.eventId === eventId) plSyncSchedulePoll(PL_POLL_MS * 2);
+    },
+    true,
+  );
+}
+
+// ออกจากหน้าจัดลิสต์ / ปิดแท็บ: บันทึกที่ค้างอยู่ทันที
+function plSyncFlush(keepalive) {
+  if (!plSync.on || (!plSync.saveTimer && !plSync.saving)) return;
+  if (plSyncKey() === plSync.base) return;
+  if (!keepalive) return plSyncSave();
+  const body = JSON.stringify({
+    action: "savePlaylistState",
+    payload: {
+      eventId: plSync.eventId,
+      date: activeEvent.date,
+      lists: collectPlaylistLists(),
+      baseRev: plSync.rev,
+      by: userName || "",
+      uuid: userUUID,
+    },
+    token: localStorage.getItem("delia_token") || "",
+  });
+  if (body.length < 60000) {
+    try {
+      fetch(apiURL, { method: "POST", body: body, keepalive: true });
+    } catch (e) {}
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) plSyncFlush(true);
+  else if (plSync.on && currentViewId === "playlist") plSyncSchedulePoll(200);
+});
+window.addEventListener("pagehide", () => plSyncFlush(true));
+
+// ปุ่ม "เซฟลง Sheet": บันทึกทันที (ปกติบันทึกอัตโนมัติอยู่แล้ว) / Apps Script รุ่นเก่า: บันทึกแบบเดิม
 function savePlaylistData() {
-  const lists = collectPlaylistLists();
+  if (plSync.on) {
+    plSync.toastOnSave = true;
+    plSyncSave();
+    return;
+  }
+  const lists = collectPlaylistLists().filter((s) => !isCatMarker(s));
   const btnTop = document.getElementById("btn-save-playlist-top");
   const btnBot = document.getElementById("btn-save-playlist-bottom");
   if (btnTop) btnTop.disabled = true;
@@ -5300,6 +5993,9 @@ function savePlaylistData() {
     (res) => {
       if (btnTop) btnTop.disabled = false;
       if (btnBot) btnBot.disabled = false;
+      plSync.at = Date.now();
+      plSync.by = "";
+      setSyncStatus("saved");
       showToast(t("toast_success"), t("playlist_saved"));
     },
     () => {

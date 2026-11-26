@@ -16,6 +16,7 @@ const ADMIN_ACTIONS = {
   createEvent: 1, closeEvent: 1, editEvent: 1, deleteEvent: 1,
   updateSongStatus: 1, deleteSong: 1,
   getPlaylist: 1, savePlaylist: 1, listPlaylists: 1, getPlaylistBySheet: 1, savePlaylistBackup: 1,
+  getPlaylistState: 1, savePlaylistState: 1,
   aiMagicSetlist: 1, getFeedback: 1,
   addArtistToDB: 1, suggestSongFixes: 1, applySongFixes: 1, mergeSongs: 1,
   addSongs: 1, deleteSongs: 1
@@ -215,6 +216,15 @@ function doPost(e) {
       case "listPlaylists": result = listPlaylists(p.eventId); break;
       case "getPlaylistBySheet": result = getPlaylistBySheet(p.eventId, p.sheetName); break;
       case "savePlaylistBackup": result = savePlaylistBackup(p.eventId, p.date, p.lists, p.label); break;
+      // หน้าจัดลิสต์แบบทำงานร่วมกัน (บันทึกอัตโนมัติ + ดึงการเปลี่ยนแปลงของคนอื่น)
+      case "getPlaylistState":
+        result = getPlaylistState(p.eventId, p.date, p.knownRev);
+        if (HARDENED && result.songs) result.songs = anonymizeSongs(result.songs, p.uuid);
+        break;
+      case "savePlaylistState":
+        result = savePlaylistState(p.eventId, p.date, p.lists, p.baseRev, p.by);
+        if (HARDENED && result.songs) result.songs = anonymizeSongs(result.songs, p.uuid);
+        break;
 
       // 🌟 ประมวลผลเพลงด้วย Database
       case "aiProcess": result = processSongDB(p.title, p.author); break;
@@ -1204,6 +1214,7 @@ function deleteEvent(id) {
         allSheets.forEach(s => {
           if (s.getName().includes(`(${id})`)) ss.deleteSheet(s);
         });
+        PropertiesService.getScriptProperties().deleteProperty(plStateKey(id));
         break;
       }
     }
@@ -1254,17 +1265,7 @@ function addSongLocked(eventId, songData, uuid, isAdmin) {
   let cleanNewLink = link ? link.toLowerCase().trim() : "";
   const newVid = ytVideoId(link); // ลิงก์คนละรูปแบบแต่เป็นวิดีโอเดียวกัน (youtu.be / watch?v= / shorts) ก็นับว่าซ้ำ
 
-  for (let i = 1; i < data.length; i++) {
-    let existingName = data[i][1].toString().toLowerCase().replace(/\s/g, '');
-    let existingLink = data[i][3].toString().toLowerCase().trim();
-    if ((cleanNewLink && existingLink === cleanNewLink) || existingName === cleanNewName ||
-        (newVid && ytVideoId(data[i][3]) === newVid)) {
-       // เพลงซ้ำ -> นับเป็นโหวต (อยู่ในล็อกอยู่แล้ว จึงเรียกตัวที่ไม่ล็อกซ้ำ)
-       return voteSongLocked(eventId, data[i][0], uuid);
-    }
-  }
-
-  if (!isAdmin) {
+  const checkQuota = function () {
     let maxQuota = 3;
     let eventSheet = ss.getSheetByName("Events");
     if(eventSheet) {
@@ -1279,7 +1280,26 @@ function addSongLocked(eventId, songData, uuid, isAdmin) {
       if (data[i][8] == uuid) userSongCount++;
     }
     if (userSongCount >= maxQuota) throw new Error("คุณขอเพลงครบโควตา " + maxQuota + " เพลงแล้วค่ะ");
+  };
+
+  for (let i = 1; i < data.length; i++) {
+    let existingName = data[i][1].toString().toLowerCase().replace(/\s/g, '');
+    let existingLink = data[i][3].toString().toLowerCase().trim();
+    if ((cleanNewLink && existingLink === cleanNewLink) || existingName === cleanNewName ||
+        (newVid && ytVideoId(data[i][3]) === newVid)) {
+       // ผู้ใช้ขอเพลงที่แอดมินเพิ่มไว้เอง (ซ่อนจากหน้าโหวต): เปลี่ยนเป็นเพลงที่ผู้ใช้คนนี้ขอ ให้ขึ้นหน้าโหวตตามปกติ
+       // (เดิมนับเป็นโหวตให้เพลงที่ผู้ใช้มองไม่เห็น)
+       if (!isAdmin && String(data[i][9]) === "AdminOnly" && uuid) {
+         checkQuota();
+         sheet.getRange(i + 1, 7, 1, 4).setValues([[1, uuid, uuid, "Pending"]]);
+         return getSongs(eventId);
+       }
+       // เพลงซ้ำ -> นับเป็นโหวต (อยู่ในล็อกอยู่แล้ว จึงเรียกตัวที่ไม่ล็อกซ้ำ)
+       return voteSongLocked(eventId, data[i][0], uuid);
+    }
   }
+
+  if (!isAdmin) checkQuota();
 
   const songId = "S" + new Date().getTime() + Math.random().toString(36).slice(2, 5);
   const breakdanceText = songData.isBreakdance ? "Yes" : "No";
@@ -1422,6 +1442,7 @@ function mergeSongs(eventId, merges) {
         }
         rng.setValues(ids);
         removeRows.sort(function (a, b) { return b - a; }).forEach(function (r) { pl.deleteRow(r); });
+        bumpPlaylistRev(eventId, "");
       }
       dropRows.sort(function (a, b) { return b - a; }).forEach(function (r) { sheet.deleteRow(r + 1); });
     }
@@ -1508,7 +1529,87 @@ function getPlaylist(eventId, date) {
   let sheet = ss.getSheetByName(getPlaylistSheetName(eventId));
   if (!sheet && date) sheet = ss.getSheetByName(legacyPlaylistSheetName(eventId, date));
   if (!sheet) return [];
-  return readPlaylistSheet(sheet);
+  // หน้าเว็บรุ่นเก่าไม่รู้จักแถวเก็บชื่อลิสต์ว่าง จึงตัดออก (รุ่นใหม่ใช้ getPlaylistState)
+  return readPlaylistSheet(sheet).filter(function (r) { return r.id !== PL_CAT_MARKER; });
+}
+
+// ============================================================
+// 🤝 หน้าจัดลิสต์แบบทำงานร่วมกัน
+//   - ทุกครั้งที่บันทึก เลขรุ่น (rev) ของลิสต์งานนั้นเพิ่มขึ้น 1 (เก็บใน Script Properties)
+//   - หน้าเว็บถามเลขรุ่นเป็นระยะ ถ้าเปลี่ยนจึงอ่านลิสต์ใหม่ (ไม่อ่านชีตลิสต์ซ้ำถ้าไม่มีอะไรเปลี่ยน)
+//   - บันทึกต้องแนบเลขรุ่นที่ตัวเองเห็นล่าสุด ถ้ามีคนบันทึกตัดหน้า จะไม่เขียนทับ แต่ส่งลิสต์ล่าสุดกลับไปให้รวมก่อน
+//   - ลิสต์ที่ยังไม่มีเพลงถูกเก็บเป็นแถว SongID = "__CAT__" เพื่อไม่ให้ลิสต์ว่างหายเมื่อเปิดใหม่
+// ============================================================
+const PL_CAT_MARKER = "__CAT__";
+
+function plStateKey(eventId) {
+  return "PLSTATE_" + eventId;
+}
+
+function readPlaylistMeta(eventId) {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(plStateKey(eventId));
+    const m = raw ? JSON.parse(raw) : null;
+    if (m && typeof m.rev === "number") return m;
+  } catch (e) {}
+  return { rev: 0, by: "", at: 0 };
+}
+
+// เรียกขณะถือล็อกอยู่เท่านั้น
+function bumpPlaylistRev(eventId, by) {
+  const m = readPlaylistMeta(eventId);
+  const next = { rev: m.rev + 1, by: clip(by, 60), at: Date.now() };
+  PropertiesService.getScriptProperties().setProperty(plStateKey(eventId), JSON.stringify(next));
+  return next;
+}
+
+function writePlaylistRows(eventId, lists) {
+  const ss = getSS();
+  const sheetName = getPlaylistSheetName(eventId);
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) sheet = ss.insertSheet(sheetName);
+  sheet.clear();
+  sheet.appendRow(["หมวดหมู่ห้อง", "ลำดับ", "ชื่อเพลง", "ศิลปิน", "เพศศิลปิน", "Breakdance", "เวลาที่เต้น", "ลิงก์ Youtube", "SongID"]);
+  const list = Array.isArray(lists) ? lists.slice(0, 2000) : [];
+  if (list.length > 0) {
+    const s = function (v, n) { return safeCell(clip(v, n)); };
+    const rows = list.map(function (r, index) {
+      r = r || {};
+      return [s(r.listName, 120), index + 1, s(r.name, 200), s(r.artist, 200), s(r.gender, 10),
+              r.isBreakdance ? "Yes" : "No", s(r.time, 40), s(r.link, 500), s(r.id, 60)];
+    });
+    sheet.getRange(2, 1, rows.length, 9).setValues(rows);
+  }
+}
+
+// สถานะลิสต์ปัจจุบัน: เลขรุ่น + ผู้บันทึกล่าสุด + รายการเพลงของงาน (+ ลิสต์ ถ้าเลขรุ่นต่างจากที่หน้าเว็บมี)
+function getPlaylistState(eventId, date, knownRev) {
+  if (!eventId) throw new Error("ไม่พบข้อมูลงาน");
+  const meta = readPlaylistMeta(eventId);
+  const out = { rev: meta.rev, by: meta.by, at: meta.at, songs: getSongs(eventId) };
+  if (knownRev === null || knownRev === undefined || String(knownRev) !== String(meta.rev)) {
+    const ss = getSS();
+    let sheet = ss.getSheetByName(getPlaylistSheetName(eventId));
+    if (!sheet && date) sheet = ss.getSheetByName(legacyPlaylistSheetName(eventId, date));
+    out.lists = sheet ? readPlaylistSheet(sheet) : [];
+  }
+  return out;
+}
+
+// บันทึกเมื่อ baseRev ตรงกับรุ่นล่าสุดเท่านั้น ไม่งั้นตอบ conflict พร้อมลิสต์ล่าสุด (ไม่เขียนทับงานของคนอื่น)
+function savePlaylistState(eventId, date, lists, baseRev, by) {
+  if (!eventId) throw new Error("ไม่พบข้อมูลงาน");
+  return withScriptLock(15000, function () {
+    const meta = readPlaylistMeta(eventId);
+    if (baseRev !== null && baseRev !== undefined && String(baseRev) !== String(meta.rev)) {
+      const st = getPlaylistState(eventId, date, null);
+      st.conflict = true;
+      return st;
+    }
+    writePlaylistRows(eventId, lists);
+    const next = bumpPlaylistRev(eventId, by);
+    return { rev: next.rev, by: next.by, at: next.at };
+  });
 }
 
 // 🌟 ฟังก์ชันสำหรับให้แอดมินปิดงาน
@@ -1531,20 +1632,9 @@ function closeEvent(id) {
 function savePlaylist(eventId, date, lists) {
   return withScriptLock(15000, function () {
     if (!eventId) throw new Error("ไม่พบข้อมูลงาน");
-    const ss = getSS();
-    const sheetName = getPlaylistSheetName(eventId);
-    let sheet = ss.getSheetByName(sheetName);
-    if (!sheet) sheet = ss.insertSheet(sheetName);
-    sheet.clear();
-    sheet.appendRow(["หมวดหมู่ห้อง", "ลำดับ", "ชื่อเพลง", "ศิลปิน", "เพศศิลปิน", "Breakdance", "เวลาที่เต้น", "ลิงก์ Youtube", "SongID"]);
-
-    if (lists && lists.length > 0) {
-      const rows = lists.map((s, index) => [
-        safeCell(s.listName), index + 1, safeCell(s.name), safeCell(s.artist), s.gender, s.isBreakdance ? "Yes" : "No", safeCell(s.time), safeCell(s.link), s.id
-      ]);
-      sheet.getRange(2, 1, rows.length, 9).setValues(rows);
-    }
-    return { success: true };
+    writePlaylistRows(eventId, lists);
+    const next = bumpPlaylistRev(eventId, ""); // หน้าจัดลิสต์ที่เปิดค้างอยู่จะเห็นการเปลี่ยนแปลงนี้
+    return { success: true, rev: next.rev };
   });
 }
 

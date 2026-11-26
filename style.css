@@ -3024,3 +3024,150 @@ body.pl-dragging .pl-trash .pl-trash-count {
     animation: none;
   }
 }
+
+/* ============================================================
+   หน้าจัดลิสต์: แยกเพลงที่แอดมินเพิ่มเอง กับเพลงจากการโหวต
+   ============================================================ */
+.playlist-item.pl-src-admin {
+  border-left: 4px solid #f39c12;
+  background: #fffaf0;
+}
+.playlist-item.pl-src-vote {
+  border-left: 4px solid var(--primary);
+}
+.tag-admin {
+  background: #fff1d6;
+  color: #9a5b00;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tag-admin i {
+  font-size: 0.65rem;
+}
+
+/* แถบสถานะบันทึกอัตโนมัติ + คำอธิบายป้าย */
+.pl-infobar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 14px;
+  padding: 6px 15px;
+  font-size: 0.8rem;
+}
+.pl-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: #f4f7f4;
+  transition: background 0.3s;
+}
+.pl-sync-status:empty {
+  display: none;
+}
+.pl-sync-status[data-state="saved"] i {
+  color: var(--success);
+}
+.pl-sync-status[data-state="pending"],
+.pl-sync-status[data-state="manual"] {
+  background: #fff7e0;
+  color: #8a5a00;
+}
+.pl-sync-status[data-state="offline"] {
+  background: #fdecea;
+  color: var(--danger);
+}
+.pl-sync-status.pulse {
+  animation: plSyncPulse 1.2s ease;
+}
+@keyframes plSyncPulse {
+  0% { background: var(--primary-light); }
+  100% { background: #f4f7f4; }
+}
+.pl-legend {
+  display: inline-flex;
+  gap: 10px;
+  color: var(--text-muted);
+}
+.pl-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 6px;
+}
+.pl-legend-admin {
+  border-left: 4px solid #f39c12;
+  color: #9a5b00;
+}
+.pl-legend-vote {
+  border-left: 4px solid var(--primary);
+  color: var(--primary-hover);
+}
+
+/* ปุ่มนับศิลปินบนหัวลิสต์ + หน้าต่างสถิติ */
+.list-stats-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.artist-stats-list {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.artist-stats-head,
+.artist-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 4px;
+}
+.artist-stats-head {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: white;
+}
+.artist-stats-row + .artist-stats-row {
+  border-top: 1px dashed var(--border-color);
+}
+.artist-stats-name {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.artist-stats-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.artist-stats-split {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.artist-stats-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: #f3e5ec;
+  overflow: hidden;
+}
+.artist-stats-bar span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+.artist-stats-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--dark);
+  min-width: 2ch;
+  text-align: right;
+}

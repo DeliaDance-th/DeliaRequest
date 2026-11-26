@@ -376,13 +376,6 @@
             <div style="display: flex; gap: 5px; padding: 0 10px">
               <button
                 class="btn btn-outline btn-full btn-sm"
-                onclick="randomizeAlternate('list-pool')"
-              >
-                <i class="fa-solid fa-shuffle"></i>
-                <span data-i18n="shuffle_mf">สุ่ม (M/F)</span>
-              </button>
-              <button
-                class="btn btn-outline btn-full btn-sm"
                 id="btn-shuffle-pool"
                 onclick="shufflePool()"
               >
@@ -524,6 +517,19 @@
               <i class="fa-solid fa-floppy-disk"></i>
               <span data-i18n="btn_save">เซฟลง Sheet</span>
             </button>
+          </div>
+          <!-- สถานะบันทึกอัตโนมัติ + คำอธิบายป้ายแหล่งที่มาของเพลง -->
+          <div class="pl-infobar">
+            <div class="pl-sync-status" id="pl-sync-status" aria-live="polite"></div>
+            <div class="pl-legend">
+              <span class="pl-legend-item pl-legend-admin"
+                ><i class="fa-solid fa-user-shield"></i>
+                <span data-i18n="src_admin">แอดมินเพิ่ม</span></span
+              >
+              <span class="pl-legend-item pl-legend-vote"
+                >♥ <span data-i18n="src_vote">จากการโหวต</span></span
+              >
+            </div>
           </div>
           <div class="dynamic-board" id="dynamic-board"></div>
           <!-- ถังขยะ: ลากเพลงมาวางเพื่อเอาออกจากหน้าจัดลิสต์ / แตะเพื่อดูและนำกลับ -->
@@ -1759,6 +1765,36 @@
           style="text-align: center; font-size: 0.9rem; margin-bottom: 12px"
         ></p>
         <div id="move-song-targets" class="move-targets"></div>
+      </div>
+    </div>
+
+    <!-- สถิติศิลปินในลิสต์ -->
+    <div class="modal-overlay" id="artistStatsModal">
+      <div class="modal-content" style="max-width: 460px">
+        <i
+          class="modal-close fa-solid fa-xmark"
+          onclick="closeModal('artistStatsModal')"
+        ></i>
+        <h3 style="margin-top: 0; text-align: center">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span id="artist-stats-title"></span>
+        </h3>
+        <p
+          id="artist-stats-summary"
+          class="text-muted"
+          style="text-align: center; font-size: 0.9rem; margin-bottom: 12px"
+        ></p>
+        <div id="artist-stats-list" class="artist-stats-list"></div>
+        <button
+          type="button"
+          class="btn btn-outline btn-full"
+          id="btn-artist-stats-copy"
+          style="margin-top: 12px"
+          onclick="copyArtistStats()"
+        >
+          <i class="fa-solid fa-copy"></i>
+          <span data-i18n="artist_stats_copy">คัดลอกตาราง</span>
+        </button>
       </div>
     </div>
 
